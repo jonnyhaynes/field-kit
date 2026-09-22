@@ -1,0 +1,76 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(git status)",
+      "Shell(git diff:*)",
+      "Shell(git log:*)",
+      "Shell(git show:*)",
+      "Shell(git branch:*)",
+      "Shell(git add:*)",
+      "Shell(git commit:*)",
+      "Shell(git fetch:*)",
+      "Shell(git switch:*)",
+      "Shell(git checkout:*)",
+      "Shell(npm install)",
+      "Shell(npm install *)",
+      "Shell(npm ci)",
+      "Shell(npm run *)",
+      "Shell(npm test)",
+      "Shell(npm test *)",
+      "Shell(npx tsc *)",
+      "Shell(npx eslint *)",
+      "Shell(npx prettier *)",
+      "Shell(npx expo *)",
+      "Shell(npx expo-doctor*)",
+      "Shell(npx eas *)",
+      "Shell(pnpm install*)",
+      "Shell(pnpm run *)",
+      "Shell(pnpm test*)",
+      "Shell(yarn install*)",
+      "Shell(yarn run *)",
+      "Shell(bun install*)",
+      "Shell(bun run *)",
+      "Shell(bun test*)",
+      "Shell(gh pr view:*)",
+      "Shell(gh pr list:*)",
+      "Shell(gh pr diff:*)",
+      "Shell(gh pr status:*)",
+      "Shell(gh issue view:*)",
+      "Shell(gh issue list:*)",
+      "Shell(npm:*)"
+    ],
+    "ask": [
+      "Shell(git push:*)",
+      "Shell(git pull:*)"
+    ],
+    "deny": [
+      "Read(.env*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/id_rsa)",
+      "Read(**/id_ed25519)",
+      "Edit(.env*)",
+      "Edit(**/*.pem)",
+      "Edit(**/*.key)",
+      "Edit(.git/**)",
+      "Shell(git push --force*)",
+      "Shell(git reset --hard*)",
+      "Shell(git clean:*)",
+      "Shell(gh pr merge*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "shell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.commandcode/hooks/guard-test-command.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

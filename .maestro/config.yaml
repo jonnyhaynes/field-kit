@@ -1,0 +1,29 @@
+# Maestro workspace config for Field Kit E2E.
+#
+# `flows` scopes which files are treated as runnable top-level flows. Sub-flows
+# are pulled in via `runFlow:` and must NOT be run on their own (they assume a
+# caller-provided state), so they must not be collected here.
+#
+# WHY THIS IS AN EXPLICIT ALLOW-LIST rather than "**/*.yaml" + an exclusion:
+# Maestro's `flows` globs are INCLUSION-ONLY. A "!subflows/**" entry compiles as
+# the literal glob `!subflows/**`, matches nothing (no path starts with "!"), and
+# is silently inert — so the helpers get collected as if they were test cases and
+# fail mid-journey with no caller state. A single `*` does not cross a path
+# separator, so one-level-per-area patterns naturally exclude both `subflows/`
+# and any area-local `<area>/subflows/`.
+#
+# ADDING A NEW AREA: add a line for it here, or its flows will not run.
+#
+# Filter by area or ticket block with tags, e.g.:
+#   maestro test .maestro/ --include-tags guided
+#   maestro test .maestro/ --include-tags smoke
+#
+# Run instructions and the current state of the suite: .maestro/README.md
+flows:
+  - "smoke/*.yaml"
+  - "guided/*.yaml"
+  - "aed/*.yaml"
+  - "location/*.yaml"
+  - "capture/*.yaml"
+  - "transfer/*.yaml"
+  - "settings/*.yaml"
