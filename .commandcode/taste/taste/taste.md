@@ -1,0 +1,23 @@
+# Taste
+- Uses both Command Code and Claude Code as coding agents, and expects repos set up for both: shared `AGENTS.md` as the single source of truth, with a thin `CLAUDE.md` that just imports `@AGENTS.md`, plus `.commandcode/` and `.claude/` settings for each tool. Confidence: 0.85
+- Expects agent guardrails to be committed to the repo rather than left to memory: permission allow/ask/deny lists, secret deny-lists, and `PreToolUse` hooks, kept equivalent across both tools' config files (one shared hook script reading either `COMMANDCODE_PROJECT_DIR` or `CLAUDE_PROJECT_DIR`, not duplicated copies that can drift). Confidence: 0.8
+- Expects guardrails to be open and honest: if a guardrail gets in the way, change it in the open rather than routing around it silently. Confidence: 0.6
+- Builds apps with Expo (React Native) + TypeScript, targeting native iOS and Android from v1 using Expo dev builds via CNG/EAS — not web/PWA first (reverses an earlier web-first PWA preference). Confidence: 0.75
+- Uses npm as the package manager for Expo projects (consistent across sibling repos) and commits the lockfile. Confidence: 0.6
+- Hosts personal projects on GitHub under the `jonnyhaynes` account and prefers GitHub Issues as the tracker (over Bitbucket/Jira). Confidence: 0.6
+- Wants projects scaffolded to "work with agents": agent context files, in-repo guardrails (permissions/hooks), and a plan-first, human-approved workflow. Confidence: 0.65
+- Prefers one source of truth for shared config/guidance over duplicated copies — reference or share a file rather than maintaining parallel versions. Confidence: 0.65
+- Uses Maestro for end-to-end tests on Expo/React Native apps, following their established conventions: flows grouped by feature area (e.g. `smoke/`, `guided/`), shared steps in `subflows/`, testID selectors, and an explicit inclusion allow-list in `.maestro/config.yaml` because Maestro's `flows` globs are inclusion-only. Confidence: 0.7
+- Prefers simple, clean, uncluttered UI, and colour schemes that suit a broad general audience rather than a narrow demographic (e.g. rejecting a teenager-targeted palette). Confidence: 0.6
+- Builds for the UK market first but avoids UK-only assumptions in the design/data model so it can expand to Europe and the rest of the world. Confidence: 0.7
+- Favours zero-cost, open-source, self-hosted solutions over paid licences or commercial SDKs, and pushes back on cost if it would block delivery. Confidence: 0.6
+- Prefers relying on platform-native defaults over adding libraries or complexity where the built-in option is adequate (e.g. OS app sandbox + device encryption instead of adding SQLCipher). Confidence: 0.55
+- Marks AI-assisted work: `[ai-assisted]` prefix on PR titles, reference the approved plan doc in the PR body, a `Manually reviewed by <name>` line, and keep the `Co-Authored-By` trailer on commits. Confidence: 0.6
+- Enforces a human gate on git: a named person reviews the diff against the approved plan and merges every PR — the agent never merges (deny-listed, e.g. `gh pr merge`). Confidence: 0.6
+- Prefers test-first development — each acceptance criterion becomes a failing test before the implementation — and wants review findings vetted rather than blindly applied. Confidence: 0.55
+- Expects agents to push back rather than agree reflexively, and to flag changes to a load-bearing decision explicitly instead of slipping them in. Confidence: 0.55
+- For UI/design decisions, wants real, openable HTML mock-ups (self-contained, no CDN) that can be viewed at actual size rather than markdown sketches or prose descriptions of the screens. Confidence: 0.55
+- Expects design/plan artifacts to cover the full app against their original brief, not just the narrow decision being asked about — will push back when previously-requested features appear to be missing, so artifacts should map requested features to where they live. Confidence: 0.5
+- When the agent surfaces open decisions, wants its own concrete recommendation ("what do you suggest") rather than only a list of options. Confidence: 0.5
+- Expects the approved plan/design docs to be kept current when decisions change: he asks for the plan to be updated/revised (and re-approved) rather than letting the signed-off doc drift out of sync with what was actually agreed. Confidence: 0.55
+- Keeps `AGENTS.md` lean — it points at docs rather than explaining; substantive design and rationale live under `/docs`, and a section that outgrows a few lines should move out and be linked. Confidence: 0.6

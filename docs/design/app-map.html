@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FieldKit — app map</title>
+<style>
+  :root {
+    --paper: oklch(97.2% 0.006 85);
+    --card: oklch(99% 0.003 85);
+    --ink: oklch(23% 0.012 85);
+    --ink-soft: oklch(46% 0.012 85);
+    --line: oklch(89% 0.008 85);
+    --accent: oklch(80% 0.155 78);
+    --accent-ink: oklch(28% 0.06 78);
+    --rescue: oklch(48% 0.185 25);
+    --rescue-ink: oklch(99% 0.01 25);
+    --quiet: oklch(50% 0 0 / 0.05);
+    --r: 14px;
+    --tap: 52px;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: oklch(19% 0.008 85);
+      --card: oklch(24% 0.009 85);
+      --ink: oklch(94% 0.006 85);
+      --ink-soft: oklch(70% 0.010 85);
+      --line: oklch(33% 0.010 85);
+      --accent: oklch(82% 0.150 78);
+      --accent-ink: oklch(24% 0.05 78);
+      --rescue: oklch(58% 0.180 25);
+      --quiet: oklch(100% 0 0 / 0.06);
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 40px 24px 80px; background: var(--paper); color: var(--ink);
+         font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { max-width: 1220px; margin: 0 auto; }
+  h1 { font-size: 30px; line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.01em; }
+  h2 { font-size: 21px; margin: 0 0 6px; letter-spacing: -0.005em; }
+  h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft);
+       margin: 0 0 12px; font-weight: 650; }
+  .lede { color: var(--ink-soft); max-width: 70ch; margin: 0 0 8px; }
+  section { margin-top: 52px; }
+  .note { font-size: 13.5px; color: var(--ink-soft); margin: 12px 0 0; max-width: 74ch; }
+  .note b { color: var(--ink); font-weight: 650; }
+
+  /* ---- app map ---- */
+  .map { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; }
+  @media (max-width: 900px) { .map { grid-template-columns: 1fr 1fr; } }
+  .col { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: var(--card); }
+  .col > h3 { margin-bottom: 10px; }
+  .node {
+    border: 1px solid var(--line); border-radius: 11px; padding: 10px 11px; margin-bottom: 8px;
+    font-size: 14px; font-weight: 600; background: var(--card);
+  }
+  .node span { display: block; font-size: 12px; font-weight: 400; color: var(--ink-soft);
+               margin-top: 3px; line-height: 1.4; }
+  .node.hero { background: var(--rescue); color: var(--rescue-ink); border-color: transparent; }
+  .node.hero span { color: var(--rescue-ink); opacity: 0.85; }
+  .node.gate { border-style: dashed; }
+  .node.last { margin-bottom: 0; }
+  .tag { display: inline-block; font-size: 10.5px; font-weight: 650; letter-spacing: 0.04em;
+         text-transform: uppercase; padding: 2px 7px; border-radius: 999px;
+         background: var(--quiet); color: var(--ink-soft); margin-bottom: 8px; }
+  .tag.now { background: var(--accent); color: var(--accent-ink); }
+
+  /* ---- screens ---- */
+  .rail { display: flex; gap: 20px; overflow-x: auto; padding: 22px 2px 10px; align-items: flex-start; }
+  .step { flex: 0 0 auto; width: 268px; }
+  .phone { width: 268px; height: 552px; background: var(--card); border: 1px solid var(--line);
+           border-radius: 26px; padding: 10px; display: flex; flex-direction: column;
+           box-shadow: 0 1px 2px oklch(0% 0 0 / 0.06); }
+  .screen { flex: 1; display: flex; flex-direction: column; border-radius: 18px; overflow: hidden; }
+  .bar { padding: 12px 14px 10px; border-bottom: 1px solid var(--line); display: flex;
+         justify-content: space-between; align-items: baseline; gap: 8px; }
+  .bar .t { font-size: 15px; font-weight: 650; }
+  .bar .p { font-size: 11px; color: var(--ink-soft); letter-spacing: 0.03em; }
+  .body { flex: 1; padding: 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; }
+  .foot { padding: 14px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+  .cap { font-size: 12.5px; color: var(--ink-soft); margin-top: 10px; }
+
+  .btn { min-height: var(--tap); border-radius: var(--r); border: 1px solid var(--line);
+         background: var(--card); color: var(--ink); font-size: 15px; font-weight: 600;
+         display: flex; align-items: center; justify-content: space-between; padding: 0 15px;
+         gap: 10px; text-align: left; }
+  .btn .go { color: var(--ink-soft); font-weight: 400; }
+  .btn.rescue { background: var(--rescue); border-color: transparent; color: var(--rescue-ink);
+                font-size: 17px; font-weight: 700; justify-content: center; }
+  .btn.sm { min-height: 44px; font-size: 14px; }
+  .btn.accent { background: var(--accent); border-color: transparent; color: var(--accent-ink); }
+
+  .row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .key { flex: 0 0 26px; height: 26px; border-radius: 8px; background: var(--quiet);
+         display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+  .key.on { background: var(--ink); color: var(--paper); }
+  .lbl { flex: 1; }
+  .meta { font-size: 11.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .slot { border: 1px dashed var(--line); border-radius: 10px; padding: 10px 11px; font-size: 12.5px;
+          color: var(--ink-soft); background: var(--quiet); }
+  .slot b { color: var(--ink); font-weight: 600; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 650;
+          padding: 3px 8px; border-radius: 999px; background: var(--quiet); color: var(--ink-soft); }
+  .big { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .qr { width: 132px; height: 132px; margin: 0 auto; border: 1px dashed var(--line); border-radius: 12px;
+        display: grid; place-items: center; font-size: 12px; color: var(--ink-soft); text-align: center; padding: 10px; }
+  .attr { font-size: 10.5px; color: var(--ink-soft); margin-top: auto; }
+  .offline { font-size: 11.5px; color: var(--ink-soft); display: flex; align-items: center; gap: 6px;
+             padding: 7px 10px; border-radius: 9px; background: var(--quiet); }
+  .prog { height: 6px; border-radius: 3px; background: var(--quiet); overflow: hidden; }
+  .prog i { display: block; height: 100%; width: 62%; background: var(--ink); }
+  table { border-collapse: collapse; width: 100%; margin-top: 14px; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line);
+           vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-soft); font-weight: 650; }
+  td:first-child { font-weight: 600; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>FieldKit — the whole app</h1>
+  <p class="lede">
+    The first mock-up showed only the Guided emergency path, because that was all the
+    3-vs-4-screens question needed. This is everything you originally asked for, and where each
+    piece sits.
+  </p>
+  <p class="lede">
+    One structural decision drives it: <b>depth is not a mode.</b> Call 999, CPR and the
+    defibrillator locator are always present, in the same place, for everyone. The Responder depth
+    <em>adds</em> tools on top rather than swapping the app out — so a trained responder never loses
+    the fast path, and an untrained user never meets a mnemonic form.
+  </p>
+
+  <section>
+    <h3>Structure</h3>
+    <div class="map">
+      <div class="col">
+        <h3>Act — always</h3>
+        <div class="node hero">Call 999<span>Dominant on every launch. One verb, red, reserved for this and nothing else.</span></div>
+        <div class="node">They're not breathing<span>Guided CPR, with a metronome. Cites the sourced record.</span></div>
+        <div class="node last">Find nearest defibrillator<span>Peer destination, one tap. Never a step in a sequence.</span></div>
+      </div>
+
+      <div class="col">
+        <h3>Defibrillators</h3>
+        <div class="node">Nearest list<span>Distance and bearing. Works with no signal.</span></div>
+        <div class="node">Offline map<span>Bundled UK overview, plus downloaded region packs.</span></div>
+        <div class="node">How to use an AED<span>Cited content. Not authored here.</span></div>
+        <div class="node last">Flag as inaccurate<span>Suppresses locally, queues an OSM note.</span></div>
+      </div>
+
+      <div class="col">
+        <h3>Position &amp; orientation</h3>
+        <div class="node">Where I am<span>Lat/long and OS grid ref, computed on device.</span></div>
+        <div class="node">Compass<span>Bearing, with a calibration warning and a GPS-course fallback.</span></div>
+        <div class="node last">what3words<span>Resolved when online, stored against the record with its sample time. Never shown as your current position.</span></div>
+      </div>
+
+      <div class="col">
+        <h3>Responder tools <span class="tag now">depth</span></h3>
+        <div class="node gate">Record incident<span>Revealed only when the Responder depth is on.</span></div>
+        <div class="node">SAMPLER<span>History from an alert casualty.</span></div>
+        <div class="node">ABCDE<span>Primary and secondary survey.</span></div>
+        <div class="node">ETHANE<span>Situation report, including exact location.</span></div>
+        <div class="node">ASHICE<span>Handover: age, sex, history, illness or injury, cause for concern, ETA.</span></div>
+        <div class="node last">Send report<span>QR, share sheet, or NFC tag.</span></div>
+      </div>
+    </div>
+    <p class="note">
+      <b>Plus settings:</b> depth switch, offline region packs, sources and attribution, privacy, and
+      delete all records. Nothing here needs an account, and nothing leaves the phone unless the
+      user sends it.
+    </p>
+  </section>
+
+  <section>
+    <h3>Screens the first mock-up didn't show</h3>
+    <div class="rail">
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar"><span class="t">Record incident</span><span class="p">SAMPLER</span></div>
+          <div class="body">
+            <div class="row"><div class="key on">S</div><div class="lbl">Signs and symptoms</div></div>
+            <div class="row"><div class="key">A</div><div class="lbl">Allergies and age</div></div>
+            <div class="row"><div class="key">M</div><div class="lbl">Medication</div></div>
+            <div class="row"><div class="key">P</div><div class="lbl">Past history</div></div>
+            <div class="row"><div class="key">L</div><div class="lbl">Last meal</div></div>
+            <div class="row"><div class="key">E</div><div class="lbl">Events</div></div>
+            <div class="slot"><b>Content slot</b> — the prompts behind each letter come from the sourced record, not from here.</div>
+          </div>
+          <div class="foot"><div class="btn">Continue to survey <span class="go">&rarr;</span></div></div>
+        </div></div>
+        <p class="cap">Capture is a form of questions, not a set of instructions. The prompts are cited content.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar"><span class="t">Where I am</span><span class="p">On device</span></div>
+          <div class="body">
+            <div>
+              <div class="meta">Latitude, longitude</div>
+              <div class="big">54.4609<br>-3.0886</div>
+            </div>
+            <div>
+              <div class="meta">OS grid reference</div>
+              <div class="big" style="font-size:26px">NY 26259 06255</div>
+            </div>
+            <div>
+              <div class="meta">what3words</div>
+              <div class="slot">Not resolved. Needs a network — tap to resolve and store against this record.</div>
+            </div>
+            <div class="offline">&#9679; Coordinates and grid ref need no signal</div>
+          </div>
+          <div class="foot"><div class="btn sm">Open compass <span class="go">&rarr;</span></div></div>
+        </div></div>
+        <p class="cap">The w3w slot is empty rather than stale. That's the design rule: never present a cached address as current.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar"><span class="t">Send report</span><span class="p">ETHANE</span></div>
+          <div class="body">
+            <div class="qr">QR generated on this phone. No network, no server.</div>
+            <div class="slot"><b>Compact payload</b> — ETHANE fields, coordinates, time. Compressed to fit one code.</div>
+            <div class="offline">&#9679; Works with no signal, either side</div>
+          </div>
+          <div class="foot">
+            <div class="btn sm">Share<span>WhatsApp, SMS, email, AirDrop</span></div>
+            <div class="btn sm">Write to NFC tag</div>
+          </div>
+        </div></div>
+        <p class="cap">QR is the primary path: it crosses iOS and Android, needs no entitlement and no tags. NFC is for tags, not phone-to-phone.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar"><span class="t">Map data</span><span class="p">Offline</span></div>
+          <div class="body">
+            <div class="offline">&#9679; UK overview included — the map is never blank</div>
+            <div>
+              <div class="meta">Peak District, high detail</div>
+              <div class="prog"><i></i></div>
+              <div class="meta" style="margin-top:6px">Downloading &middot; 62%</div>
+            </div>
+            <div class="slot"><b>Add detail for where you're going.</b> Overview works out of the box; detail is an enhancement, not a prerequisite.</div>
+            <div class="attr">Map &copy; OpenStreetMap contributors, Protomaps</div>
+          </div>
+          <div class="foot"><div class="btn sm accent">Download area</div></div>
+        </div></div>
+        <p class="cap">Bundled overview keeps the offline-first promise; region packs add detail without gating the core flow.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Against what you originally asked for</h2>
+    <table>
+      <thead><tr><th>Asked for</th><th>Where it lives</th></tr></thead>
+      <tbody>
+        <tr><td>AED lookup</td><td>Defibrillators — proximity list plus offline map, both reachable in one tap from Act</td></tr>
+        <tr><td>what3words</td><td>Position &amp; orientation — online-resolved, stored on the record, never faked offline</td></tr>
+        <tr><td>Grid reference</td><td>Position &amp; orientation — on-device, no signal needed, UK only for now</td></tr>
+        <tr><td>Compass</td><td>Position &amp; orientation — with a fallback when the magnetometer is unusable</td></tr>
+        <tr><td>Call emergency services</td><td>Act — the dominant action, on every launch</td></tr>
+        <tr><td>The card's capture, sendable</td><td>Responder tools — SAMPLER, ABCDE, ETHANE, ASHICE, then QR, share sheet or NFC tag</td></tr>
+        <tr><td>Works fully offline</td><td>Guidance, AED data, position maths and reports are all local. Only w3w resolution and region-pack downloads want a network, and both degrade visibly</td></tr>
+        <tr><td>UK first, expandable</td><td>Only the OS grid ref and the AED dataset are UK-bound, and both sit behind the same interface as everything else</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+</body>
+</html>
