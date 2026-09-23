@@ -236,9 +236,10 @@ guideline edition. A content change is then a reviewable diff, not a code change
 check; what3words licence read; ODbL and Protomaps attribution settled; MHRA intent documented;
 Apple Developer account.
 *Already done:* the Expo app is scaffolded (SDK 57, dependencies installed, `tsc --noEmit` clean);
-this plan is filed at `docs/plans/fieldkit-v1.md`; both design artefacts are in `docs/design/`;
-`.maestro/` carries the conventions; and `AGENTS.md`, `docs/dev-workflow.md`, `.gitignore` and the
-project taste entry are amended for the native pivot.
+the bundle identifiers are set (`com.colouringcode.fieldkit`); the four checks and a bundle check
+run in CI; this plan is filed at `docs/plans/fieldkit-v1.md`; both design artefacts are in
+`docs/design/`; `.maestro/` carries the conventions; and `AGENTS.md`, `docs/dev-workflow.md`,
+`.gitignore` and the project taste entry are amended for the native pivot.
 
 **Phase 1 — offline skeleton. Done.** Expo Router screens, content model, **Guided depth at 3
 screens** (Act, CPR, defibrillator locator), emergency call button. No network calls anywhere.
@@ -299,11 +300,8 @@ read/write.
    single item standing between the project and having no safety gate at all (§2.1).
 2. **Field Kit trademark and store-name availability** — there's an existing open-source FieldKit in
    environmental sensing, so this needs a real check before anything ships under the name.
-3. **Bundle identifiers.** `app.json` has no `ios.bundleIdentifier` or `android.package`, and both
-   derive from a domain you own. Nothing can be installed on a device, or targeted by a Maestro flow,
-   until they exist.
-4. **Does `expo-env.d.ts` get committed?** The template gitignores it, but `tsc --noEmit` fails
-   without it — so a CI type-check gate needs it either committed or generated before the check runs.
 
 Resolved since revision 2: the app name (Field Kit, repo `field-kit`), the Guided share path (both
-depths send a report), the PMTiles location (both), and the Guided screen count (three).
+depths send a report), the PMTiles location (both), the Guided screen count (three), the bundle
+identifiers (`com.colouringcode.fieldkit`), and `expo-env.d.ts` (committed, so the CI type-check is
+reproducible from a clean checkout).

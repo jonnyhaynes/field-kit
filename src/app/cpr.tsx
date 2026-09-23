@@ -1,11 +1,10 @@
 import { router } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { ActionButton } from '@/components/action-button';
 import { ContentSlot } from '@/components/content-slot';
 import { Metronome } from '@/components/metronome';
 import { Screen } from '@/components/screen';
-import { Spacing } from '@/constants/theme';
 import { GUIDANCE_IDS, compressionPaceBpm } from '@/content';
 import { useTheme } from '@/hooks/use-theme';
 

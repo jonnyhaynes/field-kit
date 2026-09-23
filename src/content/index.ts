@@ -6,4 +6,10 @@ export {
   type Depth,
   type GuidanceRecord,
 } from './types';
-export { compressionPaceBpm, getGuidance, GUIDANCE, GUIDANCE_IDS, type GuidanceId } from './guidance';
+export {
+  compressionPaceBpm,
+  getGuidance,
+  GUIDANCE,
+  GUIDANCE_IDS,
+  type GuidanceId,
+} from './guidance';

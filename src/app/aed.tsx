@@ -18,24 +18,22 @@ export default function AedScreen() {
     <Screen testID="aed-screen">
       <Text style={[styles.title, { color: theme.text }]}>Nearest defibrillator</Text>
 
-      <View
-        testID="aed-no-data"
-        style={[styles.card, { borderColor: theme.border }]}>
+      <View testID="aed-no-data" style={[styles.card, { borderColor: theme.border }]}>
         <Text style={[styles.cardTitle, { color: theme.text }]}>
           No defibrillator data in this build
         </Text>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
           The dataset isn&apos;t installed yet. When it is, every result will be labelled
-          unverified: a defibrillator can be removed, moved, or locked away, and this app
-          will never imply that one is present, reachable or working.
+          unverified: a defibrillator can be removed, moved, or locked away, and this app will never
+          imply that one is present, reachable or working.
         </Text>
       </View>
 
       <ContentSlot id={GUIDANCE_IDS.aedUse} label="How to use an AED" />
 
       <OfflineNote>
-        Once the dataset is installed it ships with the app, so this screen will still work
-        with no signal.
+        Once the dataset is installed it ships with the app, so this screen will still work with no
+        signal.
       </OfflineNote>
     </Screen>
   );

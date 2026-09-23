@@ -8,6 +8,10 @@ export function useColorScheme() {
   const [hasHydrated, setHasHydrated] = useState(false);
 
   useEffect(() => {
+    // Expo's static-rendering hydration guard: the server has no colour scheme, so the
+    // first client render has to match the server and only then switch. There is no
+    // external system to subscribe to instead, which is exactly why the rule is wrong here.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate exception
     setHasHydrated(true);
   }, []);
 

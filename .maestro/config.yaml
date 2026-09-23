@@ -20,10 +20,10 @@
 #
 # Run instructions and the current state of the suite: .maestro/README.md
 flows:
-  - "smoke/*.yaml"
-  - "guided/*.yaml"
-  - "aed/*.yaml"
-  - "location/*.yaml"
-  - "capture/*.yaml"
-  - "transfer/*.yaml"
-  - "settings/*.yaml"
+  - 'smoke/*.yaml'
+  - 'guided/*.yaml'
+  - 'aed/*.yaml'
+  - 'location/*.yaml'
+  - 'capture/*.yaml'
+  - 'transfer/*.yaml'
+  - 'settings/*.yaml'
