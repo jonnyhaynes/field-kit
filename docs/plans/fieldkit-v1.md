@@ -149,7 +149,9 @@ entitlement), and ODbL share-alike obligations on the derived AED database.
 - `expo-location` (GPS + heading), `expo-sensors` (magnetometer), `expo-sqlite`, `expo-camera`
   (QR scan), `expo-sharing` + RN `Share`, `react-native-qrcode-svg`, `react-native-nfc-manager`,
   `@maplibre/maplibre-react-native`, `zustand` (incident session), `proj4` (OSGB36 grid refs).
-- **Unit/component:** Jest via `jest-expo` + React Native Testing Library.
+- **Unit:** Jest via `jest-expo`, installed. Tests import their globals from `@jest/globals` so
+  `tsc` types them without loosening the global config. React Native Testing Library is *not*
+  installed yet — component tests arrive with the first component worth testing.
 - **E2E: Maestro**, matching the existing setup in `stem-4-clear-fear-expo/.maestro/`: explicit
   inclusion allow-list in `.maestro/config.yaml` (one glob per area — Maestro's `flows` globs are
   inclusion-only, so a `!subflows/**` negation is silently inert), flows named `TC-NN — description`
@@ -238,8 +240,12 @@ this plan is filed at `docs/plans/fieldkit-v1.md`; both design artefacts are in 
 `.maestro/` carries the conventions; and `AGENTS.md`, `docs/dev-workflow.md`, `.gitignore` and the
 project taste entry are amended for the native pivot.
 
-**Phase 1 — offline skeleton.** Expo Router screens, content model, **Guided depth at 3 screens**
-(Act, CPR, defibrillator locator), emergency call button. No network calls anywhere.
+**Phase 1 — offline skeleton. Done.** Expo Router screens, content model, **Guided depth at 3
+screens** (Act, CPR, defibrillator locator), emergency call button. No network calls anywhere.
+*Landed:* `src/app/{index,cpr,aed}.tsx` as a Stack; the cited-content model with `assertCited`
+running at import time; the palette tokens; Jest with 23 tests over the content gate and the pace
+maths; `expo export` bundles clean. *Deliberately absent:* every clinical value. The corpus is
+empty, so the slots render empty and the metronome is dormant rather than guessing a pace.
 
 **Phase 2 — AED.** OSM extract pipeline (`scripts/build-aed-db.ts`) → quality gate (require
 public-access tagging, drop stale nodes) → bundled SQLite with bounding-box + haversine proximity →

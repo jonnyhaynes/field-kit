@@ -1,18 +1,45 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { useColorScheme } from 'react-native';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { Colors } from '@/constants/theme';
 
-SplashScreen.preventAutoHideAsync();
+type Scheme = 'light' | 'dark';
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+/** Navigation chrome follows the app palette rather than the platform default. */
+function navigationTheme(scheme: Scheme) {
+  const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+  const palette = Colors[scheme];
+
+  return {
+    ...base,
+    colors: {
+      ...base.colors,
+      primary: palette.accent,
+      background: palette.background,
+      card: palette.backgroundElement,
+      text: palette.text,
+      border: palette.border,
+    },
+  };
+}
+
+export default function RootLayout() {
+  const scheme: Scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+  const palette = Colors[scheme];
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
+    <ThemeProvider value={navigationTheme(scheme)}>
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: palette.backgroundElement },
+          headerTintColor: palette.text,
+          headerTitleStyle: { fontSize: 17 },
+          contentStyle: { backgroundColor: palette.background },
+        }}>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="cpr" options={{ title: 'Start compressions' }} />
+        <Stack.Screen name="aed" options={{ title: 'Nearest defibrillator' }} />
+      </Stack>
     </ThemeProvider>
   );
 }
