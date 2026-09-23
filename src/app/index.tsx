@@ -1,98 +1,62 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { ActionButton } from '@/components/action-button';
+import { OfflineNote } from '@/components/offline-note';
+import { Screen } from '@/components/screen';
+import { Spacing } from '@/constants/theme';
+import { EMERGENCY_LABEL, callEmergencyServices } from '@/emergency/dial';
+import { useTheme } from '@/hooks/use-theme';
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+/**
+ * The one screen everyone sees. Call 999 is the single dominant action; the other two
+ * are peer destinations reachable in one tap, not steps in a sequence.
+ */
+export default function ActScreen() {
+  const theme = useTheme();
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
-
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
-
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
+    <Screen
+      testID="act-screen"
+      withTopInset
+      actions={
+        <>
+          <ActionButton
+            variant="rescue"
+            label={EMERGENCY_LABEL}
+            testID="act-call-emergency"
+            accessibilityHint={`Opens the dialler with ${EMERGENCY_LABEL.replace('Call ', '')} ready`}
+            onPress={() => {
+              void callEmergencyServices();
+            }}
           />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
+          <ActionButton
+            label="They're not breathing"
+            hint="Start compressions"
+            testID="act-cpr"
+            onPress={() => router.push('/cpr')}
           />
-        </ThemedView>
+          <ActionButton
+            label="Find nearest defibrillator"
+            testID="act-aed"
+            onPress={() => router.push('/aed')}
+          />
+        </>
+      }>
+      <View style={styles.intro}>
+        <Text style={[styles.title, { color: theme.text }]}>Someone needs help</Text>
+        <Text style={[styles.sub, { color: theme.textSecondary }]}>
+          Are they awake and breathing normally? If you&apos;re not sure, treat it as no.
+        </Text>
+      </View>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      <OfflineNote>No signal needed — nothing on this screen uses the network.</OfflineNote>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
+  intro: { gap: Spacing.two },
+  title: { fontSize: 30, fontWeight: '700', letterSpacing: -0.5 },
+  sub: { fontSize: 16, lineHeight: 23 },
 });
