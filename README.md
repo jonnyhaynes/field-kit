@@ -37,9 +37,14 @@ npx expo run:ios     # or run:android
 
 ```sh
 npm run typecheck                 # tsc --noEmit
+npm run lint                      # eslint
+npm run format:check              # prettier
 npm test                          # jest
 npx expo export --platform ios    # proves the whole module graph bundles
 ```
+
+All five run in CI on every pull request and every push to `main`
+(`.github/workflows/ci.yml`).
 
 ## Why the screens look half-empty
 
@@ -54,11 +59,9 @@ we chose ourselves.
 
 ## Not yet in place
 
-- **Clinical content** — blocked on the licence. See the plan, §2.1.
+- **Clinical content** — blocked on the licence. See the plan, §2.1. This is the only thing gating
+  real work.
 - **AED dataset and offline map packs** — Phase 2.
-- **Bundle identifiers** — `app.json` has no `ios.bundleIdentifier` or `android.package`, so the app
-  cannot be installed on a device yet, and no Maestro flow can target it.
-- **Maestro flows** — `.maestro/` carries the conventions and has no flows, for the same reason.
-- **No linter or formatter** — `npm run lint` will try to install ESLint on first run rather than
-  checking anything, and Prettier is not installed.
-- **No CI** — so "CI must be green before review" is not yet enforced.
+- **Maestro flows** — `.maestro/` carries the conventions and has no flows yet.
+- **An EAS project** — `app.json` now has both bundle identifiers (`com.colouringcode.fieldkit`), so
+  installing on a device is unblocked, but `eas.json` is not set up and that needs an Expo account.

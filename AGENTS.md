@@ -35,12 +35,15 @@ explaining why it has to be an allow-list. Lint with ESLint, format with Prettie
 type-check with `tsc --noEmit`. Prefer `npx expo install` over `npm install` for
 anything that links native code, so versions stay compatible with the SDK.
 
-_(Unit tests are specified but not installed -- there is no `test` script yet, so the
-test-guard hook is currently a no-op. Bundle identifiers are also unset in `app.json`.
-Both are in the plan, §7.)_
+_(Checks are real: `npm run typecheck`, `npm run lint`, `npm run format:check` and `npm test`
+all run, and `.github/workflows/ci.yml` enforces the same four plus a bundle check. The
+test-guard hook routes test runs through `npm test`. Maestro flows are still unwritten —
+`.maestro/` holds the conventions only.)_
 
-_(Re-scaffolding note: `create-expo-app` now writes its own `AGENTS.md`, `CLAUDE.md` and
-`.claude/settings.json`. Pass `--no-agents-md` or it overwrites this setup.)_
+_(Two scaffold gotchas, both learned the hard way. `create-expo-app` writes its own `AGENTS.md`,
+`CLAUDE.md` and `.claude/settings.json` — pass `--no-agents-md` or it overwrites this setup.
+And `npx expo install <pkg> -- --save-dev` does **not** reliably write to `devDependencies`;
+check `package.json` afterwards or test tooling ends up shipped in production builds.)_
 
 ## Load-bearing principles
 

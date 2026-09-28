@@ -28,8 +28,8 @@ export function ContentSlot({ id, label }: Props) {
         style={[styles.card, styles.empty, { borderColor: theme.border }]}>
         <Text style={[styles.title, { color: theme.text }]}>{label}</Text>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
-          Not in this build. Field Kit reproduces first aid guidance from a licensed source
-          rather than writing its own, and that licence isn&apos;t in place yet.
+          Not in this build. Field Kit reproduces first aid guidance from a licensed source rather
+          than writing its own, and that licence isn&apos;t in place yet.
         </Text>
       </View>
     );
@@ -38,7 +38,10 @@ export function ContentSlot({ id, label }: Props) {
   return (
     <View
       testID={`content-slot-${id}`}
-      style={[styles.card, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
+      style={[
+        styles.card,
+        { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+      ]}>
       <Text style={[styles.title, { color: theme.text }]}>{record.title}</Text>
       <Text style={[styles.body, { color: theme.text }]}>{record.body}</Text>
       <Text style={[styles.citation, { color: theme.textSecondary }]}>

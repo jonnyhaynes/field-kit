@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `--include=dev` is deliberate. With NODE_ENV=production set, npm omits
+      # devDependencies and the tooling these checks need simply isn't there — which is
+      # how eslint and prettier went missing locally once already.
+      - run: npm ci --include=dev
+
+      - run: npm run typecheck
+
+      - run: npm run lint
+
+      - run: npm run format:check
+
+      - run: npm test
+
+      # Type-checking proves the types line up; this proves the module graph actually
+      # bundles. It is the check that would have caught the deleted-template-import class
+      # of mistake on its own.
+      - run: npx expo export --platform ios --output-dir dist

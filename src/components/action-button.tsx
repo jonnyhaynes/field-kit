@@ -43,7 +43,11 @@ export function ActionButton({
       ]}>
       <View style={styles.text}>
         <Text
-          style={[styles.label, isRescue && styles.labelRescue, { color: isRescue ? theme.rescueInk : theme.text }]}>
+          style={[
+            styles.label,
+            isRescue && styles.labelRescue,
+            { color: isRescue ? theme.rescueInk : theme.text },
+          ]}>
           {label}
         </Text>
         {hint ? (

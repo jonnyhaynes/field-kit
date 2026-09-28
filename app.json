@@ -8,9 +8,11 @@
     "scheme": "fieldkit",
     "userInterfaceStyle": "automatic",
     "ios": {
+      "bundleIdentifier": "com.colouringcode.fieldkit",
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "com.colouringcode.fieldkit",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

@@ -21,8 +21,9 @@ export function Metronome({ bpm, testID = 'metronome' }: Props) {
   const [lit, setLit] = useState(false);
 
   useEffect(() => {
-    setBeats(0);
-    setLit(false);
+    // Beat only. No state reset in here: setting state synchronously in an effect causes a
+    // cascading render, and letting the count carry over is harmless for a pace that does
+    // not change mid-incident.
     const id = setInterval(() => {
       setBeats((n) => n + 1);
       setLit((on) => !on);
@@ -37,10 +38,7 @@ export function Metronome({ bpm, testID = 'metronome' }: Props) {
       accessibilityLabel={`Compression pace, ${bpm} per minute, ${beats} beats so far`}
       style={[styles.wrap, { borderColor: theme.border }]}>
       <View
-        style={[
-          styles.dot,
-          { backgroundColor: lit ? theme.accent : theme.backgroundSelected },
-        ]}
+        style={[styles.dot, { backgroundColor: lit ? theme.accent : theme.backgroundSelected }]}
       />
       <Text style={[styles.rate, { color: theme.text }]}>{bpm}</Text>
       <Text style={[styles.caption, { color: theme.textSecondary }]}>per minute</Text>
