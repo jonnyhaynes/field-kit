@@ -253,6 +253,22 @@ public-access tagging, drop stale nodes) → bundled SQLite with bounding-box + 
 proximity list → flagging (§4.3) → MapLibre with bundled overview and downloadable region packs →
 attribution.
 
+**Phase 2 as sliced** — tracked as issues #4–#7. The domain layer lands before the pipeline so the
+gate and the distance maths are executable and tested without a dataset or a network.
+
+| Slice | Issue | Scope |
+| --- | --- | --- |
+| 2a | #4 | AED domain layer — record model, quality gate, bounding-box + haversine proximity. Offline, fixtures only. |
+| 2b | #5 | OSM extract pipeline → gated, bundled SQLite. |
+| 2c | #6 | AED proximity list on-device, with flagging. |
+| 2d | #7 | MapLibre basemap — bundled UK overview plus region packs. |
+
+**Gate staleness policy — refined for #4, and one item left open.** "Drop stale nodes" is narrowed:
+staleness never *silently* drops a node. A missing or unreadable `check_date` becomes
+`never-verified` and the UI says so; age-based dropping is an explicit, opt-in parameter. **Still
+open for sign-off:** the threshold at which an *explicitly* stale `check_date` should drop a node.
+There is no defensible number yet, so #4 ships the parameter and does not assume one.
+
 **Phase 3 — position and orientation.** GPS, lat/long, OSGB36 grid ref, compass with calibration
 warning and fallback, and the online-w3w-resolved-onto-the-record flow.
 
