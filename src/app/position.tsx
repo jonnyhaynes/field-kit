@@ -1,21 +1,25 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
-import { Fonts, Radius, Spacing } from '@/constants/theme';
+import { Fonts, MinTarget, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { currentFrom, describeCurrentPosition } from '@/incident/recorded-location';
 import { useCurrentPosition } from '@/location/current-position';
 import { toOsGridReference } from '@/location/osgb';
+import type { ResolutionFailure } from '@/what3words/resolver';
+import { useAddress } from '@/what3words/use-address';
 
 /**
  * "Where I am" — the thing to read out on the phone.
  *
- * This screen is a deliberate copy of the design's own mock: latitude and longitude, the OS grid
- * reference, and a what3words slot that stays empty rather than stale.
- *
- * Two things it does not do. It shows **eight figures, not ten** — metre precision would be a
- * claim neither the grid transformation nor the phone's GPS can support (see `osgb.ts`). And it
- * offers no compass button yet: the design has one, but a button that does nothing is worse than
+ * This screen follows the design's own mock: latitude and longitude, the OS grid reference, and a
+ * what3words location. Two deviations, both deliberate. It shows **eight figures, not ten** — metre
+ * precision would be a claim neither the grid transformation nor GPS can support (see `osgb.ts`).
+ * And there is no compass button: the design has one, but a button that does nothing is worse than
  * no button, and the compass is its own slice.
+ *
+ * The latitude and longitude are rendered from a `CurrentPosition`, so the type — not a comment —
+ * is what stops a recorded location being shown here as though it were where you are standing.
  */
 export default function PositionScreen() {
   const theme = useTheme();
@@ -51,9 +55,7 @@ export default function PositionScreen() {
         <Text
           testID="position-latlong"
           style={[styles.readout, { color: theme.text, fontFamily: Fonts?.mono }]}>
-          {position.coordinates.latitude.toFixed(5)}
-          {'\n'}
-          {position.coordinates.longitude.toFixed(5)}
+          {describeCurrentPosition(currentFrom(position.coordinates)).join('\n')}
         </Text>
       </Field>
 
@@ -82,20 +84,88 @@ export default function PositionScreen() {
         )}
       </Field>
 
-      <Field label="what3words">
-        <Text testID="position-w3w" style={[styles.body, { color: theme.textSecondary }]}>
-          Not available yet. Resolving an address needs a network, and it is not built. When it is,
-          it will be stored against a record with the time it was taken — never shown here as though
-          it were your current position.
-        </Text>
-      </Field>
+      <What3WordsField coordinates={position.coordinates} />
 
       <Text style={[styles.note, { color: theme.textSecondary }]}>
-        Coordinates and the grid reference are worked out on the device. No signal needed, and
-        nothing about where you are leaves the phone.
+        Coordinates and the grid reference are worked out on the device and need no signal.
+        Resolving a what3words location is the one thing on this screen that leaves the phone, and
+        it only does so when you ask.
       </Text>
     </Screen>
   );
+}
+
+function What3WordsField({
+  coordinates,
+}: {
+  coordinates: { latitude: number; longitude: number };
+}) {
+  const theme = useTheme();
+  const { state, resolve } = useAddress(coordinates);
+
+  return (
+    <Field label="what3words">
+      <View testID="position-w3w">
+        {state.status === 'resolved' ? (
+          <>
+            <Text
+              testID="position-w3w-words"
+              style={[styles.readout, { color: theme.text, fontFamily: Fonts?.mono }]}>
+              {state.words}
+            </Text>
+            <Text style={[styles.note, { color: theme.textSecondary }]}>
+              Read the three words out exactly as they are written.
+            </Text>
+          </>
+        ) : state.status === 'resolving' ? (
+          <Text
+            testID="position-w3w-resolving"
+            style={[styles.body, { color: theme.textSecondary }]}>
+            Resolving…
+          </Text>
+        ) : state.status === 'unavailable' ? (
+          <Text
+            testID="position-w3w-unavailable"
+            style={[styles.body, { color: theme.textSecondary }]}>
+            {unavailableMessage(state.reason)}
+          </Text>
+        ) : (
+          <>
+            <Text style={[styles.body, { color: theme.textSecondary }]}>
+              A location that is easier to read out than a grid reference, and that works anywhere
+              in the world. It needs a network.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Resolve a what3words location"
+              testID="position-w3w-resolve"
+              onPress={resolve}
+              style={({ pressed }) => [
+                styles.action,
+                { backgroundColor: theme.accent },
+                pressed && styles.pressed,
+              ]}>
+              <Text style={[styles.actionLabel, { color: theme.accentInk }]}>Resolve</Text>
+            </Pressable>
+          </>
+        )}
+      </View>
+    </Field>
+  );
+}
+
+/** Each failure gets its own words, because they call for different things from the user. */
+function unavailableMessage(reason: ResolutionFailure): string {
+  switch (reason) {
+    case 'not-configured':
+      return 'Not available in this build. Resolving a what3words location needs an API key, and this copy of the app does not have one. The coordinates and grid reference above need no network at all.';
+    case 'no-connection':
+      return 'Could not reach what3words — no signal, or the service is unreachable. The coordinates and grid reference above need no network.';
+    case 'rejected':
+      return 'what3words refused the request: the key is not valid, or the plan does not include resolving. The coordinates and grid reference above still work.';
+    case 'failed':
+      return 'what3words did not return a usable answer. Try again, or read out the grid reference above instead.';
+  }
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -125,4 +195,12 @@ const styles = StyleSheet.create({
   readout: { fontSize: 26, lineHeight: 34, fontWeight: '600' },
   body: { fontSize: 15, lineHeight: 22 },
   note: { fontSize: 13, lineHeight: 18 },
+  action: {
+    minHeight: MinTarget,
+    borderRadius: Radius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pressed: { opacity: 0.85 },
+  actionLabel: { fontSize: 17, fontWeight: '600' },
 });

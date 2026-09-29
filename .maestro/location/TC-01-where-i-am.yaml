@@ -39,4 +39,12 @@ tags:
 - assertNotVisible:
     id: position-out-of-coverage
 
+# The what3words field is present, and has not resolved anything: resolving is an explicit action,
+# never something fired by opening a screen. With no API key configured this build shows its
+# "not available" state, which is what the honest default looks like.
+- assertVisible:
+    id: position-w3w
+- assertNotVisible:
+    id: position-w3w-words
+
 - takeScreenshot: /tmp/fieldkit-position
