@@ -9,6 +9,7 @@ import {
   DatasetIntegrityError,
   datasetMetaProblems,
   datasetMetaRows,
+  toAedRecords,
   toDatasetRows,
   type AedDatasetMeta,
 } from '../dataset';
@@ -33,6 +34,32 @@ const goodMeta = (): AedDatasetMeta =>
     ],
     rejected: [{ reason: 'not-a-defibrillator' }, { reason: 'not-publicly-accessible' }],
   });
+
+describe('toAedRecords', () => {
+  it('reads a NULL verified_on back as never-verified, not an invented date', () => {
+    expect(
+      toAedRecords([
+        {
+          id: 2,
+          latitude: 51.5074,
+          longitude: -0.1278,
+          verified_on: null,
+          source_dataset: 'osm-overpass@2026-09-27T20:23:36Z',
+        },
+      ]),
+    ).toEqual([record(2, { status: 'never-verified' })]);
+  });
+
+  it('round-trips records through rows and back unchanged', () => {
+    const records = [
+      record(1, { status: 'verified', on: '2025-06-01' }),
+      record(2, { status: 'never-verified' }),
+      record(3, { status: 'verified', on: '2019-11-30' }),
+    ];
+
+    expect(toAedRecords(toDatasetRows(records))).toEqual(records);
+  });
+});
 
 describe('toDatasetRows', () => {
   it('maps a verified record to its ISO date', () => {

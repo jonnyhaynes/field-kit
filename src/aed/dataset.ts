@@ -54,6 +54,22 @@ export function toDatasetRows(records: readonly AedRecord[]): AedDatasetRow[] {
   }));
 }
 
+/**
+ * Rows back into records — the inverse of `toDatasetRows`, used when loading the shipped
+ * database. NULL becomes `never-verified` again rather than an invented date.
+ */
+export function toAedRecords(rows: readonly AedDatasetRow[]): AedRecord[] {
+  return rows.map((row) => ({
+    id: row.id,
+    coordinates: { latitude: row.latitude, longitude: row.longitude },
+    source: { dataset: row.source_dataset, osmNodeId: row.id },
+    verification:
+      row.verified_on === null
+        ? { status: 'never-verified' }
+        : { status: 'verified', on: row.verified_on },
+  }));
+}
+
 export type AedDatasetMeta = {
   schemaVersion: number;
   builtAt: string;

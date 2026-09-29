@@ -27,6 +27,15 @@ export type {
 } from './types';
 export { OverpassShapeError, overpassTimestamp, parseOverpassExtract } from './overpass';
 export { GeoJsonShapeError, parseGeoJsonExtract } from './geojson';
+export { describeVerification, formatDistance } from './presentation';
+export {
+  AED_FLAGS_KEY,
+  createAedFlagStore,
+  parseFlaggedIds,
+  serialiseFlaggedIds,
+  type AedFlagStore,
+  type KeyValueStore,
+} from './flags';
 export {
   AED_ATTRIBUTION,
   AED_DB_SCHEMA_VERSION,

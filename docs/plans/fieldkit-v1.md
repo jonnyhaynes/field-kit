@@ -260,7 +260,7 @@ gate and the distance maths are executable and tested without a dataset or a net
 | --- | --- | --- |
 | 2a | #4 | AED domain layer — record model, quality gate, bounding-box + haversine proximity. Offline, fixtures only. |
 | 2b | #5, #9 | OSM extract pipeline → gated SQLite, plus the committed UK dataset (22,357 records). |
-| 2c | #6 | AED proximity list on-device, with flagging. |
+| 2c | #6, #12 | AED proximity list on-device, with local-first flagging. OSM-note submission split out. |
 | 2d | #7 | MapLibre basemap — bundled UK overview plus region packs. |
 
 **Gate staleness policy — refined for #4, and one item left open.** "Drop stale nodes" is narrowed:
@@ -297,6 +297,28 @@ Two things the research settled along the way. **`.db` is already a Metro asset 
 so no `metro.config.js` is needed as long as the file is `*.db` and not `*.sqlite`. And **`check_date`
 is present on only 7.4% of UK AED nodes** — 1,581 of 22,357 accepted records here — which is why
 `never-verified` is the common case rather than an edge case.
+
+**Phase 2c as delivered — the list, on the device.** The AED screen loads the shipped database
+(`SQLiteProvider` with `assetSource`; expo-sqlite copies the bundled file into the app's directory
+once), reads all 22,357 rows, and reuses the tested `nearestAeds` to rank the nearest three — so
+proximity has one implementation rather than a second one in SQL. Each result shows a deliberately
+coarse distance (rounded to 10 m under a kilometre: a mapped point is not accurate to the metre) and
+whether the position was ever checked, carries the unverified disclaimer, and can be flagged as
+inaccurate, which hides it on that device immediately and persistently. The database is opened
+`PRAGMA query_only`, so nothing on the device can write to the shipped data; flags live in
+expo-sqlite's key-value store instead.
+
+**A slice of Phase 3 came forward, deliberately.** The list needs the user's position to compute
+distances, and position was Phase 3. Rather than reorder the phase quietly, the narrow piece moved:
+`src/location/current-position.ts` takes a foreground fix and does nothing else. Grid references,
+the compass and what3words stay in Phase 3. The position is not stored and not sent, and there is no
+network call anywhere in `src/` (verified by grep, and the offline note on the screen says only what
+is true of that screen).
+
+**Not done in 2c:** the acceptance criterion that a flag becomes an OpenStreetMap note when online
+and opted in. Local-first flagging is complete; submission needs an opt-in surface that does not
+exist yet, and it posts to a third party under the user's name, so it is a separate tracked decision
+(#12) rather than a side effect of the list landing.
 
 **Phase 3 — position and orientation.** GPS, lat/long, OSGB36 grid ref, compass with calibration
 warning and fallback, and the online-w3w-resolved-onto-the-record flow.
