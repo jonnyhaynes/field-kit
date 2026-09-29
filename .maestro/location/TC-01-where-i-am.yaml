@@ -1,0 +1,42 @@
+# TC-01 — "Where I am" reads out a grid reference for the current position.
+#
+# Why this flow exists: the conversion is pure and unit-tested against OS's own worked examples,
+# but the screen around it is not, and the last phase taught the same lesson — a green test suite
+# said nothing about whether the thing actually appeared on a device.
+#
+# Prerequisite: the simulator must be inside Great Britain, Northern Ireland or the Isle of Man,
+# or the screen correctly reports that there is no grid reference to give.
+#   xcrun simctl location booted set 51.5074,-0.1278
+appId: com.colouringcode.fieldkit
+tags:
+  - location
+---
+- launchApp
+
+# Act -> AED -> map -> Where I am.
+- tapOn:
+    id: act-aed
+- assertVisible:
+    id: aed-screen
+- tapOn:
+    id: aed-map
+- extendedWaitUntil:
+    visible:
+      id: map-position-link
+    timeout: 60000
+- tapOn:
+    id: map-position-link
+
+- assertVisible:
+    id: position-screen
+
+- extendedWaitUntil:
+    visible:
+      id: position-grid-ref
+    timeout: 30000
+
+# In coverage, so the refusal must not be what is shown.
+- assertNotVisible:
+    id: position-out-of-coverage
+
+- takeScreenshot: /tmp/fieldkit-position

@@ -119,6 +119,16 @@ function MapContent() {
 
       <Pressable
         accessibilityRole="link"
+        accessibilityLabel="Where I am"
+        accessibilityHint="Latitude, longitude and an OS grid reference"
+        testID="map-position-link"
+        onPress={() => router.push('/position')}
+        style={({ pressed }) => [styles.link, pressed && styles.pressed]}>
+        <Text style={[styles.linkLabel, { color: theme.text }]}>Where I am — grid reference</Text>
+      </Pressable>
+
+      <Pressable
+        accessibilityRole="link"
         accessibilityLabel="Data and licences"
         testID="map-about-link"
         onPress={() => router.push('/about')}
