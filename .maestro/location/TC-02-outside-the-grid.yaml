@@ -1,0 +1,43 @@
+# TC-02 — outside the OS grid, the screen refuses rather than inventing a reference.
+#
+# Why this flow exists: the OS grid's area of use is a rectangle that contains the whole island of
+# Ireland, and Dublin projects inside it to a plausible-looking reference in a different country.
+# Reading that out to an ambulance service would be worse than useless. Unit tests cover the
+# conversion; this covers the screen that has to say so.
+#
+# Prerequisite: the simulator must be outside the grid's coverage, or this flow cannot pass.
+#   xcrun simctl location booted set 53.35,-6.26   # Dublin
+appId: com.colouringcode.fieldkit
+tags:
+  - location
+---
+- launchApp
+- tapOn:
+    id: act-aed
+- assertVisible:
+    id: aed-screen
+- tapOn:
+    id: aed-map
+- extendedWaitUntil:
+    visible:
+      id: map-position-link
+    timeout: 60000
+- tapOn:
+    id: map-position-link
+- assertVisible:
+    id: position-screen
+
+- extendedWaitUntil:
+    visible:
+      id: position-out-of-coverage
+    timeout: 30000
+
+# The important half: no grid reference is offered at all.
+- assertNotVisible:
+    id: position-grid-ref
+
+# Latitude and longitude are still shown — they are correct anywhere.
+- assertVisible:
+    id: position-latlong
+
+- takeScreenshot: /tmp/fieldkit-position-outside

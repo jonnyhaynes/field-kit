@@ -4,13 +4,10 @@ First aid reference for remote and low-signal environments. Native iOS and Andro
 Expo. It has to work with no network at all: the guidance, the defibrillator data and the position
 maths all live on the phone.
 
-**Status: Phase 2 done.** Phase 1 (the offline skeleton) is done, and Phase 2 stands: the AED domain
-layer, the extract pipeline, the UK dataset (22,357 defibrillators from a pinned OpenStreetMap
-extract), the on-device list with local flagging, and an offline basemap. The map shows where you are
-and marks the nearest defibrillators, with lettering and sprites bundled so nothing is fetched.
-
-The map has been run on an iOS simulator and screenshotted — it renders, offline, from the bundled
-archive. It has **not** been run on Android or on real hardware.
+**Status: Phase 3 in progress.** Phase 2 is done. In Phase 3, "Where I am" now gives the current
+latitude, longitude and an **OS grid reference** — the form a British 999 operator works in — computed
+on the device, with no reference offered when you are outside Great Britain, Northern Ireland and the
+Isle of Man rather than a plausible-looking one for the wrong country.
 
 - The approved implementation plan is [`docs/plans/fieldkit-v1.md`](docs/plans/fieldkit-v1.md).
   Read that before starting any work.
@@ -25,6 +22,7 @@ archive. It has **not** been run on Android or on real hardware.
 | `src/app/cpr.tsx` | Compressions, paced by a metronome driven by licensed guidance |
 | `src/app/aed.tsx` | Nearest defibrillator — the nearest three from the bundled dataset, with unverified labelling and local flagging |
 | `src/app/map.tsx` | Offline map — a bundled UK overview, your position and the nearest defibrillators marked |
+| `src/app/position.tsx` | Where I am — latitude, longitude and an OS grid reference to read out |
 | `src/app/about.tsx` | Data and licences — where the defibrillator and map data come from |
 
 ## Run
@@ -70,7 +68,11 @@ we chose ourselves.
 
 - **Clinical content** — blocked on the licence. See the plan, §2.1. This is the only thing gating
   real work.
-- **Android and real hardware** — the map, the location prompt and the 7 MB asset copy are verified
+- **A compass** — the bearing, with a calibration warning and a GPS-course fallback. The design's
+  "Open compass" button is deliberately absent until it does something.
+- **what3words** — an address resolved online and stored against a record with its sample time, never
+  shown as the current position. The slot is on "Where I am" and says so.
+- **Android and real hardware** — the map, the position screen and the 7 MB asset copy are verified
   on an iOS simulator only. Android's local `pmtiles://file://` path is documented but unexercised
   here, and neither platform has been tried on a device.
 - **Region packs** — the bundled overview is a national map at zoom 8 (towns and major roads, not
