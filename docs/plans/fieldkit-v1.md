@@ -261,7 +261,7 @@ gate and the distance maths are executable and tested without a dataset or a net
 | 2a | #4 | AED domain layer — record model, quality gate, bounding-box + haversine proximity. Offline, fixtures only. |
 | 2b | #5, #9 | OSM extract pipeline → gated SQLite, plus the committed UK dataset (22,357 records). |
 | 2c | #6, #12 | AED proximity list on-device, with local-first flagging. OSM-note submission split out. |
-| 2d | #7 | MapLibre basemap — bundled UK overview plus region packs. |
+| 2d | #7, #14 | MapLibre basemap — bundled UK overview at zoom 8, plus the map and data/licences screens. Region packs split out. |
 
 **Gate staleness policy — refined for #4, and one item left open.** "Drop stale nodes" is narrowed:
 staleness never *silently* drops a node. A missing or unreadable `check_date` becomes
@@ -320,6 +320,46 @@ and opted in. Local-first flagging is complete; submission needs an opt-in surfa
 exist yet, and it posts to a third party under the user's name, so it is a separate tracked decision
 (#12) rather than a side effect of the list landing.
 
+**Phase 2d as delivered — the bundled basemap.** The UK overview ships inside the app: a Protomaps v4
+PMTiles archive cut for the UK bounding box, with its lettering and sprites bundled too, so the style
+fetches nothing. `src/maps/style.ts` builds the style from `@protomaps/basemaps` and rewrites every
+remote URL to a local `file://` copy — including the font stacks buried inside `text-field` format
+expressions, which is exactly where the first attempt missed them and left the style reaching for
+protomaps.github.io. The map screen shows your position and the nearest defibrillators, and
+`src/app/about.tsx` carries the attribution and licence text the ODbL requires to be *reachable*,
+not merely present.
+
+**Measured, not guessed — the `maxzoom` trade-off.** Cut from `build.protomaps.com/20260929.pmtiles`
+(a 138 GB planet archive, read remotely with `pmtiles extract` rather than downloaded):
+
+| maxzoom | archive size |
+| --- | --- |
+| 5 | 959 kB |
+| 6 | 1.3 MB |
+| 7 | 2.6 MB |
+| **8** | **6.4 MB** |
+
+**z8 is used** — the largest that fits an 8 MB budget, and each further zoom roughly doubles the file
+(z9 would be about 12 MB). At z8 the archive holds only ~190 tiles of the UK, so this is a national
+overview — coastlines, towns, major roads — not street level. That is the honest limit of the
+bundled map, and the reason region packs exist as a separate slice.
+
+To rebuild it:
+
+```sh
+pmtiles extract https://build.protomaps.com/<build>.pmtiles assets/maps/uk-overview.pmtiles \
+  --bbox=-8.65,49.86,1.77,60.86 --maxzoom=8
+```
+
+**Still open, and split out as #14: region packs.** Free hosting exists (GitHub Releases), so this is
+a scope decision rather than a budget blocker — but a download pipeline, progress UI, integrity
+checking and a `canMapRegions` capability belong together, not bolted onto the overview.
+
+**Unverified, and it matters:** the map has never been seen to render. There is no simulator in the
+development environment, so the style, the marker placement and both colour schemes land unseen. iOS
+also does not document the local `pmtiles://file://` route that Android does, so **a device smoke test
+is the gate before this is trusted**.
+
 **Phase 3 — position and orientation.** GPS, lat/long, OSGB36 grid ref, compass with calibration
 warning and fallback, and the online-w3w-resolved-onto-the-record flow.
 
@@ -343,6 +383,9 @@ read/write.
   out-of-UK case that reports "grid ref unavailable" rather than a wrong answer.
 - **AED query** — fixture dataset; nearest-3 ordering, quality-gate failures excluded, and a
   flagged entry disappearing from results immediately.
+- **Map style** — the built style is pure and testable: no URL a fetch could follow, a local
+  `pmtiles://file://` source, local glyph and sprite templates, and no Protomaps font stack name left
+  to be URL-escaped into a path that does not exist on disk.
 - **Stale-position guard** — a cached 3wa is never rendered in the current-position slot.
 - **Serialisation** — a report round-trips through the QR payload encoder, including overflow.
 

@@ -41,7 +41,9 @@
         {
           "locationWhenInUsePermission": "Field Kit uses your location only to sort defibrillators by distance. Your position is never stored and never sent anywhere."
         }
-      ]
+      ],
+      "@maplibre/maplibre-react-native",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,

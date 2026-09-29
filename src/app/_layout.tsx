@@ -39,6 +39,8 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="cpr" options={{ title: 'Start compressions' }} />
         <Stack.Screen name="aed" options={{ title: 'Nearest defibrillator' }} />
+        <Stack.Screen name="map" options={{ title: 'Offline map' }} />
+        <Stack.Screen name="about" options={{ title: 'Data and licences' }} />
       </Stack>
     </ThemeProvider>
   );
