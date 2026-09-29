@@ -1,0 +1,63 @@
+{
+  "_note": "Synthetic sample, hand-written to exercise every gate path. NOT real AED data and never shipped in the app. Used by the offline pipeline run and by CI.",
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.5 (sample)",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-27T20:23:36Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+    {
+      "type": "node",
+      "id": 1001,
+      "lat": 51.5074,
+      "lon": -0.1278,
+      "tags": {
+        "emergency": "defibrillator",
+        "access": "yes",
+        "check_date": "2025-06-01",
+        "indoor": "no",
+        "defibrillator:location": "Outside the library entrance"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1002,
+      "lat": 51.5121,
+      "lon": -0.1201,
+      "tags": { "emergency": "defibrillator", "access": "permissive" }
+    },
+    {
+      "type": "way",
+      "id": 1003,
+      "center": { "lat": 51.5009, "lon": -0.1421 },
+      "tags": { "emergency": "defibrillator", "access": "public" }
+    },
+    {
+      "type": "node",
+      "id": 1004,
+      "lat": 51.5199,
+      "lon": -0.1278,
+      "tags": { "emergency": "fire_hydrant", "access": "yes" }
+    },
+    {
+      "type": "node",
+      "id": 1005,
+      "lat": 51.4988,
+      "lon": -0.1355,
+      "tags": { "emergency": "defibrillator", "access": "private" }
+    },
+    {
+      "type": "node",
+      "id": 1006,
+      "lat": 51.5033,
+      "lon": -0.1195,
+      "tags": { "emergency": "defibrillator" }
+    },
+    {
+      "type": "relation",
+      "id": 1007,
+      "tags": { "emergency": "defibrillator" }
+    }
+  ]
+}
