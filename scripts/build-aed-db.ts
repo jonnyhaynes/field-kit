@@ -24,11 +24,13 @@ import {
   buildDatasetMeta,
   datasetMetaRows,
   overpassTimestamp,
+  parseGeoJsonExtract,
   parseOverpassExtract,
   toDatasetRows,
   type AedDatasetMeta,
   type AedDatasetRow,
   type GatePolicy,
+  type ParsedExtract,
 } from '../src/aed';
 
 /**
@@ -45,14 +47,39 @@ out body center;`;
 
 const DEFAULT_OUT = 'assets/data/aed.db';
 
-const USAGE = `Usage: npm run build:aed -- --from-file <overpass.json> [options]
+const USAGE = `Usage: npm run build:aed -- --from-file <extract.json> [options]
 
-  --from-file <path>    Overpass API JSON export to read (required)
-  --out <path>          SQLite database to write (default ${DEFAULT_OUT})
-  --meta <path>         Metadata JSON to write (default <out>.json)
-  --dataset <label>     Source label recorded on every row (default derived from the extract)
-  --max-age-years <n>   Drop records whose explicit check_date is older than n years
-                        (off by default — the threshold is an open question, see issue #4)`;
+  --from-file <path>          Overpass JSON or GeoJSON export to read (required)
+  --out <path>                SQLite database to write (default ${DEFAULT_OUT})
+  --meta <path>               Metadata JSON to write (default <out>.json)
+  --dataset <label>           Source label recorded on every row
+                              (default derived from the extract)
+  --source-timestamp <iso>    The extract's OSM data timestamp, when the file
+                              does not carry one (a GeoJSON from osmium does not)
+  --query <text>              Provenance recorded as the source query or command
+  --max-age-years <n>         Drop records whose explicit check_date is older
+                              than n years (off by default — the threshold is an
+                              open question, see issue #4)`;
+
+/**
+ * Overpass JSON (`elements[]`) or GeoJSON (`FeatureCollection`).
+ *
+ * Sniffed from the payload rather than demanded as a flag: the two shapes are unambiguous, so
+ * a wrong file should fail on its contents rather than on how it was described.
+ */
+function parseExtract(payload: unknown, dataset: string): ParsedExtract {
+  const record =
+    typeof payload === 'object' && payload !== null
+      ? (payload as Record<string, unknown>)
+      : undefined;
+
+  if (record && 'elements' in record) return parseOverpassExtract(payload, dataset);
+  if (record && record.type === 'FeatureCollection') return parseGeoJsonExtract(payload, dataset);
+
+  throw new Error(
+    'unrecognised extract: expected Overpass JSON (`elements`) or GeoJSON (`FeatureCollection`)',
+  );
+}
 
 function parsePolicy(raw: string | undefined): GatePolicy | undefined {
   if (raw === undefined) return undefined;
@@ -97,6 +124,8 @@ function main(): number {
       out: { type: 'string' },
       meta: { type: 'string' },
       dataset: { type: 'string' },
+      'source-timestamp': { type: 'string' },
+      query: { type: 'string' },
       'max-age-years': { type: 'string' },
     },
   });
@@ -109,10 +138,10 @@ function main(): number {
 
   const payload: unknown = JSON.parse(readFileSync(resolve(fromFile), 'utf8'));
 
-  const timestamp = overpassTimestamp(payload);
+  const timestamp = values['source-timestamp'] ?? overpassTimestamp(payload);
   const dataset =
     values.dataset ?? (timestamp ? `osm-overpass@${timestamp}` : 'osm-overpass@unknown');
-  const extract = parseOverpassExtract(payload, dataset);
+  const extract = parseExtract(payload, dataset);
 
   const builtAt = new Date().toISOString();
   const summary = applyQualityGate(extract.nodes, {
@@ -123,7 +152,7 @@ function main(): number {
   const meta = buildDatasetMeta({
     dataset,
     timestamp,
-    query: OVERPASS_QUERY,
+    query: values.query ?? OVERPASS_QUERY,
     builtAt,
     records: summary.accepted,
     rejected: summary.rejected,

@@ -5,9 +5,9 @@ Expo. It has to work with no network at all: the guidance, the defibrillator dat
 maths all live on the phone.
 
 **Status: Phase 2 in progress.** The offline skeleton (Phase 1) is done, and Phase 2 is under way:
-the AED domain layer and the extract pipeline have landed. **No defibrillator data ships yet** —
-the pipeline is built and CI-verified, but the real UK extract has not been generated, so the
-defibrillator screen still shows its empty state rather than fabricated data.
+the AED domain layer, the extract pipeline, and the UK dataset itself — 22,357 defibrillators built
+from a pinned OpenStreetMap extract — are all in. The screen does not read the dataset yet, so it
+still shows its honest empty state.
 
 - The approved implementation plan is [`docs/plans/fieldkit-v1.md`](docs/plans/fieldkit-v1.md).
   Read that before starting any work.
@@ -20,7 +20,7 @@ defibrillator screen still shows its empty state rather than fabricated data.
 | --- | --- |
 | `src/app/index.tsx` | Act — Call 999 as the single dominant action, with CPR and the defibrillator locator one tap away |
 | `src/app/cpr.tsx` | Compressions, paced by a metronome driven by licensed guidance |
-| `src/app/aed.tsx` | Nearest defibrillator — an honest empty state, because there is no dataset yet |
+| `src/app/aed.tsx` | Nearest defibrillator — an honest empty state, because nothing loads the dataset yet |
 
 ## Run
 
@@ -65,9 +65,9 @@ we chose ourselves.
 
 - **Clinical content** — blocked on the licence. See the plan, §2.1. This is the only thing gating
   real work.
-- **The AED dataset itself** — the pipeline (issue #5) is in and CI-verified offline against a
-  fixture; generating the real UK extract is a tracked follow-up. No AED data ships until then, on
-  purpose: a fabricated defibrillator is worse than none.
+- **Reading the AED dataset** — the data is committed and the query code is tested, but nothing
+  loads it on device yet. That wiring, the proximity list and the flagging UI are the next slice;
+  until then the defibrillator screen shows its empty state rather than pretending.
 - **Offline map packs** — Phase 2d.
 - **Maestro flows** — `.maestro/` carries the conventions and has no flows yet.
 - **An EAS project** — `app.json` now has both bundle identifiers (`com.colouringcode.fieldkit`), so

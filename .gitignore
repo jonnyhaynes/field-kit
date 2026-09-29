@@ -46,3 +46,9 @@ example
 # The committed policy lives in .commandcode/settings.json and .claude/settings.json.
 .commandcode/settings.local.json
 .claude/settings.local.json
+
+# Raw OpenStreetMap extracts. Large, and reproducible from the pinned URL and md5
+# recorded in docs/plans/fieldkit-v1.md. Only the derived assets/data/aed.db ships.
+*.osm.pbf
+*.osm.pbf.md5
+*.osm

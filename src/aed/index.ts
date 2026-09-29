@@ -16,13 +16,17 @@ export {
   type GateSummary,
 } from './gate';
 export { nearestAeds, type AedNeighbour, type NearestQuery } from './proximity';
-export type { AedNode, AedRecord, AedSource, AedTags, Coordinates, Verification } from './types';
-export {
-  OverpassShapeError,
-  overpassTimestamp,
-  parseOverpassExtract,
-  type OverpassExtract,
-} from './overpass';
+export type {
+  AedNode,
+  AedRecord,
+  AedSource,
+  AedTags,
+  Coordinates,
+  ParsedExtract,
+  Verification,
+} from './types';
+export { OverpassShapeError, overpassTimestamp, parseOverpassExtract } from './overpass';
+export { GeoJsonShapeError, parseGeoJsonExtract } from './geojson';
 export {
   AED_ATTRIBUTION,
   AED_DB_SCHEMA_VERSION,

@@ -7,7 +7,7 @@
  * untouched.
  */
 
-import type { AedNode } from './types';
+import type { AedNode, ParsedExtract } from './types';
 
 export class OverpassShapeError extends Error {
   constructor(problems: readonly string[]) {
@@ -15,14 +15,6 @@ export class OverpassShapeError extends Error {
     this.name = 'OverpassShapeError';
   }
 }
-
-export type OverpassExtract = {
-  nodes: AedNode[];
-  /** OSM's own data timestamp for the extract, when the response carries one. */
-  sourceTimestamp?: string;
-  /** Elements that were present but carried no usable coordinates. */
-  ignored: number;
-};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -77,7 +69,7 @@ export function overpassTimestamp(payload: unknown): string | undefined {
  * truncated download must fail loudly, because silently producing zero records would ship
  * an empty dataset as though it were a real one.
  */
-export function parseOverpassExtract(payload: unknown, dataset: string): OverpassExtract {
+export function parseOverpassExtract(payload: unknown, dataset: string): ParsedExtract {
   if (!isRecord(payload)) {
     throw new OverpassShapeError(['the payload is not an object']);
   }

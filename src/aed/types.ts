@@ -53,3 +53,17 @@ export type AedRecord = {
   source: AedSource;
   verification: Verification;
 };
+
+/**
+ * The result of reading an OSM extract, whichever shape it arrived in.
+ *
+ * Overpass JSON is the primary input; GeoJSON is accepted so a pinned Geofabrik extract can
+ * feed the same gate and schema when Overpass is unreachable. `ignored` counts elements that
+ * were present but unusable, so dropped input is reported rather than silently lost.
+ */
+export type ParsedExtract = {
+  nodes: AedNode[];
+  /** The extract's own data timestamp, when the source carries one. */
+  sourceTimestamp?: string;
+  ignored: number;
+};
