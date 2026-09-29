@@ -1,7 +1,9 @@
+import { router } from 'expo-router';
 import { Suspense, useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AED_ATTRIBUTION, nearestAeds, type AedNeighbour } from '@/aed';
+import { ActionButton } from '@/components/action-button';
 import { AedDatabaseProvider, useAedRecords } from '@/aed/database';
 import { describeVerification, formatDistance } from '@/aed/presentation';
 import { useAedFlags } from '@/aed/use-flags';
@@ -60,7 +62,16 @@ function AedResults() {
   const hasDataset = records.status === 'ready' && records.records.length > 0;
 
   return (
-    <Screen testID="aed-screen">
+    <Screen
+      testID="aed-screen"
+      actions={
+        <ActionButton
+          label="Show on a map"
+          hint="Offline map — works with no signal"
+          testID="aed-map"
+          onPress={() => router.push('/map')}
+        />
+      }>
       <Text style={[styles.title, { color: theme.text }]}>Nearest defibrillator</Text>
 
       {hasDataset ? <Disclaimer /> : null}

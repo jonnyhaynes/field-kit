@@ -1,0 +1,46 @@
+# TC-01 — the offline map renders from the bundled basemap.
+#
+# Why this flow exists: the map is the one part of the app that unit tests, a type-check and
+# an `expo export` cannot prove. All three can show that a 6 MB PMTiles archive ships and that
+# the style points at it, and none of them can show that MapLibre Native actually reads it
+# through the `pmtiles://file://` scheme on a device. This flow does, and screenshots it.
+#
+# It is also the regression check for two real failures found this way: a missing 2x sprite
+# descriptor (the map was blank on a Retina device) and glyph requests for scripts the app
+# does not ship.
+#
+# Prerequisite: the simulator must be inside the UK, because the bundled archive is UK-only
+# and a location outside it is correctly reported as outside the mapped area.
+#   xcrun simctl location booted set 51.5074,-0.1278
+appId: com.colouringcode.fieldkit
+tags:
+  - map
+---
+- launchApp
+
+# Act -> AED -> map. The map is reached from the list rather than from Act, so Act keeps its
+# three destinations.
+- tapOn:
+    id: act-aed
+- assertVisible:
+    id: aed-screen
+- tapOn:
+    id: aed-map
+
+# Preparing the archive is a one-off ~7 MB copy on first use, then the map renders.
+- extendedWaitUntil:
+    visible:
+      id: map-attribution
+    timeout: 60000
+
+# The failure branch must not be the one on screen.
+- assertNotVisible:
+    id: map-failed
+
+# Inside the UK the map is the user's own area, so the outside-the-area notice must be absent.
+- assertNotVisible:
+    id: map-outside-area
+
+- assertVisible:
+    id: map-screen
+- takeScreenshot: /tmp/fieldkit-map

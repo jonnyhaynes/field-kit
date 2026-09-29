@@ -23,6 +23,7 @@ flows:
   - 'smoke/*.yaml'
   - 'guided/*.yaml'
   - 'aed/*.yaml'
+  - 'map/*.yaml'
   - 'location/*.yaml'
   - 'capture/*.yaml'
   - 'transfer/*.yaml'

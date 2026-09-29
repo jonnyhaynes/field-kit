@@ -1,0 +1,32 @@
+# TC-02 — outside the archive, the map says so instead of going blank.
+#
+# Why this flow exists: the bundled archive is UK-only, so a position anywhere else has no
+# tiles at all. Found by looking at a screenshot of exactly that — a grey rectangle with no
+# explanation, which breaks the plan's promise that the map is never blank. The screen now
+# falls back to the UK overview and says why, and it does *not* mark defibrillators, because
+# "nearest to you" would be a lie about a place the user is not standing.
+#
+# Prerequisite: the simulator must be OUTSIDE the UK, or this flow cannot pass.
+#   xcrun simctl location booted set 48.8566,2.3522   # Paris
+appId: com.colouringcode.fieldkit
+tags:
+  - map
+---
+- launchApp
+- tapOn:
+    id: act-aed
+- assertVisible:
+    id: aed-screen
+- tapOn:
+    id: aed-map
+
+- extendedWaitUntil:
+    visible:
+      id: map-outside-area
+    timeout: 60000
+
+# Still a map, not an empty frame: the overview is shown rather than a blank rectangle.
+- assertVisible:
+    id: map-attribution
+
+- takeScreenshot: /tmp/fieldkit-map-outside
