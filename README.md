@@ -4,8 +4,10 @@ First aid reference for remote and low-signal environments. Native iOS and Andro
 Expo. It has to work with no network at all: the guidance, the defibrillator data and the position
 maths all live on the phone.
 
-**Status: Phase 1 done — the offline skeleton.** Three Guided screens, no network calls, and no
-clinical content (which is deliberate, not an omission — see below).
+**Status: Phase 2 in progress.** The offline skeleton (Phase 1) is done, and Phase 2 is under way:
+the AED domain layer and the extract pipeline have landed. **No defibrillator data ships yet** —
+the pipeline is built and CI-verified, but the real UK extract has not been generated, so the
+defibrillator screen still shows its empty state rather than fabricated data.
 
 - The approved implementation plan is [`docs/plans/fieldkit-v1.md`](docs/plans/fieldkit-v1.md).
   Read that before starting any work.
@@ -37,14 +39,16 @@ npx expo run:ios     # or run:android
 
 ```sh
 npm run typecheck                 # tsc --noEmit
+npm run typecheck:scripts         # tsc over scripts/, against Node's globals
 npm run lint                      # eslint
 npm run format:check              # prettier
 npm test                          # jest
 npx expo export --platform ios    # proves the whole module graph bundles
 ```
 
-All five run in CI on every pull request and every push to `main`
-(`.github/workflows/ci.yml`).
+All of these run in CI on every pull request and every push to `main`
+(`.github/workflows/ci.yml`), along with an offline run of the AED pipeline against a checked-in
+fixture (`npm run build:aed -- --from-file scripts/fixtures/overpass-sample.json`).
 
 ## Why the screens look half-empty
 
@@ -61,7 +65,10 @@ we chose ourselves.
 
 - **Clinical content** — blocked on the licence. See the plan, §2.1. This is the only thing gating
   real work.
-- **AED dataset and offline map packs** — Phase 2.
+- **The AED dataset itself** — the pipeline (issue #5) is in and CI-verified offline against a
+  fixture; generating the real UK extract is a tracked follow-up. No AED data ships until then, on
+  purpose: a fabricated defibrillator is worse than none.
+- **Offline map packs** — Phase 2d.
 - **Maestro flows** — `.maestro/` carries the conventions and has no flows yet.
 - **An EAS project** — `app.json` now has both bundle identifiers (`com.colouringcode.fieldkit`), so
   installing on a device is unblocked, but `eas.json` is not set up and that needs an Expo account.

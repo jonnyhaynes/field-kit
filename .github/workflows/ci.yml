@@ -23,11 +23,24 @@ jobs:
 
       - run: npm run typecheck
 
+      # The build scripts run under Node, not React Native, so they are type-checked
+      # against Node's globals in their own project rather than loosening the app's.
+      - run: npm run typecheck:scripts
+
       - run: npm run lint
 
       - run: npm run format:check
 
       - run: npm test
+
+      # The pipeline runs offline against a checked-in fixture, so CI proves the
+      # parse -> gate -> SQLite path end to end without reaching OpenStreetMap. The script
+      # refuses to write an empty database, so a clean exit here is a real assertion.
+      - name: Build the AED database from the fixture
+        run: >-
+          npm run build:aed -- --from-file scripts/fixtures/overpass-sample.json
+          --dataset fixture-sample --out "$RUNNER_TEMP/aed.db"
+          --meta "$RUNNER_TEMP/aed.meta.json"
 
       # Type-checking proves the types line up; this proves the module graph actually
       # bundles. It is the check that would have caught the deleted-template-import class
