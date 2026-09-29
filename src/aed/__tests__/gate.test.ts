@@ -37,24 +37,35 @@ describe('evaluateNode', () => {
     expect(evaluateNode(node(tags))).toEqual({ accepted: false, reason: 'not-a-defibrillator' });
   });
 
-  it.each([
-    ['no access tag', { emergency: 'defibrillator' }],
-    ['access=no', { ...publicDefibrillator, access: 'no' }],
-    ['access=private', { ...publicDefibrillator, access: 'private' }],
-    ['an empty access value', { ...publicDefibrillator, access: '  ' }],
-  ])('rejects %s as not publicly accessible', (_label, tags) => {
-    expect(evaluateNode(node(tags))).toEqual({
-      accepted: false,
-      reason: 'not-publicly-accessible',
-    });
-  });
-
-  it.each(['yes', 'permissive', 'public', 'YES', ' Permissive '])(
-    'accepts access=%p as publicly accessible',
+  it.each(['no', 'private', 'customers', 'employees', 'staff', 'NO', ' Private '])(
+    'rejects access=%p as not publicly accessible',
     (access) => {
-      expect(evaluateNode(node({ emergency: 'defibrillator', access })).accepted).toBe(true);
+      expect(evaluateNode(node({ emergency: 'defibrillator', access }))).toEqual({
+        accepted: false,
+        reason: 'not-publicly-accessible',
+      });
     },
   );
+
+  /**
+   * `access` is optional in OSM, and absent means "no restriction recorded" rather than "no
+   * access" — 46% of UK defibrillator nodes carry none. Requiring a positive value dropped
+   * half the country's mapped AEDs, so the gate only rejects explicit exclusion.
+   */
+  it.each<[string, string | undefined]>([
+    ['no access tag at all', undefined],
+    ['an empty access value', '   '],
+    ['access=yes', 'yes'],
+    ['access=permissive', 'permissive'],
+    ['access=public', 'public'],
+    ['a merely conditional access=permit', 'permit'],
+    ['access=code', 'code'],
+    ['access=unknown', 'unknown'],
+    ['access=restricted', 'restricted'],
+  ])('keeps a record with %s', (label, access) => {
+    const result = evaluateNode(node({ emergency: 'defibrillator', access }));
+    if (!result.accepted) throw new Error(`expected ${label} to be accepted`);
+  });
 
   it('accepts emergency=aed, the documented OSM variant', () => {
     expect(evaluateNode(node({ emergency: 'aed', access: 'yes' })).accepted).toBe(true);

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "builtAt": "2026-09-29T10:41:42.367Z",
+  "source": {
+    "dataset": "osm-geofabrik-united-kingdom-260927",
+    "timestamp": "2026-09-27T20:23:36Z",
+    "query": "Geofabrik united-kingdom-260927.osm.pbf (md5 4b63755764a6ef617d00ca75088db378); osmium tags-filter n/emergency=defibrillator w/emergency=defibrillator; osmium export -u type_id"
+  },
+  "counts": {
+    "accepted": 22357,
+    "rejected": 552,
+    "rejectedByReason": {
+      "not-a-defibrillator": 6,
+      "not-publicly-accessible": 546,
+      "stale": 0
+    },
+    "neverVerified": 20776
+  },
+  "licence": {
+    "id": "ODbL-1.0",
+    "attribution": "© OpenStreetMap contributors",
+    "url": "https://www.openstreetmap.org/copyright"
+  }
+}

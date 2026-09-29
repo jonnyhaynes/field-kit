@@ -11,8 +11,20 @@ import type { AedNode, AedRecord } from './types';
 /** OSM values that mark a node as a defibrillator. */
 const DEFIBRILLATOR_EMERGENCY_VALUES = new Set(['defibrillator', 'aed']);
 
-/** Access values that mean the public can actually reach it. */
-const PUBLIC_ACCESS_VALUES = new Set(['yes', 'permissive', 'public']);
+/**
+ * Access values that say the public is excluded.
+ *
+ * This is a deny-list rather than an allow-list on purpose. `access` is an optional tag, and
+ * in OSM an absent value means "no restriction recorded", not "no access" — 46% of UK
+ * defibrillator nodes carry no access tag at all, and almost all of those are ordinary public
+ * ones. Requiring a positive value threw away half the country's mapped defibrillators to
+ * catch the small fraction that are genuinely restricted. Everything not listed here is kept
+ * and shown as unverified, which is the app's default posture anyway.
+ *
+ * A borderline value worth naming: `access=restricted` (13 nodes nationally) is kept, because
+ * it usually describes opening hours rather than exclusion, and the unverified label covers it.
+ */
+const RESTRICTED_ACCESS_VALUES = new Set(['no', 'private', 'customers', 'employees', 'staff']);
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -67,7 +79,7 @@ export function evaluateNode(node: AedNode, options: GateOptions = {}): GateResu
   }
 
   const access = normalise(node.tags.access);
-  if (!access || !PUBLIC_ACCESS_VALUES.has(access)) {
+  if (access && RESTRICTED_ACCESS_VALUES.has(access)) {
     return { accepted: false, reason: 'not-publicly-accessible' };
   }
 
