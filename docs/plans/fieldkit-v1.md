@@ -364,10 +364,26 @@ map labels English-then-local and the POI layer is gone: a cafe's name is not wh
 is for. A `name` that is itself non-Latin can still slip through as a missing glyph in one label —
 not a broken map, and not worth a megabyte per script to avoid.
 
-**Unverified, and it matters:** the map has never been seen to render. There is no simulator in the
-development environment, so the style, the marker placement and both colour schemes land unseen. iOS
-also does not document the local `pmtiles://file://` route that Android does, so **a device smoke test
-is the gate before this is trusted**.
+**Verified on a device — by looking at it.** The map was run on an iOS 26.4 simulator and driven with
+Maestro to a screenshot, which settles the assumption this slice rested on: **`pmtiles://file://`
+works on iOS**, glyphs and sprites load over `file://`, place labels draw, and the AED markers sit on
+the London streets you would expect. The device log shows no glyph or sprite failures.
+
+Three things came out of actually looking, and none of them would have surfaced from a type-check or a
+bundle check: a missing 2x sprite descriptor (a blank map on a Retina device), glyph requests for
+scripts the app does not ship (fixed by narrowing labels to Latin and dropping POIs), and — from a
+screenshot — that a position outside the archive left a grey rectangle with no explanation at all,
+which breaks §2.3's "never blank" promise. The map now falls back to the UK overview and says why, and
+deliberately marks no defibrillators, because "nearest to you" would be a lie about a place the user is
+not standing.
+
+The archive's extent is a **rectangle** cut from a bounding box rather than the coastline, so it
+includes the island of Ireland — Dublin and Dundalk are drawn and labelled. Tidying that up means
+`pmtiles extract --region` with a GeoJSON outline, which would also drop tiles nobody in the UK needs;
+noted rather than done.
+
+Two `.maestro/map/` flows cover the map: one inside the UK and one outside. Each documents the
+simulator location it needs, since a flow cannot set one.
 
 **Phase 3 — position and orientation.** GPS, lat/long, OSGB36 grid ref, compass with calibration
 warning and fallback, and the online-w3w-resolved-onto-the-record flow.

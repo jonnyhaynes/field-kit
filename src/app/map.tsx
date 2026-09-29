@@ -11,6 +11,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import { useCurrentPosition } from '@/location/current-position';
 import { useMapAssets } from '@/maps/assets';
+import { isWithinUkOverview } from '@/maps/bounds';
 import { MapView } from '@/maps/map-view';
 import { buildMapStyle } from '@/maps/style';
 
@@ -41,13 +42,20 @@ function MapContent() {
   const records = useAedRecords();
   const { flagged } = useAedFlags();
 
-  const center = position.status === 'ready' ? position.coordinates : UK_CENTRE;
-  const zoom = position.status === 'ready' ? USER_ZOOM : UK_ZOOM;
+  /**
+   * Outside the archive there are no tiles, so the map would be a blank rectangle. Rather than
+   * show that, the map falls back to the UK overview and the screen says why — and it does not
+   * mark AEDs, because "nearest to you" would be a lie about a place the user is not standing.
+   */
+  const outsideArchive = position.status === 'ready' && !isWithinUkOverview(position.coordinates);
+
+  const center = position.status === 'ready' && !outsideArchive ? position.coordinates : UK_CENTRE;
+  const zoom = position.status === 'ready' && !outsideArchive ? USER_ZOOM : UK_ZOOM;
 
   const neighbours = useMemo(() => {
-    if (records.status !== 'ready') return [];
+    if (records.status !== 'ready' || outsideArchive) return [];
     return nearestAeds(records.records, { center, limit: RESULT_LIMIT, excludedIds: flagged });
-  }, [records, center, flagged]);
+  }, [records, center, flagged, outsideArchive]);
 
   const style = useMemo(
     () => (assets.status === 'ready' ? buildMapStyle({ urls: assets.urls, scheme }) : undefined),
@@ -81,7 +89,13 @@ function MapContent() {
         />
       </View>
 
-      {position.status === 'ready' ? (
+      {outsideArchive ? (
+        <Text testID="map-outside-area" style={[styles.body, { color: theme.text }]}>
+          You are outside the area this map covers, so it is showing the UK overview instead of
+          where you are. Everything else on this screen still works, and the defibrillator list
+          still uses your position.
+        </Text>
+      ) : position.status === 'ready' ? (
         <Text style={[styles.body, { color: theme.textSecondary }]}>
           {neighbours.length > 0
             ? `Nearest ${neighbours.length} defibrillators marked. Distances are in the list.`

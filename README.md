@@ -4,11 +4,13 @@ First aid reference for remote and low-signal environments. Native iOS and Andro
 Expo. It has to work with no network at all: the guidance, the defibrillator data and the position
 maths all live on the phone.
 
-**Status: Phase 2 done — pending real-device verification.** Phase 1 (the offline skeleton) is done,
-and Phase 2 stands: the AED domain layer, the extract pipeline, the UK dataset (22,357 defibrillators
-from a pinned OpenStreetMap extract), the on-device list with local flagging, and an offline basemap.
-The map shows where you are and marks the nearest defibrillators, with lettering and sprites bundled
-so nothing is fetched. **The map has not yet been run on a device** — see below.
+**Status: Phase 2 done.** Phase 1 (the offline skeleton) is done, and Phase 2 stands: the AED domain
+layer, the extract pipeline, the UK dataset (22,357 defibrillators from a pinned OpenStreetMap
+extract), the on-device list with local flagging, and an offline basemap. The map shows where you are
+and marks the nearest defibrillators, with lettering and sprites bundled so nothing is fetched.
+
+The map has been run on an iOS simulator and screenshotted — it renders, offline, from the bundled
+archive. It has **not** been run on Android or on real hardware.
 
 - The approved implementation plan is [`docs/plans/fieldkit-v1.md`](docs/plans/fieldkit-v1.md).
   Read that before starting any work.
@@ -68,14 +70,16 @@ we chose ourselves.
 
 - **Clinical content** — blocked on the licence. See the plan, §2.1. This is the only thing gating
   real work.
-- **A device run** — the map, the location permission prompt and the database copy have not been
-  exercised on hardware. iOS in particular does not document the local `pmtiles://file://` route that
-  Android does. Treat Phase 2 as unproven until `npx expo run:ios` says otherwise.
+- **Android and real hardware** — the map, the location prompt and the 7 MB asset copy are verified
+  on an iOS simulator only. Android's local `pmtiles://file://` path is documented but unexercised
+  here, and neither platform has been tried on a device.
 - **Region packs** — the bundled overview is a national map at zoom 8 (towns and major roads, not
-  streets). Higher-detail packs you download before a trip are a separate slice.
+  streets), and its bounding box includes the island of Ireland. Higher-detail packs you download
+  before a trip are a separate slice.
 - **Sending a flag upstream** — a flag hides an entry on your device immediately, but turning it
   into an OpenStreetMap note needs an opt-in surface that doesn't exist yet, and it posts publicly
   under your name. Tracked separately rather than bolted onto the list.
-- **Maestro flows** — `.maestro/` carries the conventions and has no flows yet.
+- **Maestro flows** — `.maestro/map/` has two flows covering the offline map (one inside the UK, one
+  outside it). The other areas still carry conventions only.
 - **An EAS project** — `app.json` now has both bundle identifiers (`com.colouringcode.fieldkit`), so
   installing on a device is unblocked, but `eas.json` is not set up and that needs an Expo account.
