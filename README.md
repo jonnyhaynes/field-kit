@@ -4,10 +4,10 @@ First aid reference for remote and low-signal environments. Native iOS and Andro
 Expo. It has to work with no network at all: the guidance, the defibrillator data and the position
 maths all live on the phone.
 
-**Status: Phase 2 in progress.** The offline skeleton (Phase 1) is done, and Phase 2 is under way:
-the AED domain layer, the extract pipeline, and the UK dataset itself — 22,357 defibrillators built
-from a pinned OpenStreetMap extract — are all in. The screen does not read the dataset yet, so it
-still shows its honest empty state.
+**Status: Phase 2 in progress.** Phase 1 (the offline skeleton) is done and Phase 2 is nearly
+there: the AED domain layer, the extract pipeline, the UK dataset (22,357 defibrillators from a
+pinned OpenStreetMap extract) and the on-device list are all in. The defibrillator screen shows the
+nearest three to you, with distances, unverified labelling and local flagging — all of it offline.
 
 - The approved implementation plan is [`docs/plans/fieldkit-v1.md`](docs/plans/fieldkit-v1.md).
   Read that before starting any work.
@@ -20,7 +20,7 @@ still shows its honest empty state.
 | --- | --- |
 | `src/app/index.tsx` | Act — Call 999 as the single dominant action, with CPR and the defibrillator locator one tap away |
 | `src/app/cpr.tsx` | Compressions, paced by a metronome driven by licensed guidance |
-| `src/app/aed.tsx` | Nearest defibrillator — an honest empty state, because nothing loads the dataset yet |
+| `src/app/aed.tsx` | Nearest defibrillator — the nearest three from the bundled dataset, with unverified labelling and local flagging |
 
 ## Run
 
@@ -65,9 +65,9 @@ we chose ourselves.
 
 - **Clinical content** — blocked on the licence. See the plan, §2.1. This is the only thing gating
   real work.
-- **Reading the AED dataset** — the data is committed and the query code is tested, but nothing
-  loads it on device yet. That wiring, the proximity list and the flagging UI are the next slice;
-  until then the defibrillator screen shows its empty state rather than pretending.
+- **Sending a flag upstream** — a flag hides an entry on your device immediately, but turning it
+  into an OpenStreetMap note needs an opt-in surface that doesn't exist yet, and it posts publicly
+  under your name. Tracked separately rather than bolted onto the list.
 - **Offline map packs** — Phase 2d.
 - **Maestro flows** — `.maestro/` carries the conventions and has no flows yet.
 - **An EAS project** — `app.json` now has both bundle identifiers (`com.colouringcode.fieldkit`), so

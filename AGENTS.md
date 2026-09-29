@@ -40,10 +40,13 @@ all run, and `.github/workflows/ci.yml` enforces the same four plus a bundle che
 test-guard hook routes test runs through `npm test`. Maestro flows are still unwritten —
 `.maestro/` holds the conventions only.)_
 
-_(Two scaffold gotchas, both learned the hard way. `create-expo-app` writes its own `AGENTS.md`,
+_(Three scaffold gotchas, all learned the hard way. `create-expo-app` writes its own `AGENTS.md`,
 `CLAUDE.md` and `.claude/settings.json` — pass `--no-agents-md` or it overwrites this setup.
-And `npx expo install <pkg> -- --save-dev` does **not** reliably write to `devDependencies`;
-check `package.json` afterwards or test tooling ends up shipped in production builds.)_
+`npx expo install <pkg> -- --save-dev` does **not** reliably write to `devDependencies`; check
+`package.json` afterwards or test tooling ends up shipped in production builds. And `npx expo
+install <pkg>` of a *runtime* dependency still runs npm under the shell's `NODE_ENV`, so with
+`NODE_ENV=production` it silently prunes every devDependency from `node_modules` — jest, eslint and
+prettier vanish while `package.json` looks fine. Run `npm install --include=dev` after it.)_
 
 ## Load-bearing principles
 
