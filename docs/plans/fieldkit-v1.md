@@ -355,6 +355,15 @@ pmtiles extract https://build.protomaps.com/<build>.pmtiles assets/maps/uk-overv
 a scope decision rather than a budget blocker — but a download pipeline, progress UI, integrity
 checking and a `canMapRegions` capability belong together, not bolted onto the overview.
 
+**Labels are Latin-only, and POIs are dropped — a decision, not an oversight.** Protomaps' name
+expression falls back to each feature's local `name` and appends secondary script lines, so a UK
+extract drags in Cyrillic, Georgian, CJK and emoji (mostly POI names — the variation-selector range
+is an emoji signature). MapLibre asks for a glyph range per script it meets, and this app ships Latin
+glyphs; bundling the rest of Unicode to render a handful of shop names would cost megabytes. So the
+map labels English-then-local and the POI layer is gone: a cafe's name is not what an orientation map
+is for. A `name` that is itself non-Latin can still slip through as a missing glyph in one label —
+not a broken map, and not worth a megabyte per script to avoid.
+
 **Unverified, and it matters:** the map has never been seen to render. There is no simulator in the
 development environment, so the style, the marker placement and both colour schemes land unseen. iOS
 also does not document the local `pmtiles://file://` route that Android does, so **a device smoke test

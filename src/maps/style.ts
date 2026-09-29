@@ -38,6 +38,45 @@ export type MapStyleOptions = {
 };
 
 /**
+ * Labels are Latin-only, on purpose.
+ *
+ * Protomaps' name expression falls back to a feature's local `name` and appends secondary
+ * script lines, so a UK extract drags in Cyrillic, Georgian, CJK and emoji — mostly from POI
+ * names. MapLibre requests the glyph range for every script it meets, and this app ships
+ * Latin glyphs only, so each one is both an error in the log and a label that cannot draw.
+ * Bundling the rest of Unicode to render a handful of shop names would cost megabytes.
+ *
+ * So `text-field` is narrowed to English-then-local, and the POI layer is dropped: a cafe's
+ * name, emoji and all, is not what an orientation map is for. A `name` that is itself
+ * non-Latin can still slip through; that is a missing glyph in one label, not a broken map.
+ */
+const LATIN_LABEL_FIELD = ['coalesce', ['get', 'name:en'], ['get', 'name']];
+
+/** The layers whose text is a place or feature name, rather than a ref or a house number. */
+function isNameField(textField: unknown): boolean {
+  return Array.isArray(textField) && (textField[0] === 'case' || textField[0] === 'format');
+}
+
+/**
+ * `LayerSpecification` is a union whose `layout` only exposes `text-field` on symbol layers,
+ * so the layer is viewed loosely here rather than fought with.
+ */
+type LooseLayer = { id: string; type?: string; layout?: Record<string, unknown> };
+
+function withLatinLabels(layer: LayerSpecification): LayerSpecification | undefined {
+  const loose = layer as LooseLayer;
+  if (loose.id === 'pois') return undefined;
+
+  const textField = loose.layout?.['text-field'];
+  if (!isNameField(textField)) return layer;
+
+  return {
+    ...loose,
+    layout: { ...loose.layout, 'text-field': LATIN_LABEL_FIELD },
+  } as unknown as LayerSpecification;
+}
+
+/**
  * Renames font stacks wherever they appear.
  *
  * The whole layer is walked, not just `layout['text-font']`: a `text-field` may be a `format`
@@ -79,6 +118,9 @@ export function buildMapStyle({
         attribution: MAP_ATTRIBUTION,
       },
     },
-    layers: base.map((layer) => localiseFontStacks(layer) as LayerSpecification),
+    layers: base
+      .map((layer) => localiseFontStacks(layer) as LayerSpecification)
+      .map(withLatinLabels)
+      .filter((layer): layer is LayerSpecification => layer !== undefined),
   } as StyleSpecification;
 }
