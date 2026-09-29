@@ -25,17 +25,24 @@ import glyphMedium256 from '../../assets/maps/glyphs/noto-sans-medium/256-511.pb
 import glyphRegular0 from '../../assets/maps/glyphs/noto-sans-regular/0-255.pbf';
 import glyphRegular256 from '../../assets/maps/glyphs/noto-sans-regular/256-511.pbf';
 import spriteDark2x from '../../assets/maps/sprites/dark/sprite-2x.png';
+import spriteDark2xJson from '../../assets/maps/sprites/dark/sprite-2x.json';
 import spriteDarkPng from '../../assets/maps/sprites/dark/sprite.png';
 import spriteDark from '../../assets/maps/sprites/dark/sprite.json';
 import spriteLight2x from '../../assets/maps/sprites/light/sprite-2x.png';
+import spriteLight2xJson from '../../assets/maps/sprites/light/sprite-2x.json';
 import spriteLightPng from '../../assets/maps/sprites/light/sprite.png';
 import spriteLight from '../../assets/maps/sprites/light/sprite.json';
 import { mapAssetUrls, type MapAssetUrls } from './urls';
 
 /**
- * Bump with the assets. Tied to the Protomaps build the archive was cut from.
+ * Bump whenever the asset set changes: the marker below is named after this, so a new value
+ * re-lays the files and an unchanged one is left alone.
+ *
+ * `.1` because the first cut shipped only `sprite.json`. On a high-DPI device MapLibre asks
+ * for `sprite@2x.json` and `sprite@2x.png` instead, and a missing descriptor fails the sprite
+ * load — which fails the style, which is a blank map.
  */
-const ASSET_VERSION = '2026-09-29';
+const ASSET_VERSION = '2026-09-29.1';
 
 /**
  * Where each bundled file belongs on disk, relative to the map directory.
@@ -59,12 +66,15 @@ const BUNDLED_ASSETS: Record<string, number> = {
 };
 
 /**
- * The sprite descriptor is the one asset that cannot be bundled as a file: Metro treats
- * `.json` as source, so it arrives already parsed and is written back out as text.
+ * The sprite descriptors are the one asset that cannot be bundled as files: Metro treats
+ * `.json` as source, so they arrive already parsed and are written back out as text.
+ *
+ * Both densities are needed. A high-DPI device requests the `@2x` pair and a missing
+ * descriptor is a hard failure, not a fallback.
  */
-const SPRITE_DESCRIPTORS: Record<'light' | 'dark', unknown> = {
-  light: spriteLight,
-  dark: spriteDark,
+const SPRITE_DESCRIPTORS: Record<'light' | 'dark', { base: unknown; retina: unknown }> = {
+  light: { base: spriteLight, retina: spriteLight2xJson },
+  dark: { base: spriteDark, retina: spriteDark2xJson },
 };
 
 export type MapAssetsState =
@@ -81,6 +91,12 @@ function ensureParent(file: File): void {
   if (!parent.exists) parent.create({ intermediates: true });
 }
 
+function writeDescriptor(file: File, descriptor: unknown): void {
+  ensureParent(file);
+  if (!file.exists) file.create({ intermediates: true });
+  file.write(JSON.stringify(descriptor));
+}
+
 async function layDownAssets(root: Directory): Promise<void> {
   for (const [path, module] of Object.entries(BUNDLED_ASSETS)) {
     const destination = fileIn(root, path);
@@ -95,10 +111,9 @@ async function layDownAssets(root: Directory): Promise<void> {
   }
 
   for (const flavour of ['light', 'dark'] as const) {
-    const descriptor = fileIn(root, `sprites/${flavour}/sprite.json`);
-    ensureParent(descriptor);
-    if (!descriptor.exists) descriptor.create({ intermediates: true });
-    descriptor.write(JSON.stringify(SPRITE_DESCRIPTORS[flavour]));
+    const { base, retina } = SPRITE_DESCRIPTORS[flavour];
+    writeDescriptor(fileIn(root, `sprites/${flavour}/sprite.json`), base);
+    writeDescriptor(fileIn(root, `sprites/${flavour}/sprite@2x.json`), retina);
   }
 }
 
