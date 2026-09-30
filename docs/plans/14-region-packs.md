@@ -169,6 +169,30 @@ District bounding box (`-3.55,54.20,-2.70,54.75`):
 The archive's own header confirms the extent and the zoom range (`pmtiles show`): 2,457 addressed
 tiles, min zoom 0, max zoom 14.
 
+## Verified by hand — the overlay renders
+
+The plan said only a device could prove that MapLibre reads a second archive, so it was done by hand
+rather than assumed, using the real 18.9 MB pack placed in the simulator's container. Same position
+both times (Ambleside, inside the pack's box), and the difference is not subtle:
+
+- **Before**, with nothing installed: Windermere as a smoothed blob, few minor roads, no landcover,
+  and the map says *"There is a Lake District pack for this area, which would add street detail."*
+- **After**, with the pack on disk: a detailed shoreline, woodland and landcover polygons, streams,
+  and the minor road network — and *"Street detail for Lake District is downloaded…"*
+
+Three things about that are worth more than the pixel count: the **layer ordering works** — the
+overview's "Windermere" label still draws *over* the pack's fills, which is the whole reason the
+layers were regrouped; **nothing went blank**, so the pack really is an overlay and not a
+replacement; and the AED markers are unaffected, because they are drawn from the app rather than the
+archive.
+
+**Delete** was exercised the same way and does what it says: the file is gone from the container and
+the screen returns to *Download*.
+
+**Still unproven, and honestly so:** the download from a GitHub Release. That needs the release to
+exist, which needs a public repository — so the redirect, and a 19 MB transfer completing, remain a
+device check for the day the first pack is published.
+
 ## Risks and open items
 
 1. **The release URL redirect is unproven.** GitHub serves assets via a redirect; whether

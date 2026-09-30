@@ -125,9 +125,13 @@ we chose ourselves.
   overlay all work, and the Lake District pack is cut and pinned at 18.9 MB. Nothing can fetch it
   yet: release assets on a private repository need authentication an app cannot hold, so the first
   release goes out once the repository is public. Until then the screen honestly reports that the
-  pack is not where it expects to find it. Two limits are deliberate and documented: a download is
-  foreground-only (leaving the screen stops it), and **a pack adds geometry but not names** — its
-  label layers are dropped so that every place name is not drawn twice.
+  pack is not where it expects to find it. **The overlay itself is verified** — with the real pack
+  placed on a simulator by hand, the map at Windermere gains a detailed shoreline, landcover and
+  minor roads, the overview's labels still draw over it, nothing goes blank, and Delete removes the
+  file. What is *not* verified is the download from GitHub, which needs the release. Two limits are
+  deliberate and documented: a download is foreground-only (leaving the screen stops it), and **a
+  pack adds geometry but not names** — its label layers are dropped so that every place name is not
+  drawn twice.
 - **Sending a report to OpenStreetMap** — a flag hides an entry here immediately, and leaves a report
   you can read, edit and send yourself in Settings. The app never sends anything on your behalf:
   OpenStreetMap's usage policy forbids that, and their notes are meant to be a person writing to a
