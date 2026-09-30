@@ -1,11 +1,11 @@
 /**
  * Resolving a what3words location for a position.
  *
- * The licence was read before this was written (plan §2.2), and two things in it are worth recording
- * here rather than being discovered later: clause 6.3(b) says a 3 Word Address must not be displayed
- * "alongside its corresponding coordinates", and the Free tier lost coordinate-to-location
- * conversion in November 2024, so resolving needs an account with `convert-to-3wa` enabled. The
- * project's decision is to proceed as designed; this comment is the record, not an argument.
+ * Two service constraints shape this, recorded so nobody rediscovers them the hard way (plan §2.2):
+ * the Free tier lost coordinate-to-location conversion in November 2024, so resolving needs an
+ * account with `convert-to-3wa` enabled — hence the honest `not-configured` resolver below; and
+ * clause 6.3(b) restricts displaying a 3 Word Address alongside its corresponding coordinates, which
+ * is a question for the licensor rather than for this module (plan, §7).
  *
  * No network happens at import, and nothing is sent until `resolve` is called.
  */
