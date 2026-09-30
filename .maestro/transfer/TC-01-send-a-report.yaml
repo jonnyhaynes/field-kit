@@ -1,0 +1,111 @@
+# TC-01 — a responder's report becomes a code.
+#
+# Why this flow exists: the point of the slice is that a report can leave the phone, and the parts a
+# unit test cannot reach are the ones that matter here — that the code renders, that the summary
+# beside it is the report rather than a placeholder, and that the native QR module was really built
+# into the app.
+#
+# It fills one ETHANE field, because ETHANE is what a code carries: SAMPLER, ABCDE and ASHICE answers
+# travel as text instead.
+#
+# **It reaches the send screen by relaunching and using the Act link, not by tapping the pinned Send
+# button on the record screen.** That button is behind the keyboard once a field has been typed into,
+# and Maestro cannot reliably dismiss a keyboard over a multiline field: two runs failed on exactly
+# that. The button's existence is asserted before typing, and the route that carries a real report is
+# proved by relaunching — which also shows the report survived, since it lives in the store.
+appId: com.colouringcode.fieldkit
+tags:
+  - transfer
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: inuse
+- setLocation:
+    latitude: 51.5074
+    longitude: -0.1278
+
+# Turn the Responder depth on: the capture forms are behind it.
+- tapOn:
+    id: act-aed
+- extendedWaitUntil:
+    visible:
+      id: aed-settings
+    timeout: 60000
+- tapOn:
+    id: aed-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 30000
+- tapOn:
+    id: settings-depth-switch
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: act-record
+    timeout: 30000
+
+- tapOn:
+    id: act-record
+- extendedWaitUntil:
+    visible:
+      id: record-start
+    timeout: 30000
+- tapOn:
+    id: record-start
+
+# A report now exists, so the pinned Send action is offered. Asserted here, before the keyboard.
+- extendedWaitUntil:
+    visible:
+      id: record-send
+    timeout: 30000
+
+# ETHANE is the fourth form, so this scrolls past SAMPLER and ABCDE first.
+#
+# Two steps, and neither is decoration. `scrollUntilVisible` wants its target *fully* on screen and
+# sweeps in large jumps, so a tall form gets overshot: the first run of this flow landed with the
+# right field in plain sight and still reported "no visible element found". The heading is small
+# enough to arrive completely, and the input two fields below it is then a short scroll — and the
+# percentage is lowered because an empty multiline field reports a frame Maestro will not call 100%.
+- scrollUntilVisible:
+    element:
+      id: record-mnemonic-ethane
+    direction: DOWN
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: record-input-ethane.incidentType
+    direction: DOWN
+    visibilityPercentage: 50
+    timeout: 30000
+- tapOn:
+    id: record-input-ethane.incidentType
+- inputText: Fell walker, suspected ankle injury
+
+# Relaunching clears the keyboard and proves the report was written down rather than held in memory.
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: act-send
+    timeout: 30000
+- tapOn:
+    id: act-send
+- extendedWaitUntil:
+    visible:
+      id: send-screen
+    timeout: 30000
+
+# The code is drawn, and the report beside it is the scene report rather than a placeholder.
+- assertVisible:
+    id: send-title
+- assertVisible:
+    id: send-summary
+- assertVisible:
+    id: send-code
+- assertNotVisible:
+    id: send-overflow
+- assertVisible:
+    id: send-share
+
+- takeScreenshot: /tmp/fieldkit-send

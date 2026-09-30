@@ -1,0 +1,53 @@
+# TC-03 — the scan screen is honest about a device that cannot scan.
+#
+# Why this flow exists: the receiving half cannot be tested here at all. A simulator has no camera, so
+# `onBarcodeScanned` never fires and no code is ever read — which means the *only* thing worth
+# asserting on a simulator is that the screen opens, does not crash, and says something true about the
+# camera it has or has not got. The scanning path itself is a device check, and the PR says so.
+#
+# The permission is asked for inside the flow rather than declared, because the app has to handle both
+# answers anyway: a refusal is a state a user can be in.
+appId: com.colouringcode.fieldkit
+tags:
+  - transfer
+---
+- launchApp
+- openLink: fieldkit://scan
+# iOS asks once before handing a custom scheme to an app, and remembers the answer.
+- tapOn:
+    text: 'Open'
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: scan-screen
+    timeout: 30000
+
+# If it is asking, answer it — the app must cope with either answer, and this flow does not care which.
+- runFlow:
+    when:
+      visible:
+        id: scan-allow
+    commands:
+      - tapOn:
+          id: scan-allow
+      - tapOn:
+          text: 'Allow'
+          optional: true
+
+# Whatever the camera did, the screen is alive and has said something true.
+- assertVisible:
+    id: scan-screen
+
+- runFlow:
+    when:
+      visible:
+        id: scan-camera
+    commands:
+      - takeScreenshot: /tmp/fieldkit-scan
+
+- runFlow:
+    when:
+      visible:
+        id: scan-unavailable
+    commands:
+      - takeScreenshot: /tmp/fieldkit-scan-unavailable

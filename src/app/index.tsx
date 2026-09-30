@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useDepth } from '@/capture/use-depth';
 import { ActionButton } from '@/components/action-button';
 import { OfflineNote } from '@/components/offline-note';
 import { Screen } from '@/components/screen';
-import { Spacing } from '@/constants/theme';
+import { MinTarget, Spacing } from '@/constants/theme';
 import { EMERGENCY_LABEL, callEmergencyServices } from '@/emergency/dial';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -64,6 +64,21 @@ export default function ActScreen() {
       </View>
 
       <OfflineNote>No signal needed — nothing on this screen uses the network.</OfflineNote>
+
+      {/*
+        Offered to both depths, and always present. §1 says depth *adds* tools rather than moving
+        anything, so a link that appeared only in one depth would be the opposite: turning the
+        Responder depth on would take this away. The screen it opens adapts instead.
+      */}
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel="Send a report"
+        accessibilityHint="A code the other phone can read, or send by message"
+        testID="act-send"
+        onPress={() => router.push('/send')}
+        style={({ pressed }) => [styles.link, pressed && styles.pressed]}>
+        <Text style={[styles.linkLabel, { color: theme.text }]}>Send a report</Text>
+      </Pressable>
     </Screen>
   );
 }
@@ -72,4 +87,7 @@ const styles = StyleSheet.create({
   intro: { gap: Spacing.two },
   title: { fontSize: 30, fontWeight: '700', letterSpacing: -0.5 },
   sub: { fontSize: 16, lineHeight: 23 },
+  link: { minHeight: MinTarget, justifyContent: 'center' },
+  linkLabel: { fontSize: 16, fontWeight: '600' },
+  pressed: { opacity: 0.7 },
 });
