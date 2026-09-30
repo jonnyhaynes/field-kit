@@ -1,0 +1,90 @@
+# TC-02 — turning the Responder depth on opens the gate, and the choice survives a relaunch.
+#
+# Why this flow exists: the depth is stored, so "on" has to mean on after the app is restarted, not
+# merely for the life of one screen. A setting held only in React state would pass every unit test in
+# this repo and lose the user's choice the moment the phone locked.
+#
+# clearState wipes the sandbox so the switch starts from a known position rather than from whatever
+# the last run left. Every capture flow does this, so they are order-independent and re-runnable.
+#
+# The flow grants its own location permission and sets its own position, because clearState resets the
+# grants and the capture screen asks for a position once a report is open.
+appId: com.colouringcode.fieldkit
+tags:
+  - capture
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: inuse
+- setLocation:
+    latitude: 51.5074
+    longitude: -0.1278
+
+# Act -> AED -> Settings. There is no settings link on the Act screen, by design: settings are not
+# part of the emergency path.
+- tapOn:
+    id: act-aed
+- extendedWaitUntil:
+    visible:
+      id: aed-settings
+    timeout: 60000
+- tapOn:
+    id: aed-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 30000
+
+- tapOn:
+    id: settings-depth-switch
+
+# Relaunch before looking: the switch must have written, not just re-rendered.
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: act-record
+    timeout: 30000
+- tapOn:
+    id: act-record
+- extendedWaitUntil:
+    visible:
+      id: record-screen
+    timeout: 30000
+
+# With the depth on, the refusal is gone and a report can be started.
+- assertNotVisible:
+    id: record-refused
+- assertVisible:
+    id: record-start
+
+- tapOn:
+    id: record-start
+
+# All four mnemonics, each saying whether it describes the scene or a casualty. ETHANE and ASHICE are
+# different tools, so a form that lost that label would be a clinical error, not a cosmetic one.
+#
+# Scroll to each form's *heading*, not its container: `scrollUntilVisible` wants the element fully on
+# screen, and a form with twenty fields is taller than any phone, so its container can never satisfy
+# that and the search would run until it gave up. The heading is small enough to arrive completely.
+- extendedWaitUntil:
+    visible:
+      id: record-mnemonic-sampler
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: record-mnemonic-abcde
+    direction: DOWN
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: record-mnemonic-ethane
+    direction: DOWN
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: record-mnemonic-ashice
+    direction: DOWN
+    timeout: 30000
+
+- takeScreenshot: /tmp/fieldkit-record

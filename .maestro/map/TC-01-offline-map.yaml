@@ -9,14 +9,18 @@
 # descriptor (the map was blank on a Retina device) and glyph requests for scripts the app
 # does not ship.
 #
-# Prerequisite: the simulator must be inside the UK, because the bundled archive is UK-only
-# and a location outside it is correctly reported as outside the mapped area.
-#   xcrun simctl location booted set 51.5074,-0.1278
+# The flow sets its own position: the bundled archive is UK-only, and a location outside it is
+# correctly reported as outside the mapped area.
 appId: com.colouringcode.fieldkit
 tags:
   - map
 ---
-- launchApp
+- launchApp:
+    permissions:
+      location: inuse
+- setLocation:
+    latitude: 51.5074
+    longitude: -0.1278
 
 # Act -> AED -> map. The map is reached from the list rather than from Act, so Act keeps its
 # three destinations.

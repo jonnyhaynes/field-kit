@@ -7,13 +7,19 @@
 # because the alternative (a needle driven by a reading that does not exist) is the failure this
 # slice exists to prevent.
 #
-# Prerequisite: none beyond a booted simulator. On a real device this flow would take the other
-# branch, so it is written to assert the honest failure and to say so rather than to pretend.
+# Prerequisite: a booted simulator. The screen is reached through the map, so the flow sets a position
+# and grants the permission; on a real device this flow would take the other branch, so it is written
+# to assert the honest failure and to say so rather than to pretend.
 appId: com.colouringcode.fieldkit
 tags:
   - location
 ---
-- launchApp
+- launchApp:
+    permissions:
+      location: inuse
+- setLocation:
+    latitude: 51.5074
+    longitude: -0.1278
 - tapOn:
     id: act-aed
 - assertVisible:

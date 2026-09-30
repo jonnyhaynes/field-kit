@@ -4,12 +4,18 @@ First aid reference for remote and low-signal environments. Native iOS and Andro
 Expo. It has to work with no network at all: the guidance, the defibrillator data and the position
 maths all live on the phone.
 
-**Status: Phase 3 done.** Phase 2 is done, and Phase 3 has landed: "Where I am" gives latitude,
-longitude and an **OS grid reference** — the form a British 999 operator works in — with no reference
-offered when you are outside Great Britain, Northern Ireland and the Isle of Man rather than a
-plausible-looking one for the wrong country. A **what3words location** can be resolved on demand beside
-it, which is the one thing on that screen that uses the network. A **compass** gives a bearing to walk
-on, or says plainly when the device cannot provide one.
+**Status: Phase 4a done.** Phase 3 is complete: "Where I am" gives latitude, longitude and an **OS
+grid reference** — the form a British 999 operator works in — with no reference offered when you are
+outside Great Britain, Northern Ireland and the Isle of Man rather than a plausible-looking one for the
+wrong country. A **what3words location** can be resolved on demand beside it, which is the one thing on
+that screen that uses the network. A **compass** gives a bearing to walk on, or says plainly when the
+device cannot provide one.
+
+Phase 4a has landed what the rest of Phase 4 stands on: a **report** that exists and persists on the
+phone, a **depth gate** that reveals responder capture without changing one thing about the emergency
+path, and the four **capture forms** — SAMPLER, ABCDE, ETHANE and ASHICE — held as data. They record
+what someone observes and never what to do about it, and ETHANE reports the scene where ASHICE hands
+over a patient.
 
 - The approved implementation plan is [`docs/plans/fieldkit-v1.md`](docs/plans/fieldkit-v1.md).
   Read that before starting any work.
@@ -26,7 +32,8 @@ on, or says plainly when the device cannot provide one.
 | `src/app/map.tsx` | Offline map — a bundled UK overview, your position and the nearest defibrillators marked |
 | `src/app/position.tsx` | Where I am — latitude, longitude and an OS grid reference to read out |
 | `src/app/compass.tsx` | Compass — a bearing to walk on, and the bearing to the nearest defibrillators |
-| `src/app/settings.tsx` | Settings — reports waiting to send to OpenStreetMap, and the opt-in for them |
+| `src/app/settings.tsx` | Settings — the Responder depth switch, and reports waiting to send to OpenStreetMap |
+| `src/app/record.tsx` | Record incident — responder capture: SAMPLER, ABCDE, ETHANE and ASHICE, written down on the phone |
 | `src/app/about.tsx` | Data and licences — where the defibrillator and map data come from |
 
 ## Run
@@ -48,7 +55,7 @@ Nothing is required to run the app. One optional variable:
 
 | Variable | What it does |
 | --- | --- |
-| `EXPO_PUBLIC_WHAT3WORDS_KEY` | A what3words API key, for resolving a location on "Where I am". Needs an account that can convert coordinates to a word address; without it the screen reports that it is not configured. Put it in `.env`, which is gitignored — never in the repo. |
+| `EXPO_PUBLIC_WHAT3WORDS_KEY` | A what3words API key, for resolving a location on "Where I am". **It needs a plan that can convert coordinates to a word address** — the free tier cannot, and answers `402 QuotaExceeded`. That was checked against the live API rather than inferred from the docs. Without a working key the screen says so. Put it in `.env`, which is gitignored — never in the repo. Note that an `EXPO_PUBLIC_` value is inlined into the JS bundle at build time, so it is not a secret: anyone with a build can spend the quota. |
 
 ## Checks
 
@@ -99,7 +106,16 @@ we chose ourselves.
   mapper. No account is used, so reports are anonymous. **Untested against the real API** — nothing
   has been posted from here, deliberately, and whether React Native can set the required `User-Agent`
   still needs a device check.
-- **Maestro flows** — seven so far, in `.maestro/map/`, `.maestro/location/` and `.maestro/settings/`.
-  The `smoke/`, `guided/`, `aed/`, `capture/` and `transfer/` areas are still conventions only.
+- **Maestro flows** — ten, across `.maestro/map/`, `.maestro/location/`, `.maestro/settings/` and
+  `.maestro/capture/`. All pass, and each is self-contained — it sets its own position and permissions
+  — so the suite is order-independent (see `.maestro/README.md` for what the device taught us). The
+  `smoke/`, `guided/`, `aed/` and `transfer/` areas are still conventions only.
+- **Getting a report off the phone** — a report is written and persisted locally, and that is as far as
+  it goes. QR render and scan, the share sheet, `sms:`/`mailto:`/`whatsapp://` and NFC are Phase 4b
+  and 4c, so a report recorded on the phone currently stays on the phone.
+- **A clinician has not read the capture fields** — the mnemonics are standard and their structure is
+  public, but *which* observations to ask for, and using ACVPU rather than a Glasgow Coma Scale, is
+  engineering judgement. The forms record and never assess, which is the mitigation; a clinical read
+  before release is still wanted (plan, §2.5).
 - **An EAS project** — `app.json` now has both bundle identifiers (`com.colouringcode.fieldkit`), so
   installing on a device is unblocked, but `eas.json` is not set up and that needs an Expo account.

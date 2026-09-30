@@ -10,14 +10,23 @@
 # so the success path is covered by unit tests against an injected fetch instead; this flow can only
 # prove the refusal.
 #
-# Prerequisite: the simulator must be inside the UK with defibrillators nearby, so there is something
-# to flag.
-#   xcrun simctl location booted set 51.5074,-0.1278
+# Prerequisite: defibrillators nearby, so there is something to flag. The flow sets its own position
+# rather than relying on how the simulator was left.
+#
+# clearState, so the opt-in is off because it starts off rather than because a previous flow left it
+# that way. Maestro does not order flows predictably — the filesystem decides, and in practice it runs
+# TC-02 before TC-01 — so a flow that reads leftover state is a flow that fails at random.
 appId: com.colouringcode.fieldkit
 tags:
   - settings
 ---
-- launchApp
+- launchApp:
+    clearState: true
+    permissions:
+      location: inuse
+- setLocation:
+    latitude: 51.5074
+    longitude: -0.1278
 - tapOn:
     id: act-aed
 - assertVisible:
