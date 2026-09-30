@@ -92,8 +92,8 @@ we chose ourselves.
   distance to nearby defibrillators are verified; the heading is not.
 - **what3words** — resolved on demand and never cached, so nothing stale can be shown as current.
   Needs `EXPO_PUBLIC_WHAT3WORDS_KEY` (see Configuration); without it the screen says so rather than
-  pretending. The licence terms were read — including one that constrains displaying a location
-  beside coordinates — and the decision to proceed is recorded in the plan, §2.2.
+  pretending. The licence terms were read, and one of them governs how a location may be displayed
+  beside its coordinates; that is carried as an open question for the licensor in the plan, §7.
 - **Android and real hardware** — the map, the position screen and the 7 MB asset copy are verified
   on an iOS simulator only. Android's local `pmtiles://file://` path is documented but unexercised
   here, and neither platform has been tried on a device.

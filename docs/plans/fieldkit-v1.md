@@ -111,11 +111,12 @@ than the one that looks like a trap:
   necessary"), but the reverse direction must always be re-called, no local dataset may be built, the
   newest API version must be used, and all what3words Data must be deleted on termination.
 
-**Decision: proceed as designed.** The pairing clause is on the record rather than treated as a
-design input, and the subscription is a known future commitment rather than a gate. The key comes from
-`EXPO_PUBLIC_WHAT3WORDS_KEY` — never committed — and without it the app reports `not-configured`
-instead of pretending. Nothing is cached in this build, so the cache-versus-store question does not
-arise; if a resolved location is ever stored, §4.1 rule 1 governs how it may be shown.
+**Where the build stands.** The subscription is a known future commitment rather than a build gate:
+the key comes from `EXPO_PUBLIC_WHAT3WORDS_KEY` — never committed — and without one the app reports
+`not-configured` instead of pretending. Nothing is cached in this build, so the cache-versus-store
+question does not arise; if a resolved location is ever stored, §4.1 rule 1 governs how it may be
+shown. One item in the clause list above is not settled by this build and is carried as an open
+question for the licensor in §7.
 
 ### 2.3 Map data and basemap — zero budget
 
@@ -588,6 +589,10 @@ Still to come in Phase 4: getting a report off the phone (QR render and scan, sh
    single item standing between the project and having no safety gate at all (§2.1).
 2. **Field Kit trademark and store-name availability** — there's an existing open-source FieldKit in
    environmental sensing, so this needs a real check before anything ships under the name.
+3. **How what3words clause 6.3(b) applies to showing a location beside its coordinates.** The two
+   appear together on "Where I am" and the clause restricts that pairing. It needs a line from
+   what3words rather than an interpretation from here — and dropping the pairing would be a change to
+   one screen's layout, not to the resolver (§2.2).
 
 Resolved since revision 2: the app name (Field Kit, repo `field-kit`), the Guided share path (both
 depths send a report), the PMTiles location (both), the Guided screen count (three), the bundle
