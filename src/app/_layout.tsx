@@ -40,6 +40,7 @@ export default function RootLayout() {
         <Stack.Screen name="cpr" options={{ title: 'Start compressions' }} />
         <Stack.Screen name="aed" options={{ title: 'Nearest defibrillator' }} />
         <Stack.Screen name="map" options={{ title: 'Offline map' }} />
+        <Stack.Screen name="regions" options={{ title: 'Region packs' }} />
         <Stack.Screen name="position" options={{ title: 'Where I am' }} />
         <Stack.Screen name="compass" options={{ title: 'Compass' }} />
         <Stack.Screen name="settings" options={{ title: 'Settings' }} />

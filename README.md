@@ -4,18 +4,25 @@ First aid reference for remote and low-signal environments. Native iOS and Andro
 Expo. It has to work with no network at all: the guidance, the defibrillator data and the position
 maths all live on the phone.
 
-**Status: Phase 4a done.** Phase 3 is complete: "Where I am" gives latitude, longitude and an **OS
-grid reference** — the form a British 999 operator works in — with no reference offered when you are
-outside Great Britain, Northern Ireland and the Isle of Man rather than a plausible-looking one for the
-wrong country. A **what3words location** can be resolved on demand beside it, which is the one thing on
-that screen that uses the network. A **compass** gives a bearing to walk on, or says plainly when the
-device cannot provide one.
+**Status: Phase 4a done, and region packs landed.** Phase 3 is complete: "Where I am" gives latitude,
+longitude and an **OS grid reference** — the form a British 999 operator works in — with no reference
+offered when you are outside Great Britain, Northern Ireland and the Isle of Man rather than a
+plausible-looking one for the wrong country. A **what3words location** can be resolved on demand beside
+it, which is the one thing on that screen that uses the network. A **compass** gives a bearing to walk
+on, or says plainly when the device cannot provide one.
 
 Phase 4a has landed what the rest of Phase 4 stands on: a **report** that exists and persists on the
 phone, a **depth gate** that reveals responder capture without changing one thing about the emergency
 path, and the four **capture forms** — SAMPLER, ABCDE, ETHANE and ASHICE — held as data. They record
 what someone observes and never what to do about it, and ETHANE reports the scene where ASHICE hands
 over a patient.
+
+**Region packs** are in: the bundled map is a national overview, and a pack adds street-level detail
+for one area — downloaded once, then offline for good. A pack is drawn *over* the overview rather than
+replacing it, because a blank rectangle wherever it does not reach is worse than a coarse map. The
+first pack is the Lake District at zoom 14 (18.9 MB), published as a GitHub Release asset and fetched
+by the app on request — verified end to end on a device, from the tap to the map redrawing with street
+detail.
 
 - The approved implementation plan is [`docs/plans/fieldkit-v1.md`](docs/plans/fieldkit-v1.md).
   Read that before starting any work.
@@ -30,6 +37,7 @@ over a patient.
 | `src/app/cpr.tsx` | Compressions, paced by a metronome driven by licensed guidance |
 | `src/app/aed.tsx` | Nearest defibrillator — the nearest three from the bundled dataset, with unverified labelling and local flagging |
 | `src/app/map.tsx` | Offline map — a bundled UK overview, your position and the nearest defibrillators marked |
+| `src/app/regions.tsx` | Region packs — the catalogue, downloads with progress, and what is using space |
 | `src/app/position.tsx` | Where I am — latitude, longitude and an OS grid reference to read out |
 | `src/app/compass.tsx` | Compass — a bearing to walk on, and the bearing to the nearest defibrillators |
 | `src/app/settings.tsx` | Settings — the Responder depth switch, and reports waiting to send to OpenStreetMap |
@@ -72,6 +80,23 @@ All of these run in CI on every pull request and every push to `main`
 (`.github/workflows/ci.yml`), along with an offline run of the AED pipeline against a checked-in
 fixture (`npm run build:aed -- --from-file scripts/fixtures/overpass-sample.json`).
 
+## Cutting a region pack
+
+Not a check, and not in CI: it needs the `pmtiles` CLI and reads byte ranges out of a 138 GB remote
+archive, which is not a job to run on every push.
+
+```sh
+brew install pmtiles
+npm run build:pack -- --region lake-district --name "Lake District" \
+  --description "Fells and valleys around Windermere, Keswick and Wasdale, at street level." \
+  --bbox=-3.55,54.20,-2.70,54.75 --maxzoom=14 --tag maps-2026.09
+```
+
+It writes the pack to `packs/` (gitignored — a 19 MB binary is a release asset, not repository
+content) and records it in `assets/maps/regions.json`, which is what ships. `--no-catalogue` cuts and
+prints the size without touching the catalogue, which is how the zoom level was chosen: measured at
+z12/z13/z14 rather than guessed. Publish with the `gh release create` line the script prints.
+
 ## Why the screens look half-empty
 
 **There is no clinical content, and that is the point.** Field Kit reproduces first aid guidance
@@ -97,16 +122,22 @@ we chose ourselves.
 - **Android and real hardware** — the map, the position screen and the 7 MB asset copy are verified
   on an iOS simulator only. Android's local `pmtiles://file://` path is documented but unexercised
   here, and neither platform has been tried on a device.
-- **Region packs** — the bundled overview is a national map at zoom 8 (towns and major roads, not
-  streets), and its bounding box includes the island of Ireland. Higher-detail packs you download
-  before a trip are a separate slice.
+- **Region packs** — published and working. A pack is cut by `npm run build:pack`, pinned in the
+  catalogue that ships in the app, downloaded from a GitHub Release, verified against its md5 before
+  it is accepted, drawn over the overview, and deletable. **Verified end to end on a device**, from
+  the download tap to the map redrawing with street detail — which also settled that a GitHub asset
+  redirect is followed. Three limits are deliberate and documented: a download is **foreground-only**
+  (leaving the screen stops it, and nothing is kept); **a pack adds geometry but not names**, because
+  its label layers are dropped so that no place name is drawn twice; and, the catalogue being bundled
+  rather than fetched, **adding or fixing a pack needs an app release**. Not verified: a download over
+  a poor connection, or any of this on Android.
 - **Sending a report to OpenStreetMap** — a flag hides an entry here immediately, and leaves a report
   you can read, edit and send yourself in Settings. The app never sends anything on your behalf:
   OpenStreetMap's usage policy forbids that, and their notes are meant to be a person writing to a
   mapper. No account is used, so reports are anonymous. **Untested against the real API** — nothing
   has been posted from here, deliberately, and whether React Native can set the required `User-Agent`
   still needs a device check.
-- **Maestro flows** — ten, across `.maestro/map/`, `.maestro/location/`, `.maestro/settings/` and
+- **Maestro flows** — eleven, across `.maestro/map/`, `.maestro/location/`, `.maestro/settings/` and
   `.maestro/capture/`. All pass, and each is self-contained — it sets its own position and permissions
   — so the suite is order-independent (see `.maestro/README.md` for what the device taught us). The
   `smoke/`, `guided/`, `aed/` and `transfer/` areas are still conventions only.

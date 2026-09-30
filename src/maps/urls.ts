@@ -19,6 +19,32 @@ export type MapAssetUrls = {
 /** The file name inside the map directory. Kept ASCII: escaped characters have crashed the map. */
 export const PMTILES_FILE_NAME = 'uk-overview.pmtiles';
 
+/** Downloaded packs live in a subdirectory of the same map directory, for the same reasons. */
+export const PACKS_DIRECTORY = 'packs';
+
+/**
+ * The file name a pack takes on disk once it is installed.
+ *
+ * Kept ASCII for the same reason as the overview's: an id with an accent or a space would be
+ * escaped into a path that does not exist, and the map would go blank with nothing in the log.
+ */
+export function packFileName(packId: string): string {
+  return `${packId}.pmtiles`;
+}
+
+/**
+ * Where MapLibre should look for an installed pack.
+ *
+ * A `file://` path wrapped in `pmtiles://`, exactly as the overview is. The pack's *download* URL is
+ * a different thing entirely and never appears here — the style must contain no remote URL at all,
+ * or it is not an offline style.
+ */
+export function packArchiveUrl(rootUri: string, packId: string): string {
+  const base = rootUri.replace(/\/+$/, '');
+
+  return `pmtiles://${base}/${PACKS_DIRECTORY}/${packFileName(packId)}`;
+}
+
 /**
  * @param rootUri Absolute `file://` URI of the directory holding the map assets, with no
  * trailing slash.

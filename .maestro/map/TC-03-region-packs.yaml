@@ -1,0 +1,110 @@
+# TC-03 — the region pack catalogue, and what a download attempt leaves behind.
+#
+# Why this flow exists: the catalogue ships inside the app, so the list has to be there with no signal
+# — and the state around a pack has to be honest, because "downloaded" and "not downloaded" is the
+# difference between a street-level map and a national overview on a hill.
+#
+# It is written to pass in two worlds. Before the release exists the download fails; afterwards it
+# succeeds. Either way the flow stops it or removes it, so it ends not-installed and leaves no 19 MB
+# on the device for the next run. The success path itself is covered by unit tests against an
+# injected file store — the same seam the OSM note sender and the what3words resolver use — because a
+# flow that depends on a 19 MB transfer from GitHub is a flow that fails for reasons unrelated to
+# this app.
+#
+# The position is Ambleside, inside the Lake District pack's box, so the map has a pack to offer for
+# where the user is standing.
+appId: com.colouringcode.fieldkit
+tags:
+  - map
+---
+- launchApp:
+    permissions:
+      location: inuse
+- setLocation:
+    latitude: 54.4287
+    longitude: -2.9613
+
+# Act -> AED -> map.
+- tapOn:
+    id: act-aed
+- assertVisible:
+    id: aed-screen
+- tapOn:
+    id: aed-map
+- extendedWaitUntil:
+    visible:
+      id: map-attribution
+    timeout: 60000
+
+# Inside the pack's area, with its bytes not downloaded: the map says a pack exists for here, and
+# must not claim to be showing detail it does not have.
+#
+# Waited for rather than asserted outright: the notice needs the position fix, and `map-attribution`
+# appears as soon as the map renders, which can be sooner. Asserting here is a race — it passed twice
+# and then failed, which is exactly how a flaky flow behaves.
+- extendedWaitUntil:
+    visible:
+      id: map-pack-available
+    timeout: 30000
+- assertNotVisible:
+    id: map-pack-active
+
+- tapOn:
+    id: map-regions-link
+- extendedWaitUntil:
+    visible:
+      id: regions-screen
+    timeout: 30000
+
+# The catalogue is bundled, so this list is here with no network at all.
+- assertVisible:
+    id: regions-pack-lake-district
+- assertVisible:
+    id: regions-pack-lake-district-size
+- assertVisible:
+    id: regions-total
+- assertVisible:
+    id: regions-pack-lake-district-download
+
+# Try it, then put the device back the way it was found.
+- tapOn:
+    id: regions-pack-lake-district-download
+
+- runFlow:
+    when:
+      visible:
+        id: regions-pack-lake-district-cancel
+    commands:
+      - tapOn:
+          id: regions-pack-lake-district-cancel
+
+- runFlow:
+    when:
+      visible:
+        id: regions-pack-lake-district-delete
+    commands:
+      - tapOn:
+          id: regions-pack-lake-district-delete
+
+# Whatever happened, nothing is installed — and this flow installed nothing.
+- extendedWaitUntil:
+    visible:
+      id: regions-pack-lake-district-download
+    timeout: 30000
+
+- takeScreenshot: /tmp/fieldkit-regions
+
+# The licence the packs are under is reachable, and the screen carrying it renders: it reads the
+# pack's licence out of the catalogue when its module loads, so a malformed catalogue takes that
+# screen down rather than going unnoticed.
+- scrollUntilVisible:
+    element:
+      id: regions-about-link
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: regions-about-link
+- extendedWaitUntil:
+    visible:
+      id: about-screen
+    timeout: 30000

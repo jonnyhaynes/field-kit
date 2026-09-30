@@ -52,3 +52,9 @@ example
 *.osm.pbf
 *.osm.pbf.md5
 *.osm
+
+# Cut region packs, where `npm run build:pack` writes by default. Release assets, not repository
+# content: a 19 MB binary would be paid for on every clone and every CI run. What ships is the
+# catalogue that points at it -- assets/maps/regions.json -- so this is deliberately ignored and
+# the bundled archive deliberately is not.
+/packs/

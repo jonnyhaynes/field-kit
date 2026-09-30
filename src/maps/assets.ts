@@ -14,7 +14,7 @@
  */
 
 import { Asset } from 'expo-asset';
-import { Directory, File, Paths } from 'expo-file-system';
+import { Directory, File } from 'expo-file-system';
 import { useEffect, useState } from 'react';
 
 import overviewArchive from '../../assets/maps/uk-overview.pmtiles';
@@ -32,6 +32,7 @@ import spriteLight2x from '../../assets/maps/sprites/light/sprite-2x.png';
 import spriteLight2xJson from '../../assets/maps/sprites/light/sprite-2x.json';
 import spriteLightPng from '../../assets/maps/sprites/light/sprite.png';
 import spriteLight from '../../assets/maps/sprites/light/sprite.json';
+import { mapsRoot } from './paths';
 import { mapAssetUrls, type MapAssetUrls } from './urls';
 
 /**
@@ -79,7 +80,7 @@ const SPRITE_DESCRIPTORS: Record<'light' | 'dark', { base: unknown; retina: unkn
 
 export type MapAssetsState =
   | { status: 'preparing' }
-  | { status: 'ready'; urls: MapAssetUrls }
+  | { status: 'ready'; urls: MapAssetUrls; rootUri: string }
   | { status: 'failed'; reason: string };
 
 function fileIn(root: Directory, path: string): File {
@@ -121,7 +122,7 @@ let prepared: Promise<Directory> | undefined;
 
 function prepare(): Promise<Directory> {
   prepared ??= (async () => {
-    const root = new Directory(Paths.document, 'maps');
+    const root = mapsRoot();
     if (!root.exists) root.create({ intermediates: true });
 
     const marker = fileIn(root, `assets-${ASSET_VERSION}.marker`);
@@ -147,7 +148,9 @@ export function useMapAssets(scheme: 'light' | 'dark'): MapAssetsState {
     void (async () => {
       try {
         const root = await prepare();
-        if (!cancelled) setState({ status: 'ready', urls: mapAssetUrls(root.uri, scheme) });
+        if (!cancelled) {
+          setState({ status: 'ready', urls: mapAssetUrls(root.uri, scheme), rootUri: root.uri });
+        }
       } catch (error) {
         if (!cancelled) {
           setState({

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "build": "20260929",
+  "packs": [
+    {
+      "id": "lake-district",
+      "name": "Lake District",
+      "description": "Fells and valleys around Windermere, Keswick and Wasdale, at street level.",
+      "bounds": {
+        "minLongitude": -3.55,
+        "minLatitude": 54.2,
+        "maxLongitude": -2.7,
+        "maxLatitude": 54.75
+      },
+      "minZoom": 0,
+      "maxZoom": 14,
+      "bytes": 18945586,
+      "md5": "02696d5c904d473bb920f34cea46f87c",
+      "sha256": "692a6ca8ce63d9c198ef87867bfd896c7e04b36eeb47ef89ed5ab88c03ae8ad6",
+      "url": "https://github.com/jonnyhaynes/field-kit/releases/download/maps-2026.09/lake-district.pmtiles",
+      "builtAt": "2026-09-30T13:02:03.294Z",
+      "source": {
+        "build": "20260929",
+        "archive": "https://build.protomaps.com/20260929.pmtiles",
+        "command": "pmtiles extract https://build.protomaps.com/20260929.pmtiles lake-district.pmtiles --bbox=-3.55,54.20,-2.70,54.75 --maxzoom=14"
+      },
+      "licence": {
+        "id": "ODbL-1.0",
+        "attribution": "© OpenStreetMap contributors",
+        "url": "https://www.openstreetmap.org/copyright"
+      }
+    }
+  ]
+}

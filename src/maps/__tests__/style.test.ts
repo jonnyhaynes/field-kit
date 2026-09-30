@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { buildMapStyle, MAP_ATTRIBUTION } from '../style';
+import { buildMapStyle, DETAIL_LAYER_PREFIX, DETAIL_SOURCE, MAP_ATTRIBUTION } from '../style';
 import { mapAssetUrls } from '../urls';
 
 const urls = mapAssetUrls('file:///data/maps', 'light');
@@ -114,5 +114,87 @@ describe('label policy', () => {
     // A house number and a road number are not names and must not be rewritten.
     expect(byId.address_label.layout?.['text-field']).toEqual(['get', 'addr_housenumber']);
     expect(byId.roads_shields.layout?.['text-field']).toEqual(['get', 'shield_text']);
+  });
+});
+
+/**
+ * A pack is drawn *over* the overview, never instead of it.
+ *
+ * Replacing the source is the obvious implementation and the wrong one: pan outside the pack's
+ * bounding box and there are no tiles at all, which is the blank rectangle Phase 2d already fixed
+ * once. So the overview stays, the pack joins it, and the layer order has to be rearranged —
+ * pack geometry above the overview's so detail wins, but below the labels so a park polygon does
+ * not paint over a town name.
+ */
+describe('an installed region pack', () => {
+  type AnyLayer = { id: string; type?: string; source?: string; layout?: Record<string, unknown> };
+
+  const PACK_URL = 'pmtiles:///data/maps/packs/lake-district.pmtiles';
+  const packed = () => buildMapStyle({ urls, scheme: 'light', packUrl: PACK_URL });
+  const layers = () => packed().layers as unknown as AnyLayer[];
+  const packLayers = () => layers().filter((layer) => layer.source === DETAIL_SOURCE);
+  const symbolIds = () =>
+    layers()
+      .filter((layer) => layer.type === 'symbol')
+      .map((l) => l.id);
+
+  it('keeps the overview and adds a second source beside it', () => {
+    expect(packed().sources.protomaps).toMatchObject({ type: 'vector', url: urls.pmtiles });
+
+    const detail = (packed().sources as Record<string, { url?: string; attribution?: string }>)[
+      DETAIL_SOURCE
+    ];
+    expect(detail?.url).toBe(PACK_URL);
+    expect(detail?.attribution).toBe(MAP_ATTRIBUTION);
+  });
+
+  it('adds nothing at all when there is no pack', () => {
+    const plain = style();
+    expect((plain.sources as Record<string, unknown>)[DETAIL_SOURCE]).toBeUndefined();
+
+    for (const layer of plain.layers as unknown as AnyLayer[]) {
+      expect(layer.id.startsWith(DETAIL_LAYER_PREFIX)).toBe(false);
+      // A background layer has no source of its own; everything else reads the overview.
+      expect(layer.source === undefined || layer.source === 'protomaps').toBe(true);
+    }
+  });
+
+  it('draws pack layers above the overview geometry and below every label', () => {
+    const ids = layers().map((layer) => layer.id);
+    const packPositions = packLayers().map((layer) => ids.indexOf(layer.id));
+
+    expect(packPositions.length).toBeGreaterThan(10);
+    expect(Math.max(...packPositions)).toBeLessThan(
+      Math.min(...symbolIds().map((id) => ids.indexOf(id))),
+    );
+  });
+
+  it('supplies geometry only, never a symbol', () => {
+    // Two sources each drawing names would draw every name twice, a pixel or two apart. The cost of
+    // dropping them is that a pack adds detail rather than more names.
+    for (const layer of packLayers()) {
+      expect(layer.type).not.toBe('symbol');
+      expect(layer.layout?.['text-field']).toBeUndefined();
+    }
+  });
+
+  it('gives every layer a unique id, and prefixes the pack layers', () => {
+    const ids = layers().map((layer) => layer.id);
+    expect(new Set(ids).size).toBe(ids.length);
+
+    for (const id of ids.filter((id) => id.startsWith(DETAIL_LAYER_PREFIX))) {
+      expect(id.slice(DETAIL_LAYER_PREFIX.length)).not.toBe('');
+    }
+  });
+
+  it('still contains no remote URL anywhere it would fetch from', () => {
+    // The attribution is an HTML link and does contain `https://` — that is text in a control, not
+    // something MapLibre fetches. What must never be remote is where tiles come from.
+    const sources = packed().sources as Record<string, { url?: string }>;
+    for (const source of Object.values(sources)) {
+      expect(source.url ?? '').not.toMatch(/https?:\/\//);
+    }
+
+    expect(JSON.stringify(packed().layers)).not.toMatch(/https?:\/\//);
   });
 });

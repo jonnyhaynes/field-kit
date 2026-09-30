@@ -401,9 +401,23 @@ pmtiles extract https://build.protomaps.com/<build>.pmtiles assets/maps/uk-overv
   --bbox=-8.65,49.86,1.77,60.86 --maxzoom=8
 ```
 
-**Still open, and split out as #14: region packs.** Free hosting exists (GitHub Releases), so this is
-a scope decision rather than a budget blocker — but a download pipeline, progress UI, integrity
-checking and a `canMapRegions` capability belong together, not bolted onto the overview.
+**Phase 2d follow-up as delivered — region packs.** The mechanism and one pack: a bundled catalogue
+(`assets/maps/regions.json`), an installer that verifies what it downloaded before it accepts it, and
+a pack drawn *over* the overview rather than instead of it. `docs/plans/14-region-packs.md` carries
+the plan, the measurements, and what it deliberately does not do.
+
+Two things are worth recording here rather than leaving in the diff. A pack **layers** instead of
+replacing, because a blank rectangle wherever it does not reach is the failure this phase already
+fixed once. And a pack supplies geometry but **not** its own labels — two sources each drawing names
+would draw every name twice — so the trade is detail without more names. Measured over a Lake District
+box, cut from the same build as the bundled archive: z12 4.8 MB, z13 10.0 MB, z14 18.9 MB. The pack is
+z14, inside a 25 MB cap.
+
+**Landed: the first pack release.** The repository is public, and the Lake District pack is published
+as a release asset carrying its ODbL notice. The app downloads it, verifies its md5 and draws with it
+— checked on a device from the tap through to the map redrawing with street detail, which also settled
+whether a GitHub asset redirect is followed (it is). Still true, and the accepted cost of the
+catalogue being bundled rather than fetched: **adding or fixing a pack needs an app release**.
 
 **Labels are Latin-only, and POIs are dropped — a decision, not an oversight.** Protomaps' name
 expression falls back to each feature's local `name` and appends secondary script lines, so a UK
