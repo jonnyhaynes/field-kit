@@ -26,6 +26,7 @@ on, or says plainly when the device cannot provide one.
 | `src/app/map.tsx` | Offline map — a bundled UK overview, your position and the nearest defibrillators marked |
 | `src/app/position.tsx` | Where I am — latitude, longitude and an OS grid reference to read out |
 | `src/app/compass.tsx` | Compass — a bearing to walk on, and the bearing to the nearest defibrillators |
+| `src/app/settings.tsx` | Settings — reports waiting to send to OpenStreetMap, and the opt-in for them |
 | `src/app/about.tsx` | Data and licences — where the defibrillator and map data come from |
 
 ## Run
@@ -92,10 +93,13 @@ we chose ourselves.
 - **Region packs** — the bundled overview is a national map at zoom 8 (towns and major roads, not
   streets), and its bounding box includes the island of Ireland. Higher-detail packs you download
   before a trip are a separate slice.
-- **Sending a flag upstream** — a flag hides an entry on your device immediately, but turning it
-  into an OpenStreetMap note needs an opt-in surface that doesn't exist yet, and it posts publicly
-  under your name. Tracked separately rather than bolted onto the list.
-- **Maestro flows** — `.maestro/map/` has two flows covering the offline map (one inside the UK, one
-  outside it). The other areas still carry conventions only.
+- **Sending a report to OpenStreetMap** — a flag hides an entry here immediately, and leaves a report
+  you can read, edit and send yourself in Settings. The app never sends anything on your behalf:
+  OpenStreetMap's usage policy forbids that, and their notes are meant to be a person writing to a
+  mapper. No account is used, so reports are anonymous. **Untested against the real API** — nothing
+  has been posted from here, deliberately, and whether React Native can set the required `User-Agent`
+  still needs a device check.
+- **Maestro flows** — seven so far, in `.maestro/map/`, `.maestro/location/` and `.maestro/settings/`.
+  The `smoke/`, `guided/`, `aed/`, `capture/` and `transfer/` areas are still conventions only.
 - **An EAS project** — `app.json` now has both bundle identifiers (`com.colouringcode.fieldkit`), so
   installing on a device is unblocked, but `eas.json` is not set up and that needs an Expo account.

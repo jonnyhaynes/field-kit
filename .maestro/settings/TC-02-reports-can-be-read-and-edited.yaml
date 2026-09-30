@@ -1,0 +1,51 @@
+# TC-02 — with the opt-in on, the report can be read and edited before it is sent.
+#
+# The counterpart to TC-01. Together they cover the two states of the policy: no way to send until a
+# person asks for it, and a report they can actually read and change once they have.
+#
+# **This flow never taps Send.** A test that posted real notes to OpenStreetMap would be vandalism, so
+# the send path is covered by unit tests against an injected fetch, and this stops one step short.
+# It turns the opt-in back off at the end, so the device is left as it was found and TC-01 still holds.
+#
+# Prerequisite: a report must already be waiting, which TC-01 leaves behind. Order matters.
+#   xcrun simctl location booted set 51.5074,-0.1278
+appId: com.colouringcode.fieldkit
+tags:
+  - settings
+---
+- launchApp
+- tapOn:
+    id: act-aed
+- extendedWaitUntil:
+    visible:
+      id: aed-settings
+    timeout: 60000
+- tapOn:
+    id: aed-settings
+- assertVisible:
+    id: settings-screen
+
+# Opt in. This shows the reports; it sends nothing.
+- tapOn:
+    id: settings-osm-opt-in
+- extendedWaitUntil:
+    visible:
+      id: settings-note-0
+    timeout: 10000
+
+# The text is editable and the send control is now here. It is the user's report, not a template they
+# cannot change.
+- assertVisible:
+    id: settings-note-text-0
+- assertVisible:
+    id: settings-note-send-0
+- assertVisible:
+    id: settings-note-discard-0
+
+- takeScreenshot: /tmp/fieldkit-settings-optin
+
+# Put it back, so this flow leaves no trace and TC-01 keeps passing on a re-run.
+- tapOn:
+    id: settings-osm-opt-in
+- assertNotVisible:
+    id: settings-note-send-0
