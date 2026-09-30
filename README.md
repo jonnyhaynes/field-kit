@@ -4,11 +4,12 @@ First aid reference for remote and low-signal environments. Native iOS and Andro
 Expo. It has to work with no network at all: the guidance, the defibrillator data and the position
 maths all live on the phone.
 
-**Status: Phase 3 in progress.** Phase 2 is done. In Phase 3, "Where I am" now gives the current
-latitude, longitude and an **OS grid reference** — the form a British 999 operator works in — computed
-on the device, with no reference offered when you are outside Great Britain, Northern Ireland and the
-Isle of Man rather than a plausible-looking one for the wrong country. A **what3words location** can be
-resolved on demand beside it, which is the one thing on that screen that uses the network.
+**Status: Phase 3 done.** Phase 2 is done, and Phase 3 has landed: "Where I am" gives latitude,
+longitude and an **OS grid reference** — the form a British 999 operator works in — with no reference
+offered when you are outside Great Britain, Northern Ireland and the Isle of Man rather than a
+plausible-looking one for the wrong country. A **what3words location** can be resolved on demand beside
+it, which is the one thing on that screen that uses the network. A **compass** gives a bearing to walk
+on, or says plainly when the device cannot provide one.
 
 - The approved implementation plan is [`docs/plans/fieldkit-v1.md`](docs/plans/fieldkit-v1.md).
   Read that before starting any work.
@@ -24,6 +25,7 @@ resolved on demand beside it, which is the one thing on that screen that uses th
 | `src/app/aed.tsx` | Nearest defibrillator — the nearest three from the bundled dataset, with unverified labelling and local flagging |
 | `src/app/map.tsx` | Offline map — a bundled UK overview, your position and the nearest defibrillators marked |
 | `src/app/position.tsx` | Where I am — latitude, longitude and an OS grid reference to read out |
+| `src/app/compass.tsx` | Compass — a bearing to walk on, and the bearing to the nearest defibrillators |
 | `src/app/about.tsx` | Data and licences — where the defibrillator and map data come from |
 
 ## Run
@@ -77,8 +79,9 @@ we chose ourselves.
 
 - **Clinical content** — blocked on the licence. See the plan, §2.1. This is the only thing gating
   real work.
-- **A compass** — the bearing, with a calibration warning and a GPS-course fallback. The design's
-  "Open compass" button is deliberately absent until it does something.
+- **A compass on real hardware** — the screen exists and is honest about a device without a
+  magnetometer, but a simulator has none, so a real bearing has never been seen. The bearing and
+  distance to nearby defibrillators are verified; the heading is not.
 - **what3words** — resolved on demand and never cached, so nothing stale can be shown as current.
   Needs `EXPO_PUBLIC_WHAT3WORDS_KEY` (see Configuration); without it the screen says so rather than
   pretending. The licence terms were read — including one that constrains displaying a location
