@@ -189,9 +189,20 @@ archive.
 **Delete** was exercised the same way and does what it says: the file is gone from the container and
 the screen returns to *Download*.
 
-**Still unproven, and honestly so:** the download from a GitHub Release. That needs the release to
-exist, which needs a public repository — so the redirect, and a 19 MB transfer completing, remain a
-device check for the day the first pack is published.
+## Verified with the real thing — the published download
+
+The overlay above was verified with the pack placed by hand, because nothing could fetch it yet. Once
+the release was published, the same check was repeated through the app's own path: tap **Download**,
+and the real 18.9 MB asset is fetched from GitHub, verified and installed.
+
+That settles the last open risk, and it settles three things at once. The release URL **redirect is
+followed** — GitHub serves assets from a redirect, and whether `downloadFileAsync` follows it was
+unknown. The **md5 of a real 19 MB download matched** (`02696d5c…`), which is the installer's only
+route to recording a pack, so hashing a file that size genuinely works on a device. And after a cold
+start the map at Windermere draws with the pack's detail — the same result as the hand-placed run,
+reached the way a user reaches it. Delete leaves the container empty.
+
+**Not verified:** a download over a poor connection, and any of this on Android.
 
 ## Risks and open items
 
@@ -245,10 +256,11 @@ Where the diff departs from the plan above, for a reviewer checking one against 
   leaves nothing installed for the next run. That is a deliberate change from the plan, which had it
   assert an unconditional cancellation: a flow that depends on a 19 MB transfer from GitHub fails for
   reasons that have nothing to do with this app.
-- **The publish step has not run yet.** The catalogue pins
-  `.../releases/download/maps-2026.09/lake-district.pmtiles`, and that release can only be created —
-  and downloaded anonymously — once the repository is public. Until then the download correctly
-  reports `unavailable`, which is what the device flow exercises.
+- **The release is published.** Tag `maps-2026.09`, carrying the pack and its ODbL notice on the
+  release page — a pack published without that notice would be data published without its licence.
+  The catalogue pins that URL and the app fetches it anonymously: verified on a device, not assumed.
+  The failure the first device run found is still handled, because a mis-published pack remains a real
+  possibility.
 - **`.gitignore` gained `/packs/`.** The cutter writes there by default, and a 19 MB binary must not
   be committable by accident. The bundled archive is deliberately *not* ignored.
 - **`src/maps/paths.ts` is new**, so the bundled assets and the downloaded packs cannot drift apart

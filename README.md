@@ -20,8 +20,9 @@ over a patient.
 **Region packs** are in: the bundled map is a national overview, and a pack adds street-level detail
 for one area — downloaded once, then offline for good. A pack is drawn *over* the overview rather than
 replacing it, because a blank rectangle wherever it does not reach is worse than a coarse map. The
-first pack is the Lake District at zoom 14 (18.9 MB); it is cut, hashed and pinned in the app's
-catalogue, but **not yet published**, because a release asset needs a public repository.
+first pack is the Lake District at zoom 14 (18.9 MB), published as a GitHub Release asset and fetched
+by the app on request — verified end to end on a device, from the tap to the map redrawing with street
+detail.
 
 - The approved implementation plan is [`docs/plans/fieldkit-v1.md`](docs/plans/fieldkit-v1.md).
   Read that before starting any work.
@@ -121,17 +122,15 @@ we chose ourselves.
 - **Android and real hardware** — the map, the position screen and the 7 MB asset copy are verified
   on an iOS simulator only. Android's local `pmtiles://file://` path is documented but unexercised
   here, and neither platform has been tried on a device.
-- **Region packs are built but not published** — the cutter, the catalogue, the download and the
-  overlay all work, and the Lake District pack is cut and pinned at 18.9 MB. Nothing can fetch it
-  yet: release assets on a private repository need authentication an app cannot hold, so the first
-  release goes out once the repository is public. Until then the screen honestly reports that the
-  pack is not where it expects to find it. **The overlay itself is verified** — with the real pack
-  placed on a simulator by hand, the map at Windermere gains a detailed shoreline, landcover and
-  minor roads, the overview's labels still draw over it, nothing goes blank, and Delete removes the
-  file. What is *not* verified is the download from GitHub, which needs the release. Two limits are
-  deliberate and documented: a download is foreground-only (leaving the screen stops it), and **a
-  pack adds geometry but not names** — its label layers are dropped so that every place name is not
-  drawn twice.
+- **Region packs** — published and working. A pack is cut by `npm run build:pack`, pinned in the
+  catalogue that ships in the app, downloaded from a GitHub Release, verified against its md5 before
+  it is accepted, drawn over the overview, and deletable. **Verified end to end on a device**, from
+  the download tap to the map redrawing with street detail — which also settled that a GitHub asset
+  redirect is followed. Three limits are deliberate and documented: a download is **foreground-only**
+  (leaving the screen stops it, and nothing is kept); **a pack adds geometry but not names**, because
+  its label layers are dropped so that no place name is drawn twice; and, the catalogue being bundled
+  rather than fetched, **adding or fixing a pack needs an app release**. Not verified: a download over
+  a poor connection, or any of this on Android.
 - **Sending a report to OpenStreetMap** — a flag hides an entry here immediately, and leaves a report
   you can read, edit and send yourself in Settings. The app never sends anything on your behalf:
   OpenStreetMap's usage policy forbids that, and their notes are meant to be a person writing to a

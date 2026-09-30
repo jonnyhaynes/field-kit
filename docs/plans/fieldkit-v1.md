@@ -413,9 +413,11 @@ would draw every name twice — so the trade is detail without more names. Measu
 box, cut from the same build as the bundled archive: z12 4.8 MB, z13 10.0 MB, z14 18.9 MB. The pack is
 z14, inside a 25 MB cap.
 
-**Still open: the first release.** Release assets need a public repository, so the pack is cut, hashed
-and pinned in the catalogue but not yet fetchable. And with the catalogue bundled rather than fetched,
-adding or fixing a pack needs an app release.
+**Landed: the first pack release.** The repository is public, and the Lake District pack is published
+as a release asset carrying its ODbL notice. The app downloads it, verifies its md5 and draws with it
+— checked on a device from the tap through to the map redrawing with street detail, which also settled
+whether a GitHub asset redirect is followed (it is). Still true, and the accepted cost of the
+catalogue being bundled rather than fetched: **adding or fixing a pack needs an app release**.
 
 **Labels are Latin-only, and POIs are dropped — a decision, not an oversight.** Protomaps' name
 expression falls back to each feature's local `name` and appends secondary script lines, so a UK
