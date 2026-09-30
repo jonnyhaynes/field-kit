@@ -13,7 +13,10 @@ import { useCurrentPosition } from '@/location/current-position';
 import { useMapAssets } from '@/maps/assets';
 import { isWithinUkOverview } from '@/maps/bounds';
 import { MapView } from '@/maps/map-view';
+import { selectPack } from '@/maps/regions';
 import { buildMapStyle } from '@/maps/style';
+import { packArchiveUrl } from '@/maps/urls';
+import { useRegions } from '@/maps/use-regions';
 
 /** Where the map sits when there is no fix: the middle of the country, zoomed out. */
 const UK_CENTRE = { latitude: 54.5, longitude: -3.0 };
@@ -41,6 +44,7 @@ function MapContent() {
   const position = useCurrentPosition();
   const records = useAedRecords();
   const { flagged } = useAedFlags();
+  const regions = useRegions();
 
   /**
    * Outside the archive there are no tiles, so the map would be a blank rectangle. Rather than
@@ -52,14 +56,33 @@ function MapContent() {
   const center = position.status === 'ready' && !outsideArchive ? position.coordinates : UK_CENTRE;
   const zoom = position.status === 'ready' && !outsideArchive ? USER_ZOOM : UK_ZOOM;
 
+  /**
+   * The pack for this position, and whether its bytes are actually here. `covering` without
+   * `installed` is worth telling the user about: it is street detail they could have for where
+   * they are standing, and there is a screen for it.
+   */
+  const covering =
+    position.status === 'ready' && !outsideArchive
+      ? selectPack(position.coordinates, regions.packs)
+      : undefined;
+  const installedPack = covering && regions.present[covering.id] === true ? covering : undefined;
+
   const neighbours = useMemo(() => {
     if (records.status !== 'ready' || outsideArchive) return [];
     return nearestAeds(records.records, { center, limit: RESULT_LIMIT, excludedIds: flagged });
   }, [records, center, flagged, outsideArchive]);
 
   const style = useMemo(
-    () => (assets.status === 'ready' ? buildMapStyle({ urls: assets.urls, scheme }) : undefined),
-    [assets, scheme],
+    () =>
+      assets.status === 'ready'
+        ? buildMapStyle({
+            urls: assets.urls,
+            scheme,
+            // A local `pmtiles://` path: the pack's download URL never reaches the style.
+            packUrl: installedPack ? packArchiveUrl(assets.rootUri, installedPack.id) : undefined,
+          })
+        : undefined,
+    [assets, scheme, installedPack],
   );
 
   if (assets.status === 'preparing') {
@@ -113,9 +136,29 @@ function MapContent() {
         there, reachable, or working.
       </Text>
 
+      {installedPack ? (
+        <Text testID="map-pack-active" style={[styles.body, { color: theme.textSecondary }]}>
+          {`Street detail for ${installedPack.name} is downloaded, so the map is more detailed here.`}
+        </Text>
+      ) : covering ? (
+        <Text testID="map-pack-available" style={[styles.body, { color: theme.textSecondary }]}>
+          {`There is a ${covering.name} pack for this area, which would add street detail.`}
+        </Text>
+      ) : null}
+
       <Text testID="map-attribution" style={[styles.attribution, { color: theme.textSecondary }]}>
         Map data © OpenStreetMap contributors, tiles by Protomaps.
       </Text>
+
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel="Region packs"
+        accessibilityHint="Download street detail for one area"
+        testID="map-regions-link"
+        onPress={() => router.push('/regions')}
+        style={({ pressed }) => [styles.link, pressed && styles.pressed]}>
+        <Text style={[styles.linkLabel, { color: theme.text }]}>Region packs</Text>
+      </Pressable>
 
       <Pressable
         accessibilityRole="link"

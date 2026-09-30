@@ -35,7 +35,21 @@ export type MapStyleOptions = {
   urls: MapAssetUrls;
   scheme: 'light' | 'dark';
   language?: string;
+  /**
+   * An installed region pack, as a local `pmtiles://` URL.
+   *
+   * A pack is drawn **over** the overview rather than replacing it — see `buildMapStyle`. It is
+   * always a local file: the style must contain no remote URL, and the pack's download URL is a
+   * different thing that never reaches here.
+   */
+  packUrl?: string;
 };
+
+/** The second source, added only when a pack is in play. */
+export const DETAIL_SOURCE = 'detail';
+
+/** Pack layer ids are prefixed so they cannot collide with the overview's — MapLibre requires unique ids. */
+export const DETAIL_LAYER_PREFIX = 'detail-';
 
 /**
  * Labels are Latin-only, on purpose.
@@ -100,12 +114,63 @@ function localiseFontStacks<T>(node: T): T {
   return node;
 }
 
+/**
+ * A pack is drawn **over** the overview, never instead of it.
+ *
+ * Replacing the source would be simpler, and wrong: pan outside the pack's bounding box and there
+ * are no tiles at all — a blank rectangle, which is the failure Phase 2d already fixed once and
+ * §2.3 promises never to show. It also could not be worked around with a loading state, because the
+ * blank area is wherever the user panned to.
+ *
+ * Two things follow, and both are deliberate.
+ *
+ * **Layer order.** Pack geometry has to sit above the overview's so that detail wins where the pack
+ * covers — and *below* the labels, or a park polygon would paint over a town's name. So the layers
+ * are regrouped as geometry, pack geometry, symbols.
+ *
+ * **Packs supply geometry only.** Every symbol layer — text and icons alike — comes from the
+ * overview. Two sources each drawing names would draw every name twice, a pixel or two apart. The
+ * cost is real and worth stating: a pack adds detail, not more names.
+ */
+function packDetailLayers(base: readonly LayerSpecification[]): LayerSpecification[] {
+  return base
+    .filter((layer) => (layer as LooseLayer).type !== 'symbol')
+    .map((layer) => ({
+      ...layer,
+      id: `${DETAIL_LAYER_PREFIX}${layer.id}`,
+      source: DETAIL_SOURCE,
+    }));
+}
+
+function isSymbolLayer(layer: LayerSpecification): boolean {
+  return (layer as LooseLayer).type === 'symbol';
+}
+
 export function buildMapStyle({
   urls,
   scheme,
   language = 'en',
+  packUrl,
 }: MapStyleOptions): StyleSpecification {
   const base = layers('protomaps', namedFlavor(scheme), { lang: language });
+
+  const prepared = base
+    .map((layer) => localiseFontStacks(layer) as LayerSpecification)
+    .map(withLatinLabels)
+    .filter((layer): layer is LayerSpecification => layer !== undefined);
+
+  const detail = packUrl ? packDetailLayers(prepared) : [];
+
+  // Without a pack the order is left exactly as Protomaps' own package has it, so nothing about the
+  // bundled map changes; the regrouping is only needed to make room for a second source.
+  const ordered =
+    detail.length === 0
+      ? prepared
+      : [
+          ...prepared.filter((layer) => !isSymbolLayer(layer)),
+          ...detail,
+          ...prepared.filter(isSymbolLayer),
+        ];
 
   return {
     version: 8,
@@ -117,10 +182,10 @@ export function buildMapStyle({
         url: urls.pmtiles,
         attribution: MAP_ATTRIBUTION,
       },
+      ...(packUrl
+        ? { [DETAIL_SOURCE]: { type: 'vector', url: packUrl, attribution: MAP_ATTRIBUTION } }
+        : {}),
     },
-    layers: base
-      .map((layer) => localiseFontStacks(layer) as LayerSpecification)
-      .map(withLatinLabels)
-      .filter((layer): layer is LayerSpecification => layer !== undefined),
+    layers: ordered,
   } as StyleSpecification;
 }

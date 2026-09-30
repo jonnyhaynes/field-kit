@@ -59,7 +59,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "jest",
-    "build:outline": "tsx scripts/build-gb-outline.ts"
+    "build:outline": "tsx scripts/build-gb-outline.ts",
+    "build:pack": "tsx scripts/build-region-pack.ts"
   },
   "private": true
 }

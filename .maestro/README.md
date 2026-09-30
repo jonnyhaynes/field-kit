@@ -17,13 +17,13 @@ brew install maestro`). The app must be built and installed on the target device
 
 ## Current state
 
-**Ten flows, all passing, across five areas.** Every flow is **self-contained**: it sets the position
-and permissions it needs, so the suite passes in any order on a device in any state, and a single
-flow can be run on its own.
+**Eleven flows, all passing, across five areas.** Every flow is **self-contained**: it sets the
+position and permissions it needs, so the suite passes in any order on a device in any state, and a
+single flow can be run on its own.
 
 | Area | Flows |
 | --- | --- |
-| `map/` | the offline map renders; outside the UK it says so instead of going blank |
+| `map/` | the offline map renders; outside the UK it says so instead of going blank; the region-pack catalogue, and what a download attempt leaves behind |
 | `location/` | a grid reference in Great Britain; the refusal in Dublin; the compass's honest state |
 | `settings/` | a report cannot be sent without the opt-in; with it on, the report is readable and editable |
 | `capture/` | capture is off by default; the depth switch opens it and persists; an observation survives a relaunch |
