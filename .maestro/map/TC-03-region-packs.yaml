@@ -87,3 +87,18 @@ tags:
     timeout: 30000
 
 - takeScreenshot: /tmp/fieldkit-regions
+
+# The licence the packs are under is reachable, and the screen carrying it renders: it reads the
+# pack's licence out of the catalogue when its module loads, so a malformed catalogue takes that
+# screen down rather than going unnoticed.
+- scrollUntilVisible:
+    element:
+      id: regions-about-link
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: regions-about-link
+- extendedWaitUntil:
+    visible:
+      id: about-screen
+    timeout: 30000

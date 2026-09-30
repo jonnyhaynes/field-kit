@@ -4,6 +4,8 @@ import { AED_ATTRIBUTION, AED_LICENCE_URL } from '@/aed';
 import { Screen } from '@/components/screen';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { parseRegionsCatalogue } from '@/maps/regions';
+import catalogueJson from '../../assets/maps/regions.json';
 
 /**
  * Where the app says where its data comes from.
@@ -14,6 +16,16 @@ import { useTheme } from '@/hooks/use-theme';
  */
 
 const PROTOTMAPS_URL = 'https://protomaps.com';
+
+/**
+ * Taken from the catalogue rather than written out here.
+ *
+ * The licence is recorded per pack, so it travels with the data instead of depending on somebody
+ * remembering this screen exists. If a pack ever ships under different terms, this says so on its
+ * own — and the fallback keeps the screen honest when there are no packs in the build at all.
+ */
+const packLicenceUrl =
+  parseRegionsCatalogue(catalogueJson).packs[0]?.licence.url ?? AED_LICENCE_URL;
 
 export default function AboutScreen() {
   const theme = useTheme();
@@ -35,6 +47,12 @@ export default function AboutScreen() {
       />
 
       <Section
+        title="Region packs"
+        body="Downloads cut from the same Protomaps archive as the bundled map, for one area at higher detail. The same OpenStreetMap data under the same licence, stored on your device and deleted from the Region packs screen whenever you like."
+        link={{ label: 'OpenStreetMap copyright and licence', url: packLicenceUrl }}
+      />
+
+      <Section
         title="Map lettering and icons"
         body="Noto Sans glyphs under the SIL Open Font License; map icons derived from tangrams/icons under the MIT licence."
       />
@@ -47,7 +65,8 @@ export default function AboutScreen() {
       <Text style={[styles.footnote, { color: theme.textSecondary }]}>
         OpenStreetMap data is offered here under the Open Database License, which also covers any
         derived database: the shipped defibrillator database is a derivative of OpenStreetMap and is
-        offered on the same terms.
+        offered on the same terms, and so is every region pack — each is published as a file anyone
+        can download, which is where that offer is made.
       </Text>
     </Screen>
   );
