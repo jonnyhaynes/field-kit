@@ -162,9 +162,10 @@ entitlement), and ODbL share-alike obligations on the derived AED database.
   Both need a domain you own, and Maestro flows need them to target the installed app.
 - Operational warning: `create-expo-app` now generates its own `AGENTS.md`, `CLAUDE.md` and
   `.claude/settings.json`. Pass **`--no-agents-md`** or it overwrites this repo's agent setup.
-- `expo-location` (GPS + heading), `expo-sensors` (magnetometer), `expo-sqlite`, `expo-camera`
-  (QR scan), `expo-sharing` + RN `Share`, `react-native-qrcode-svg`, `react-native-nfc-manager`,
-  `@maplibre/maplibre-react-native`, `zustand` (incident session), `proj4` (OSGB36 grid refs).
+- `expo-location` (GPS, heading **and the compass** — see Phase 3b; `expo-sensors` turned out to be
+  unnecessary), `expo-sqlite`, `expo-camera` (QR scan), `expo-sharing` + RN `Share`,
+  `react-native-qrcode-svg`, `react-native-nfc-manager`, `@maplibre/maplibre-react-native`,
+  `zustand` (incident session), `proj4` (OSGB36 grid refs).
 - **Unit:** Jest via `jest-expo`, installed. Tests import their globals from `@jest/globals` so
   `tsc` types them without loosening the global config. React Native Testing Library is *not*
   installed yet — component tests arrive with the first component worth testing.
@@ -449,6 +450,49 @@ the way.
 **Not done here:** nothing is stored. There is no incident record to store against, so
 `RecordedLocation.words` exists as a shape and Phase 4 fills it.
 
+**Phase 3b as delivered — the compass, and a fallback that cannot lie.** `src/compass/` holds the
+reading and the policy; `src/capabilities/` holds the probe; `src/app/compass.tsx` is reached from
+"Where I am" by the control the design already drew.
+
+**No new dependency, and the plan was wrong about one.** `expo-location`'s `watchHeadingAsync`
+already returns a platform tilt-compensated heading *and* a calibration signal — expo's Android path
+performs the rotation matrix, the screen-orientation remap and the declination itself. Building this
+from `expo-sensors`' raw magnetometer would have been reimplementing all of it. §3 said
+`expo-sensors`; it is not needed and was not installed.
+
+**The policy is a pure function, and it is the only route to a number.**
+`chooseCompassDisplay` decides what may be shown, so an untrustworthy bearing has no path to the
+screen even by mistake. Three platform behaviours make it necessary:
+
+- **`accuracy` does not mean the same thing on the two platforms.** iOS buckets a real angular error
+  (`2` is "within 35°"); Android reports a raw calibration status and **initialises it to `0`**, so
+  some devices read `0` all session with a working magnetometer. The gate is `accuracy >= 2`, which
+  errs towards showing nothing — a stuck calibration state is a degradation, a wrong bearing is a
+  hazard.
+- **Both platforms signal an unavailable true heading with a negative value, and neither exposes the
+  declination.** So magnetic north is shown **labelled as magnetic** rather than quietly passed off as
+  true north.
+- **The GPS course is the dangerous half.** On Android `coords.heading` is
+  `Location.getBearing()`, which returns **`0.0` when there is no bearing at all** — expo never checks
+  `hasBearing()` — so a stationary phone reports due north. The course is therefore accepted only
+  above a walking pace and labelled "direction of travel", never as a compass.
+
+The capability probe is load-bearing rather than decorative: `useHeading` asks `canCompass()` first
+and does not subscribe at all when the device has no compass. It has to be empirical, because no API
+answers the question — iOS **rejects** with no magnetometer, and Android **resolves and then never
+emits**, so only a timeout catches that one.
+
+**Verified on a simulator, honestly:** the compass screen shows its "no compass on this device" state
+rather than a dial, because the iOS Simulator has no magnetometer, and the flow asserts both that the
+state renders and that no dial or readout does. What *did* work is the part computed from position:
+the nearest defibrillators appear with real bearings and distances (`067° NE`, 220 m from central
+London), which is `initialBearing` against the bundled dataset.
+
+**Not verifiable here, and left as a real-device check:** a bearing against a known direction, the
+metal that pushes `accuracy` down into the calibration state, and — the open question — whether iOS
+ever supplies a usable `trueHeading` at all, since Apple requires location updates on the heading
+manager and expo's streamer does not start them.
+
 **Phase 4 — responder capture and report.** Depth gate, SAMPLER / ABCDE / ETHANE / ASHICE forms,
 local persistence, QR render and scan, share sheet, `sms:`/`mailto:`/`whatsapp://`, NFC NDEF
 read/write.
@@ -486,7 +530,9 @@ read/write.
   `subflows/` as in the existing setup.
 - Real-device checks: QR generate-then-scan between two devices; share sheet to SMS, WhatsApp and
   email; NFC tag write then read on Android and read on iOS with the entitlement in place; compass
-  against a known bearing, plus the fallback when the magnetometer is unavailable.
+  against a known bearing, plus the fallback when the magnetometer is unavailable. **The compass half
+  of this cannot be done in a simulator** — there is no magnetometer, so the simulator only ever
+  exercises the "no compass" branch (§5, Phase 3b).
 
 ---
 

@@ -1,0 +1,55 @@
+# TC-03 — the compass shows an honest state, and never an unearned bearing.
+#
+# Why this flow exists: this is the one screen whose *interesting* behaviour cannot be produced on a
+# simulator. The iOS Simulator has no magnetometer at all — CoreLocation's headingAvailable() is
+# false and expo rejects — so the correct outcome here is the "no compass on this device" state.
+# That is worth asserting precisely because it is the state a user with an unusable sensor sees, and
+# because the alternative (a needle driven by a reading that does not exist) is the failure this
+# slice exists to prevent.
+#
+# Prerequisite: none beyond a booted simulator. On a real device this flow would take the other
+# branch, so it is written to assert the honest failure and to say so rather than to pretend.
+appId: com.colouringcode.fieldkit
+tags:
+  - location
+---
+- launchApp
+- tapOn:
+    id: act-aed
+- assertVisible:
+    id: aed-screen
+- tapOn:
+    id: aed-map
+- extendedWaitUntil:
+    visible:
+      id: map-position-link
+    timeout: 60000
+- tapOn:
+    id: map-position-link
+- assertVisible:
+    id: position-screen
+
+# The design's "Open compass" control, which the previous slice left out because a button that does
+# nothing is worse than no button.
+- assertVisible:
+    id: position-compass-link
+- tapOn:
+    id: position-compass-link
+
+- extendedWaitUntil:
+    visible:
+      id: compass-screen
+    timeout: 30000
+
+# On a simulator: the probe finds nothing, and the screen says so. It must not draw a dial, and it
+# must not show a bearing — a bearing here would be invented.
+- extendedWaitUntil:
+    visible:
+      id: compass-unsupported
+    timeout: 30000
+- assertNotVisible:
+    id: compass-dial
+- assertNotVisible:
+    id: compass-readout
+
+- takeScreenshot: /tmp/fieldkit-compass

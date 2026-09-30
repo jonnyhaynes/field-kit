@@ -1,5 +1,7 @@
+import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { ActionButton } from '@/components/action-button';
 import { Screen } from '@/components/screen';
 import { Fonts, MinTarget, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -48,7 +50,16 @@ export default function PositionScreen() {
   const reference = toOsGridReference(position.coordinates);
 
   return (
-    <Screen testID="position-screen">
+    <Screen
+      testID="position-screen"
+      actions={
+        <ActionButton
+          label="Open compass"
+          hint="A bearing to walk on, if this device has a compass"
+          testID="position-compass-link"
+          onPress={() => router.push('/compass')}
+        />
+      }>
       <Text style={[styles.title, { color: theme.text }]}>Where I am</Text>
 
       <Field label="Latitude, longitude">
