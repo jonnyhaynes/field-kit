@@ -7,7 +7,8 @@ maths all live on the phone.
 **Status: Phase 3 in progress.** Phase 2 is done. In Phase 3, "Where I am" now gives the current
 latitude, longitude and an **OS grid reference** — the form a British 999 operator works in — computed
 on the device, with no reference offered when you are outside Great Britain, Northern Ireland and the
-Isle of Man rather than a plausible-looking one for the wrong country.
+Isle of Man rather than a plausible-looking one for the wrong country. A **what3words location** can be
+resolved on demand beside it, which is the one thing on that screen that uses the network.
 
 - The approved implementation plan is [`docs/plans/fieldkit-v1.md`](docs/plans/fieldkit-v1.md).
   Read that before starting any work.
@@ -37,6 +38,14 @@ MapLibre, NFC and the camera are native modules, so this needs a **dev build**, 
 ```sh
 npx expo run:ios     # or run:android
 ```
+
+## Configuration
+
+Nothing is required to run the app. One optional variable:
+
+| Variable | What it does |
+| --- | --- |
+| `EXPO_PUBLIC_WHAT3WORDS_KEY` | A what3words API key, for resolving a location on "Where I am". Needs an account that can convert coordinates to a word address; without it the screen reports that it is not configured. Put it in `.env`, which is gitignored — never in the repo. |
 
 ## Checks
 
@@ -70,8 +79,10 @@ we chose ourselves.
   real work.
 - **A compass** — the bearing, with a calibration warning and a GPS-course fallback. The design's
   "Open compass" button is deliberately absent until it does something.
-- **what3words** — an address resolved online and stored against a record with its sample time, never
-  shown as the current position. The slot is on "Where I am" and says so.
+- **what3words** — resolved on demand and never cached, so nothing stale can be shown as current.
+  Needs `EXPO_PUBLIC_WHAT3WORDS_KEY` (see Configuration); without it the screen says so rather than
+  pretending. The licence terms were read — including one that constrains displaying a location
+  beside coordinates — and the decision to proceed is recorded in the plan, §2.2.
 - **Android and real hardware** — the map, the position screen and the 7 MB asset copy are verified
   on an iOS simulator only. Android's local `pmtiles://file://` path is documented but unexercised
   here, and neither platform has been tried on a device.

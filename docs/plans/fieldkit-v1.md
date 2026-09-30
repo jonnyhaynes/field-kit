@@ -55,7 +55,7 @@ capture. Same transfer surface underneath: QR, share sheet, NFC tag.
 | Report sending | Available in both depths; Responder fills the full capture |
 | AED data | OpenStreetMap extract (`emergency=defibrillator`), bundled, offline-queryable |
 | Basemap | Protomaps PMTiles — bundled UK overview + downloadable region packs |
-| what3words | Resolve online, store on the incident record; current position uses lat/long + OS grid ref |
+| what3words | Resolve online, store on the incident record; current position uses lat/long + OS grid ref. **Needs a key on an account with `convert-to-3wa` enabled — see §2.2.** |
 | Transfer | QR primary, then OS share sheet, then NFC tags |
 | Records storage | OS app sandbox + device encryption; no SQLCipher |
 | Geography | UK first, but no UK-only assumptions outside OS grid refs and the AED dataset |
@@ -95,9 +95,25 @@ so the app can state exactly what it presents.
 
 ### 2.2 what3words
 
-Cache-versus-store is a licence question, so Phase 0 includes reading the what3words API Licence
-Agreement. The design does not depend on the answer: the online resolver is one implementation
-behind an interface, with an offline no-op behind it.
+**Read, in Phase 3c.** Four things came out of the licence. The one that costs money matters more
+than the one that looks like a trap:
+
+- **The Free tier cannot convert coordinates to a location** — that was removed in November 2024. The
+  cheapest plan that can is **Basic, US$9.99/month**, and free access exists only for NGOs/charities
+  (written approval) or emergency services. An app being free to *users* does not exempt the licensee.
+- **Clause 6.3(b)** says a 3 Word Address must not be displayed *"alongside its corresponding
+  coordinates"*, or shared with a third party that way.
+- **Offline resolution is not on the public API.** It needs the Enterprise Suite SDK (~5 MB bundled,
+  separately licensed), not the API this app would call.
+- **Storing is permitted** (6.3(e)(ii), up to 100 m coordinate-derived pairs, where "strictly
+  necessary"), but the reverse direction must always be re-called, no local dataset may be built, the
+  newest API version must be used, and all what3words Data must be deleted on termination.
+
+**Decision: proceed as designed.** The pairing clause is on the record rather than treated as a
+design input, and the subscription is a known future commitment rather than a gate. The key comes from
+`EXPO_PUBLIC_WHAT3WORDS_KEY` — never committed — and without it the app reports `not-configured`
+instead of pretending. Nothing is cached in this build, so the cache-versus-store question does not
+arise; if a resolved location is ever stored, §4.1 rule 1 governs how it may be shown.
 
 ### 2.3 Map data and basemap — zero budget
 
@@ -415,6 +431,23 @@ the latter.
 **Verified on a device, both branches, screenshotted:** `TQ 3002 8038` for central London — the
 canonical `TQ 30 80` square — and Dublin showing latitude and longitude with no reference offered.
 Two `.maestro/location/` flows, each documenting the simulator location it needs.
+
+**Phase 3c as delivered — the location, and the guard.** `src/what3words/` holds the resolver: a real
+call to `convert-to-3wa` with `fetch` injected so every documented failure is testable without a
+network, and an honest no-op when no key is configured. The screen asks only when the user taps
+Resolve, and a result is tied to the point it was taken at — move 10 m and the words are dropped
+rather than left beside the new coordinates. That is §4.1 rule 1 in miniature.
+
+**The stale-position guard is enforced by the compiler.** `CurrentPosition` and `RecordedLocation` are
+separate types, so a recorded location cannot be passed to a current-position slot at all; the test
+that proves it carries a `@ts-expect-error`, which means widening the type makes the annotation unused
+and fails `tsc --noEmit` in CI. Removing the annotation by hand produces exactly the right error:
+*"Argument of type 'RecordedLocation' is not assignable to parameter of type 'CurrentPosition'"*.
+`assertCurrent` covers the other route in — a value that came back from storage and lost its type on
+the way.
+
+**Not done here:** nothing is stored. There is no incident record to store against, so
+`RecordedLocation.words` exists as a shape and Phase 4 fills it.
 
 **Phase 4 — responder capture and report.** Depth gate, SAMPLER / ABCDE / ETHANE / ASHICE forms,
 local persistence, QR render and scan, share sheet, `sms:`/`mailto:`/`whatsapp://`, NFC NDEF
