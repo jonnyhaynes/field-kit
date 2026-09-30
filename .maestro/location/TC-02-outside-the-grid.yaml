@@ -5,13 +5,19 @@
 # Reading that out to an ambulance service would be worse than useless. Unit tests cover the
 # conversion; this covers the screen that has to say so.
 #
-# Prerequisite: the simulator must be outside the grid's coverage, or this flow cannot pass.
-#   xcrun simctl location booted set 53.35,-6.26   # Dublin
+# The flow places the device in Dublin itself: outside the grid's coverage, and the case that matters,
+# because the OS grid's rectangle contains the whole island and would project it to a reference in the
+# wrong country.
 appId: com.colouringcode.fieldkit
 tags:
   - location
 ---
-- launchApp
+- launchApp:
+    permissions:
+      location: inuse
+- setLocation:
+    latitude: 53.35
+    longitude: -6.26
 - tapOn:
     id: act-aed
 - assertVisible:

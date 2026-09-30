@@ -4,14 +4,17 @@
 # but the screen around it is not, and the last phase taught the same lesson — a green test suite
 # said nothing about whether the thing actually appeared on a device.
 #
-# Prerequisite: the simulator must be inside Great Britain, Northern Ireland or the Isle of Man,
-# or the screen correctly reports that there is no grid reference to give.
-#   xcrun simctl location booted set 51.5074,-0.1278
+# The flow sets its own position, inside Great Britain.
 appId: com.colouringcode.fieldkit
 tags:
   - location
 ---
-- launchApp
+- launchApp:
+    permissions:
+      location: inuse
+- setLocation:
+    latitude: 51.5074
+    longitude: -0.1278
 
 # Act -> AED -> map -> Where I am.
 - tapOn:

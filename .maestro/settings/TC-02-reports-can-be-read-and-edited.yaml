@@ -7,23 +7,41 @@
 # the send path is covered by unit tests against an injected fetch, and this stops one step short.
 # It turns the opt-in back off at the end, so the device is left as it was found and TC-01 still holds.
 #
-# Prerequisite: a report must already be waiting, which TC-01 leaves behind. Order matters.
-#   xcrun simctl location booted set 51.5074,-0.1278
+# It flags its own entry rather than relying on TC-01 having left one: Maestro does not order flows
+# predictably — the filesystem decides, and it runs this one first — so a dependency on the other
+# flow's leftovers is a flow that fails on a clean device. clearState makes the opt-in's starting
+# position a fact rather than an assumption.
+#
+# Prerequisite: defibrillators nearby, so there is something to flag. The flow sets its own position
+# rather than relying on how the simulator was left.
 appId: com.colouringcode.fieldkit
 tags:
   - settings
 ---
-- launchApp
+- launchApp:
+    clearState: true
+    permissions:
+      location: inuse
+- setLocation:
+    latitude: 51.5074
+    longitude: -0.1278
 - tapOn:
     id: act-aed
+
+# Flag an entry, so there is something waiting to read.
 - extendedWaitUntil:
     visible:
-      id: aed-settings
+      id: aed-flag-0
     timeout: 60000
 - tapOn:
+    id: aed-flag-0
+
+- tapOn:
     id: aed-settings
-- assertVisible:
-    id: settings-screen
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 30000
 
 # Opt in. This shows the reports; it sends nothing.
 - tapOn:
@@ -35,16 +53,29 @@ tags:
 
 # The text is editable and the send control is now here. It is the user's report, not a template they
 # cannot change.
+#
+# The controls sit below the note's text, and the Responder tools card above this section pushes them
+# past the fold — so scroll to them. `assertVisible` only counts what is on screen, and the whole
+# screen lives in one ScrollView.
 - assertVisible:
     id: settings-note-text-0
-- assertVisible:
-    id: settings-note-send-0
+- scrollUntilVisible:
+    element:
+      id: settings-note-send-0
+    direction: DOWN
+    timeout: 30000
 - assertVisible:
     id: settings-note-discard-0
 
 - takeScreenshot: /tmp/fieldkit-settings-optin
 
-# Put it back, so this flow leaves no trace and TC-01 keeps passing on a re-run.
+# Put it back, so this flow leaves no trace and TC-01 keeps passing on a re-run. The switch is above
+# the fold now, so scroll back to it.
+- scrollUntilVisible:
+    element:
+      id: settings-osm-opt-in
+    direction: UP
+    timeout: 30000
 - tapOn:
     id: settings-osm-opt-in
 - assertNotVisible:

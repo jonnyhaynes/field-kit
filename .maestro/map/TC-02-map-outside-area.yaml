@@ -6,13 +6,18 @@
 # falls back to the UK overview and says why, and it does *not* mark defibrillators, because
 # "nearest to you" would be a lie about a place the user is not standing.
 #
-# Prerequisite: the simulator must be OUTSIDE the UK, or this flow cannot pass.
-#   xcrun simctl location booted set 48.8566,2.3522   # Paris
+# The flow places the device outside the UK itself, so the two map flows can run in either order
+# without a manual step between them.
 appId: com.colouringcode.fieldkit
 tags:
   - map
 ---
-- launchApp
+- launchApp:
+    permissions:
+      location: inuse
+- setLocation:
+    latitude: 48.8566
+    longitude: 2.3522
 - tapOn:
     id: act-aed
 - assertVisible:

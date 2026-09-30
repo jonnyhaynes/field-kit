@@ -39,6 +39,8 @@ mnemonic form or a mode picker under stress.
 - **Guided** — three screens. Act (Call 999 dominant, plus the two secondary paths), CPR with a
   metronome, and the defibrillator locator. Hard ceiling of four screens.
 - **Responder** — an added depth: SAMPLER, ABCDE, ETHANE and ASHICE capture, turned into a report.
+  ETHANE and ASHICE are not variants of each other: ETHANE reports the **scene**, ASHICE hands over a
+  **patient**, and each form says which it is so a responder knows what they are describing.
 
 **Both depths can send a report.** Guided sends a short one — where I am and what's happened —
 without asking an untrained user to work through a handover mnemonic. Responder sends the full
@@ -523,9 +525,19 @@ metal that pushes `accuracy` down into the calibration state, and — the open q
 ever supplies a usable `trueHeading` at all, since Apple requires location updates on the heading
 manager and expo's streamer does not start them.
 
-**Phase 4 — responder capture and report.** Depth gate, SAMPLER / ABCDE / ETHANE / ASHICE forms,
-local persistence, QR render and scan, share sheet, `sms:`/`mailto:`/`whatsapp://`, NFC NDEF
-read/write.
+**Phase 4 — responder capture and report.** *4a is built* (issue [#23](https://github.com/jonnyhaynes/field-kit/issues/23)):
+the report model, the depth gate and the four capture forms, persisted locally on the same key-value
+store as everything else — see `docs/plans/23-report-and-capture.md` for the plan and how it was built.
+
+Two corrections came out of building it, both recorded there in full. **ETHANE is a scene report, not
+a patient handover** — that is ASHICE — so the one-line list that stood here was loose rather than
+wrong, and each form now declares which of the two it is. And **the forms record observations, never
+treatment**: ABCDE and ASHICE as taught interleave assessments with interventions ("give oxygen",
+"cannulate", "administer"), which §2.1 forbids, so the field sets take the observation half and drop
+the action half, with a test walking every label and option against a list of instruction words.
+
+Still to come in Phase 4: getting a report off the phone (QR render and scan, share sheet,
+`sms:`/`mailto:`/`whatsapp://`) and NFC NDEF read/write.
 
 **Phase 5 — release.** EAS builds, store listings, disclaimer copy per §2.4.
 
@@ -538,7 +550,11 @@ read/write.
 - **Content traceability** — every record has a source, review date and edition; the build fails if
   any is missing one.
 - **Depth gate** — responder capture is unreachable when the depth is off, and the emergency path
-  is identical either way.
+  is identical either way. Enforced by a type rather than a conditional: `responderForms` accepts only
+  a responder depth, so widening it fails `tsc --noEmit` in CI instead of waiting for a reviewer.
+- **No treatment in the capture forms** — every field label and every choice option is checked against
+  a list of instruction words ("give", "administer", "dose", "treat", "recommend"). This app records
+  what someone observes and never recommends anything, and a form is where that rule would erode.
 - **Coordinate maths** — round-trip tests against known OS grid ref ↔ lat/long pairs, plus an
   out-of-UK case that reports "grid ref unavailable" rather than a wrong answer.
 - **AED query** — fixture dataset; nearest-3 ordering, quality-gate failures excluded, and a

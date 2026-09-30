@@ -1,0 +1,55 @@
+# TC-01 — the Responder depth is off until a person turns it on, and the surface refuses rather
+# than showing a form.
+#
+# Why this flow exists: §1 says depth is not a mode, and the failure worth preventing is an untrained
+# user meeting a mnemonic form. The gate is a type (see src/capture/depth.ts), which the unit tests
+# cover; what they cannot cover is that the *screen* honours it — so this reaches the route directly
+# and checks the refusal, rather than taking the shipped path and only proving a button is hidden.
+#
+# clearState is what makes "off by default" a claim this flow can actually make: without it, it would
+# be asserting the state the last flow left behind. A previous run leaves the depth wherever it
+# finished, so the sandbox is wiped rather than assumed.
+#
+# clearState takes the app's permission grants with it. This screen never asks for a position — the
+# refusal renders without mounting the location hook — but the grant is restored anyway: a flow that
+# clears state and does not put the grants back breaks whichever flow next needs one, and the failure
+# surfaces there, with nothing on screen to connect it to here.
+appId: com.colouringcode.fieldkit
+tags:
+  - capture
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: inuse
+
+# Guided is the default, so capture is not offered at all — not greyed out, not present.
+- assertVisible:
+    id: act-screen
+- assertNotVisible:
+    id: act-record
+
+# The route is guarded, not merely unlinked. Reached directly, it refuses.
+#
+# iOS asks before handing a custom-scheme URL to an app the first time, and the confirmation is a
+# system alert that stays up until it is answered — left unhandled it blocks the next flow as well as
+# this one. It asks once per scheme, so the tap has to be optional: on a second run the link opens
+# directly and a required tap would fail here.
+- openLink: fieldkit://record
+- tapOn:
+    text: 'Open'
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: record-screen
+    timeout: 30000
+- assertVisible:
+    id: record-refused
+
+# Nothing of the capture surface is there: no way to start, and no form.
+- assertNotVisible:
+    id: record-start
+- assertNotVisible:
+    id: record-form-sampler
+
+- takeScreenshot: /tmp/fieldkit-record-refused

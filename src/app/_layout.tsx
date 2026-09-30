@@ -43,6 +43,7 @@ export default function RootLayout() {
         <Stack.Screen name="position" options={{ title: 'Where I am' }} />
         <Stack.Screen name="compass" options={{ title: 'Compass' }} />
         <Stack.Screen name="settings" options={{ title: 'Settings' }} />
+        <Stack.Screen name="record" options={{ title: 'Record incident' }} />
         <Stack.Screen name="about" options={{ title: 'Data and licences' }} />
       </Stack>
     </ThemeProvider>

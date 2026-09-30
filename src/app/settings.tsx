@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
+import { useDepth } from '@/capture/use-depth';
 import { Screen } from '@/components/screen';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -22,6 +23,7 @@ export default function SettingsScreen() {
   const { notes, updateText, remove } = useNoteQueue();
   const { optedIn, setOptedIn } = useOsmOptIn();
   const { send, sending } = useOsmSubmitter();
+  const { depth, setDepth } = useDepth();
 
   const [failures, setFailures] = useState<Record<number, SubmitFailure>>({});
   const [sentNoteIds, setSentNoteIds] = useState<number[]>([]);
@@ -45,6 +47,29 @@ export default function SettingsScreen() {
   return (
     <Screen testID="settings-screen">
       <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
+
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+        ]}>
+        <Text style={[styles.cardTitle, { color: theme.text }]}>Responder tools</Text>
+        <Text style={[styles.body, { color: theme.textSecondary }]}>
+          Adds structured capture — SAMPLER, ABCDE, ETHANE and ASHICE — for people trained in them.
+          It only adds: Call 999, CPR and the defibrillator locator stay exactly where they are, and
+          nothing is hidden by turning this on.
+        </Text>
+        <View style={styles.toggleRow}>
+          <Text style={[styles.body, { color: theme.text }]}>Show responder capture</Text>
+          <Switch
+            testID="settings-depth-switch"
+            accessibilityLabel="Show responder capture"
+            value={depth === 'responder'}
+            onValueChange={(on) => setDepth(on ? 'responder' : 'guided')}
+            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+          />
+        </View>
+      </View>
 
       <View
         style={[
