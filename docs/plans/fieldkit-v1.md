@@ -235,9 +235,18 @@ NFC shape worth building.
 
 The dataset will contain wrong entries — AEDs get removed, moved, locked away, or were mis-tagged
 in OSM in the first place. So: a **visible disclaimer** on every result; **flag as inaccurate**
-stored locally, suppressing that entry immediately; and when online and opted in, the queued flag
-becomes an **OpenStreetMap note** — the fix belongs upstream where the data lives, not in a private
-fork. Surface the source's `check_date` where present.
+stored locally, suppressing that entry immediately; and a report the user can **review, edit and send
+themselves** — the fix belongs upstream where the data lives, not in a private fork. Surface the
+source's `check_date` where present.
+
+**Not "when online and opted in".** This section originally had the queued flag become an OSM note
+automatically, and that is not permitted. OSM's API Usage Policy says a client must not *"submit
+website forms in an automated manner or on behalf of users"*, and the Notes API page says notes are
+*"intended for humans to communicate with other humans"* and are *"not a place to dump automated error
+checking"*. That same page explicitly permits third-party apps to **include** notes functionality, so
+the feature is fine and the automation is not: the queue is a list the user sends from, one note at a
+time, not an outbox. `README.md` and `src/notes/queue.ts` say the same thing, so the next person to
+reach for an auto-send meets the constraint first.
 
 ### 4.4 Content as data
 
@@ -336,6 +345,27 @@ is true of that screen).
 and opted in. Local-first flagging is complete; submission needs an opt-in surface that does not
 exist yet, and it posts to a third party under the user's name, so it is a separate tracked decision
 (#12) rather than a side effect of the list landing.
+
+**Phase 2c follow-up as delivered — the report, sent by the person who made it.** `src/notes/` holds
+the queue, the opt-in and the client; `src/app/settings.tsx` is where a report is read, edited and
+sent. Flagging is untouched: the entry still disappears at once and offline, and the flag now also
+leaves a report waiting.
+
+**The policy changed the design, and the issue with it.** #12 asked for a flag to *become* a note when
+online and opted in. OSM's usage policy forbids submitting *"on behalf of users"*, so it does not:
+nothing is sent by the app, and with the opt-in off there is no send control at all — not a disabled
+one, none. Two details from the API shaped the rest: **no account is needed** (an unauthenticated
+request creates an anonymous note, which suits §4.1 rule 5), and an anonymous note gets a **403 inside
+a "Moderation Zone"**, which is surfaced as its own message rather than as a generic failure.
+
+**Verified:** the policy's safety property on a simulator — with the opt-in off the screen offers no
+way to send — and the review state with it on, both screenshotted, with the opt-in returned to off so
+the flows leave no trace. Nothing was sent to OpenStreetMap, by design: a test that posted real notes
+would be vandalism, so the success path is covered against an injected `fetch` instead.
+
+**Not verified, and it needs hardware:** whether React Native can set a `User-Agent` at all. OSM
+requires one identifying the app and version, and blocks clients that fake another's — so if it
+cannot, that is a reason not to ship this rather than a detail to work around.
 
 **Phase 2d as delivered — the bundled basemap.** The UK overview ships inside the app: a Protomaps v4
 PMTiles archive cut for the UK bounding box, with its lettering and sprites bundled too, so the style

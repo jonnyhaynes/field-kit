@@ -1,0 +1,54 @@
+# TC-01 — a report cannot be sent without the opt-in, and never sends itself.
+#
+# Why this flow exists: the whole design of this feature is a policy decision. OpenStreetMap's API
+# Usage Policy forbids a client submitting "on behalf of users", and their notes are "for humans to
+# communicate with other humans". So the safety property worth testing on a device is not that sending
+# works — it is that sending is *impossible* until a person turns it on and taps Send, and that
+# flagging still works without any of it.
+#
+# Nothing is ever sent by this flow. Posting real notes as a side effect of a test would be vandalism,
+# so the success path is covered by unit tests against an injected fetch instead; this flow can only
+# prove the refusal.
+#
+# Prerequisite: the simulator must be inside the UK with defibrillators nearby, so there is something
+# to flag.
+#   xcrun simctl location booted set 51.5074,-0.1278
+appId: com.colouringcode.fieldkit
+tags:
+  - settings
+---
+- launchApp
+- tapOn:
+    id: act-aed
+- assertVisible:
+    id: aed-screen
+
+# Flag an entry. This must work regardless of any reporting setting: the entry hides locally, and a
+# report joins the queue.
+- extendedWaitUntil:
+    visible:
+      id: aed-flag-0
+    timeout: 60000
+- tapOn:
+    id: aed-flag-0
+
+- tapOn:
+    id: aed-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 30000
+
+# The opt-in exists, and is off in a fresh install.
+- assertVisible:
+    id: settings-osm-opt-in
+
+# The report is waiting — and there is no way to send it.
+- assertVisible:
+    id: settings-waiting
+- assertNotVisible:
+    id: settings-note-send-0
+- assertNotVisible:
+    id: settings-note-0
+
+- takeScreenshot: /tmp/fieldkit-settings
