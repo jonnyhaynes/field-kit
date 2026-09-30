@@ -38,8 +38,14 @@ tags:
 
 # Inside the pack's area, with its bytes not downloaded: the map says a pack exists for here, and
 # must not claim to be showing detail it does not have.
-- assertVisible:
-    id: map-pack-available
+#
+# Waited for rather than asserted outright: the notice needs the position fix, and `map-attribution`
+# appears as soon as the map renders, which can be sooner. Asserting here is a race — it passed twice
+# and then failed, which is exactly how a flaky flow behaves.
+- extendedWaitUntil:
+    visible:
+      id: map-pack-available
+    timeout: 30000
 - assertNotVisible:
     id: map-pack-active
 
