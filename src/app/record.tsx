@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { responderForms, type ResponderDepth } from '@/capture/depth';
@@ -74,7 +75,26 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
   }
 
   return (
-    <Screen testID="record-screen">
+    <Screen
+      testID="record-screen"
+      actions={
+        // Only once there is something to send. A Send button over an empty report would be a
+        // promise the next screen cannot keep.
+        report ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Send this report"
+            testID="record-send"
+            onPress={() => router.push('/send')}
+            style={({ pressed }) => [
+              styles.primary,
+              { backgroundColor: theme.accent },
+              pressed && styles.pressed,
+            ]}>
+            <Text style={[styles.primaryLabel, { color: theme.accentInk }]}>Send report</Text>
+          </Pressable>
+        ) : null
+      }>
       <Text style={[styles.title, { color: theme.text }]}>Record incident</Text>
 
       {report ? (

@@ -17,7 +17,7 @@ brew install maestro`). The app must be built and installed on the target device
 
 ## Current state
 
-**Eleven flows, all passing, across five areas.** Every flow is **self-contained**: it sets the
+**Fourteen flows, all passing, across six areas.** Every flow is **self-contained**: it sets the
 position and permissions it needs, so the suite passes in any order on a device in any state, and a
 single flow can be run on its own.
 
@@ -27,9 +27,10 @@ single flow can be run on its own.
 | `location/` | a grid reference in Great Britain; the refusal in Dublin; the compass's honest state |
 | `settings/` | a report cannot be sent without the opt-in; with it on, the report is readable and editable |
 | `capture/` | capture is off by default; the depth switch opens it and persists; an observation survives a relaunch |
+| `transfer/` | a responder's report becomes a code; the Guided short report; the scan screen's honest camera states |
 
-The `smoke/`, `guided/`, `aed/` and `transfer/` areas are still conventions only — `config.yaml`
-lists them so the first flow that lands there runs, and `capture/` was the last to be filled.
+The `smoke/`, `guided/` and `aed/` areas are still conventions only — `config.yaml` lists them so the
+first flow that lands there runs; `capture/` and `transfer/` were the last to be filled.
 
 ## Conventions
 
@@ -40,7 +41,7 @@ lists them so the first flow that lands there runs, and `capture/` was the last 
 - Anything a flow needs to explain goes in a comment at the top of the flow, not in a commit
   message — the next person reads the flow.
 
-## Four things the device taught us
+## Five things the device taught us
 
 Learned by running these, each after a failure that looked like a product bug and was a test bug.
 
@@ -62,3 +63,9 @@ Learned by running these, each after a failure that looked like a product bug an
    `xcrun simctl location booted set …` step between runs, which mattered here because two pairs of
    flows had *mutually exclusive* prerequisites — the map and the position screen must be tested
    inside the UK and outside it — so the suite could never pass in a single run without it.
+5. **`hideKeyboard` cannot dismiss a multiline field.** There is no Return to press, so the keyboard
+   stays up — and a button pinned below the scroll area is behind it, which is how a flow taps the
+   keyboard instead of the button and then fails with "the next screen is not visible". Tapping a
+   non-interactive element does dismiss it, because a `Screen`'s `ScrollView` is
+   `keyboardShouldPersistTaps="handled"`; where even that is unreliable, relaunching the app avoids the
+   keyboard altogether, at the cost of a slower flow.

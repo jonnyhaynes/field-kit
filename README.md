@@ -24,6 +24,11 @@ first pack is the Lake District at zoom 14 (18.9 MB), published as a GitHub Rele
 by the app on request — verified end to end on a device, from the tap to the map redrawing with street
 detail.
 
+**Getting a report off the phone** is in too: a report becomes a **QR code** another phone can read, or
+goes by the share sheet, SMS, email or WhatsApp. Both depths can send — Guided sends where you are and
+what has happened, Responder sends the scene — and a report that arrives by scan is shown as its own
+thing, never merged into the reader's own record.
+
 - The approved implementation plan is [`docs/plans/fieldkit-v1.md`](docs/plans/fieldkit-v1.md).
   Read that before starting any work.
 - How we build is in [`docs/dev-workflow.md`](docs/dev-workflow.md).
@@ -42,6 +47,8 @@ detail.
 | `src/app/compass.tsx` | Compass — a bearing to walk on, and the bearing to the nearest defibrillators |
 | `src/app/settings.tsx` | Settings — the Responder depth switch, and reports waiting to send to OpenStreetMap |
 | `src/app/record.tsx` | Record incident — responder capture: SAMPLER, ABCDE, ETHANE and ASHICE, written down on the phone |
+| `src/app/send.tsx` | Send report — the QR code the other phone reads, the share sheet, and SMS, email and WhatsApp |
+| `src/app/scan.tsx` | Scan a report — reads another phone's code and shows what arrived, kept apart from your own record |
 | `src/app/about.tsx` | Data and licences — where the defibrillator and map data come from |
 
 ## Run
@@ -137,13 +144,18 @@ we chose ourselves.
   mapper. No account is used, so reports are anonymous. **Untested against the real API** — nothing
   has been posted from here, deliberately, and whether React Native can set the required `User-Agent`
   still needs a device check.
-- **Maestro flows** — eleven, across `.maestro/map/`, `.maestro/location/`, `.maestro/settings/` and
-  `.maestro/capture/`. All pass, and each is self-contained — it sets its own position and permissions
-  — so the suite is order-independent (see `.maestro/README.md` for what the device taught us). The
-  `smoke/`, `guided/`, `aed/` and `transfer/` areas are still conventions only.
-- **Getting a report off the phone** — a report is written and persisted locally, and that is as far as
-  it goes. QR render and scan, the share sheet, `sms:`/`mailto:`/`whatsapp://` and NFC are Phase 4b
-  and 4c, so a report recorded on the phone currently stays on the phone.
+- **Maestro flows** — fourteen, across `.maestro/map/`, `.maestro/location/`, `.maestro/settings/`,
+  `.maestro/capture/` and `.maestro/transfer/`. All pass, and each is self-contained — it sets its own
+  position and permissions — so the suite is order-independent (see `.maestro/README.md` for what the
+  device taught us). The `smoke/`, `guided/` and `aed/` areas are still conventions only.
+- **Getting a report off the phone** — built, and verified except for the claim it rests on. A report
+  becomes a QR code, or goes by the share sheet, SMS, email or WhatsApp; both depths can send, and a
+  report that arrives by scan is shown as its own thing. **What is not verified is that a phone camera
+  can read the drawn code.** It renders crisply with the right content and the serialisation
+  round-trips, but an attempt to decode the rendered pixels failed, so the two-device check the plan
+  always called for is now the first task rather than a formality — see the plan's "Verified, and not".
+  Scanning cannot be exercised in a simulator at all, because there is no camera. NFC tags are Phase 4c
+  (#25) and need an Apple Developer account for the entitlement.
 - **A clinician has not read the capture fields** — the mnemonics are standard and their structure is
   public, but *which* observations to ask for, and using ACVPU rather than a Glasgow Coma Scale, is
   engineering judgement. The forms record and never assess, which is the mitigation; a clinical read

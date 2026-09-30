@@ -43,7 +43,13 @@
         }
       ],
       "@maplibre/maplibre-react-native",
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Field Kit uses the camera only to read a report's QR code. Nothing is photographed, and nothing leaves your device."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -551,8 +551,20 @@ treatment**: ABCDE and ASHICE as taught interleave assessments with intervention
 "cannulate", "administer"), which §2.1 forbids, so the field sets take the observation half and drop
 the action half, with a test walking every label and option against a list of instruction words.
 
-Still to come in Phase 4: getting a report off the phone (QR render and scan, share sheet,
-`sms:`/`mailto:`/`whatsapp://`) and NFC NDEF read/write.
+**Phase 4b as delivered — getting the report off the phone.** QR first, then the share sheet, then the
+three schemes, with both depths able to send and a code that can be scanned back in. See
+`docs/plans/24-transfer-qr-share.md` for the plan and what was built.
+
+Two things are worth recording here. **The payload is the ETHANE answers, the position and the times**
+— not the full capture, which travels as text through the share sheet, because a code has a hard size
+limit and building one is only useful if it stays readable. And **the Act screen offers the send link
+to both depths**: the plan had it as a Guided-only link, which would have meant turning the Responder
+depth on *removing* a destination, and §1 says depth adds rather than moves.
+
+**Still to come in Phase 4:** NFC NDEF read/write (#25), and — the important one — **proving a phone
+camera can read the code**. The code renders with the right content and the serialisation round-trips,
+but a decoder could not read the rendered pixels, so the two-device scan the plan always called for is
+now the first task rather than a formality. §6 has the detail.
 
 **Phase 5 — release.** EAS builds, store listings, disclaimer copy per §2.4.
 
@@ -606,7 +618,11 @@ Still to come in Phase 4: getting a report off the phone (QR render and scan, sh
 3. **How what3words clause 6.3(b) applies to showing a location beside its coordinates.** The two
    appear together on "Where I am" and the clause restricts that pairing. It needs a line from
    what3words rather than an interpretation from here — and dropping the pairing would be a change to
-   one screen's layout, not to the resolver (§2.2).
+   one screen's layout, not to the resolver (§2.2). **Settled for reports, still open for the screen:**
+   a report payload may carry a what3words location alongside its coordinates, by the product owner's
+   decision recorded in `docs/plans/24-transfer-qr-share.md` — which is the pairing the clause names,
+   and the *sharing with a third party* half of it, which is exactly what a report does. The display
+   question on "Where I am" is unchanged.
 
 Resolved since revision 2: the app name (Field Kit, repo `field-kit`), the Guided share path (both
 depths send a report), the PMTiles location (both), the Guided screen count (three), the bundle

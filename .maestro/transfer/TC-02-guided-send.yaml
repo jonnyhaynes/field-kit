@@ -1,0 +1,53 @@
+# TC-02 — the short report, reachable without turning anything on.
+#
+# Why this flow exists: §1 says depth adds tools rather than moving them, so the send link is on the
+# Act screen for everybody and the *screen* adapts instead. A Guided user has no report and no
+# mnemonics, so what they send is where they are and one box they can type in — and it still has to
+# produce a real code rather than an empty one.
+#
+# The flow starts from a fresh install, which is the Guided depth.
+appId: com.colouringcode.fieldkit
+tags:
+  - transfer
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: inuse
+- setLocation:
+    latitude: 54.4287
+    longitude: -2.9613
+
+# No depth switch, no mnemonic, no report: straight from the emergency screen.
+- assertVisible:
+    id: act-send
+- tapOn:
+    id: act-send
+- extendedWaitUntil:
+    visible:
+      id: send-screen
+    timeout: 30000
+
+# Guided gets one box rather than a form.
+- assertVisible:
+    id: send-note
+- tapOn:
+    id: send-note
+- inputText: Cut my hand on a gate, bleeding is stopping
+# Get the keyboard out of the way. Tapping something that is not a field dismisses it, because the
+# ScrollView is `keyboardShouldPersistTaps="handled"`; `hideKeyboard` cannot dismiss a multiline
+# control, so it is attempted and allowed to fail.
+- hideKeyboard:
+    optional: true
+- tapOn:
+    id: send-title
+
+# Waited for, because the position fix arrives after the screen renders.
+- extendedWaitUntil:
+    visible:
+      id: send-code
+    timeout: 30000
+- assertNotVisible:
+    id: send-overflow
+
+- takeScreenshot: /tmp/fieldkit-send-guided
