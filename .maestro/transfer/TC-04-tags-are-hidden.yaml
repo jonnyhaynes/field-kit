@@ -1,0 +1,56 @@
+# TC-04 — tags are not offered where they cannot work.
+#
+# Why this flow exists: this is the whole of what can be asserted about NFC on this machine. No
+# simulator has an NFC reader, and iOS cannot use one without the reader-session entitlement — which
+# needs an Apple Developer account the project does not have yet (plan §2.5). So the decision was not
+# to offer a control that can only fail, and the behaviour worth testing is exactly that: **nothing is
+# offered**.
+#
+# It asserts the absence on both screens, because a control that appeared on one of them and not the
+# other would be a bug this flow exists to catch.
+#
+# What it does not do, and cannot: write a report to a tag, or read one back. That needs Android
+# hardware, and the PR says so rather than implying this flow covers it.
+appId: com.colouringcode.fieldkit
+tags:
+  - transfer
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: inuse
+- setLocation:
+    latitude: 51.5074
+    longitude: -0.1278
+
+- tapOn:
+    id: act-send
+- extendedWaitUntil:
+    visible:
+      id: send-screen
+    timeout: 30000
+
+# The send screen offers a code, a share sheet and three schemes — and no tag control.
+- assertNotVisible:
+    id: write-to-tag
+- assertNotVisible:
+    id: write-to-tag-start
+- assertVisible:
+    id: send-code
+
+# And the receiving screen, ditto.
+- scrollUntilVisible:
+    element:
+      id: send-scan-link
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: send-scan-link
+- extendedWaitUntil:
+    visible:
+      id: scan-screen
+    timeout: 30000
+- assertNotVisible:
+    id: read-from-tag
+- assertNotVisible:
+    id: read-from-tag-start

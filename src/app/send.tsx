@@ -5,6 +5,7 @@ import QRCode from 'react-native-qrcode-svg';
 
 import { OfflineNote } from '@/components/offline-note';
 import { Screen } from '@/components/screen';
+import { WriteToTag } from '@/components/tag-controls';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { messageChannels } from '@/transfer/channels';
@@ -205,6 +206,9 @@ export default function SendScreen() {
           <OfflineNote>
             The code is made here — nothing on this screen uses the network.
           </OfflineNote>
+
+          {/* Renders nothing where the device cannot use tags — every iOS build today (§2.5). */}
+          <WriteToTag payload={handover.payload} />
 
           {failure ? (
             <Text testID="send-failed" style={[styles.body, { color: theme.text }]}>

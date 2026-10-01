@@ -46,7 +46,7 @@ export default function RootLayout() {
         <Stack.Screen name="settings" options={{ title: 'Settings' }} />
         <Stack.Screen name="record" options={{ title: 'Record incident' }} />
         <Stack.Screen name="send" options={{ title: 'Send report' }} />
-        <Stack.Screen name="scan" options={{ title: 'Scan a report' }} />
+        <Stack.Screen name="scan" options={{ title: 'Open a report' }} />
         <Stack.Screen name="about" options={{ title: 'Data and licences' }} />
       </Stack>
     </ThemeProvider>
