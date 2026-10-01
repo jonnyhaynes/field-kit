@@ -95,6 +95,25 @@ Resuscitation guidance (CPR, AED use) still needs its own source. The intended r
 algorithms. That fits a zero budget. Content stays **version-pinned to a named guideline edition**
 so the app can state exactly what it presents.
 
+**Routes checked, and why RCUK is the one to take — decided.** Three alternatives were looked at before
+committing to it, and none of them removes the need:
+
+- **ILCOR's international consensus** is genuinely open access, but under **CC BY-NC-ND**, and the
+  **no-derivatives** term is the obstacle: an app screen needs wording adapted and abridged, which that
+  licence forbids. It is the evidence the algorithms rest on, not a licence for our text.
+- **Crown copyright under the Open Government Licence** would need no permission at all, and NHS
+  Digital's content demonstrably carries the OGL — but whether a given NHS first-aid page does is a
+  per-source question, and none was confirmed.
+- **Public-domain sources** remain the fallback if RCUK declines, at the cost of a US or evidence-level
+  voice rather than the UK clinical practice this app is for.
+
+**So the request that matters is RCUK's**, for the resuscitation wording: the capture forms do not need
+one, because they are structure rather than prose and the structure is public (§4.4). And the safety
+gate is unchanged — **a clinician reading the wording**, which is a person to ask rather than a licence
+to buy (§2.5). Nothing has to be built to receive the content: a cited record already carries its
+source, review date and edition, and `assertCited` refuses anything missing them, so the CPR screen
+fills in the day the wording arrives.
+
 ### 2.2 what3words
 
 **Read, in Phase 3c.** Four things came out of the licence. The one that costs money matters more
