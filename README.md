@@ -154,8 +154,13 @@ we chose ourselves.
   can read the drawn code.** It renders crisply with the right content and the serialisation
   round-trips, but an attempt to decode the rendered pixels failed, so the two-device check the plan
   always called for is now the first task rather than a formality — see the plan's "Verified, and not".
-  Scanning cannot be exercised in a simulator at all, because there is no camera. NFC tags are Phase 4c
-  (#25) and need an Apple Developer account for the entitlement.
+  Scanning cannot be exercised in a simulator at all, because there is no camera.
+- **NFC tags are built for Android only, and none of it has been run.** A report can be written to an
+  NDEF tag and read back, carrying exactly the bytes the QR path carries. iOS shows no tag control at
+  all, because the reader-session entitlement needs an Apple Developer account the project does not
+  have yet (§2.5) — so the decision was not to offer a control that can only fail. And nothing about
+  the tag path has been exercised: no simulator has an NFC reader and there is no device, so the logic
+  is unit-tested, the absence is asserted on the device, and the rest waits for an Android phone.
 - **A clinician has not read the capture fields** — the mnemonics are standard and their structure is
   public, but *which* observations to ask for, and using ACVPU rather than a Glasgow Coma Scale, is
   engineering judgement. The forms record and never assess, which is the mitigation; a clinical read

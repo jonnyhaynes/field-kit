@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { canQr } from '@/capabilities/can-qr';
 import { Screen } from '@/components/screen';
+import { ReadFromTag } from '@/components/tag-controls';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import {
@@ -216,6 +217,9 @@ export default function ScanScreen() {
             Point the camera at the code on the other phone. Nothing is photographed and nothing is
             uploaded — a QR code is read on this device.
           </Text>
+
+          {/* Nothing at all where the device cannot use tags, which is every iOS build today. */}
+          <ReadFromTag />
         </>
       )}
     </Screen>

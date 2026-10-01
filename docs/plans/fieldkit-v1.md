@@ -561,10 +561,19 @@ limit and building one is only useful if it stays readable. And **the Act screen
 to both depths**: the plan had it as a Guided-only link, which would have meant turning the Responder
 depth on *removing* a destination, and §1 says depth adds rather than moves.
 
-**Still to come in Phase 4:** NFC NDEF read/write (#25), and — the important one — **proving a phone
-camera can read the code**. The code renders with the right content and the serialisation round-trips,
-but a decoder could not read the rendered pixels, so the two-device scan the plan always called for is
-now the first task rather than a formality. §6 has the detail.
+**Phase 4c as delivered — tags.** A report can be written to an NDEF tag and read back, carrying
+*exactly* the bytes the QR path carries rather than a second format — `serialiseHandover` out,
+`parseHandover` in, same refusals. See `docs/plans/25-nfc-tags.md`.
+
+**It is offered on Android only, and deliberately.** iOS needs the reader-session entitlement, which
+needs the Apple Developer account still open in §2.5, so iOS shows no tag control at all rather than
+one that can only fail — a recorded decision, and one that lifts when the entitlement exists. Nothing
+about the tag path has been run: there is no NFC reader in a simulator and no device here, so the
+logic is unit-tested and the absence is asserted, and that is the whole of it.
+
+**Still open in Phase 4: proving a phone camera can read the QR code.** The code renders with the
+right content and the serialisation round-trips, but a decoder could not read the rendered pixels, so
+the two-device scan the plan always called for is the first task rather than a formality (§6).
 
 **Phase 5 — release.** EAS builds, store listings, disclaimer copy per §2.4.
 
