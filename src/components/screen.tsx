@@ -26,9 +26,14 @@ export function Screen({ children, actions, withTopInset = false, dock = true, t
 
   return (
     <View style={[styles.root, { backgroundColor: theme.background }]} testID={testID}>
+      {/*
+        No `bottom` edge: every screen now sits above the tab bar, and the tab bar owns the bottom
+        inset. Leaving this in would pad for the home indicator twice, which reads as a spacing bug
+        and invites someone to shrink a padding token to "fix" it.
+      */}
       <SafeAreaView
         style={styles.safe}
-        edges={withTopInset ? ['top', 'left', 'right', 'bottom'] : ['left', 'right', 'bottom']}>
+        edges={withTopInset ? ['top', 'left', 'right'] : ['left', 'right']}>
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.body}

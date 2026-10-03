@@ -12,7 +12,7 @@ tags:
   - transfer
 ---
 - launchApp
-- openLink: fieldkit://scan
+- openLink: fieldkit://field/scan
 # iOS asks once before handing a custom scheme to an app, and remembers the answer.
 - tapOn:
     text: 'Open'

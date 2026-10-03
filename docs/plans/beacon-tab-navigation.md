@@ -272,3 +272,40 @@ style questions to be settled by whoever implements slice 1 without an answer fr
 
 The PR will be titled `[ai-assisted]`, reference this doc, and end with a `Manually reviewed by
 <name>` line. A human merges once CI is green.
+
+---
+
+## 12. As built — where the diff departs from this plan
+
+Recorded here rather than left in the diff, per the repo's convention.
+
+1. **The send screen lives in Act's stack, not Field's.** This plan put it in Field, and the
+   prototype showed Field as Capture | Report. That was wrong: §1 says *both* depths send a report,
+   and Field only exists at the responder depth — so a guided user's "Send a report" link would have
+   navigated to a tab that is not there. Send is at `/send` in the Act stack, which is where it
+   already was for a guided user. Field is the capture workspace, with scan pushed from it.
+2. **Therefore Field has no sub-tabs.** The sub-tab control is demonstrated by Locate (Map · Where I
+   am · Compass), which is three peers and genuinely could not be a stack. A two-item control in
+   Field would have been a pattern looking for a use.
+3. **There is no confirmation sheet, and the plan was wrong to require one.** `callEmergencyServices`
+   deliberately has none: `tel:` hands off to the dialler, which is itself the confirmation, and
+   `emergency/dial` records that an in-app sheet would cost a tap where taps matter most. The dock
+   calls the same function as Act's button, so the two cannot behave differently under the same
+   label. The residual risk is a mis-tap opening the dialler with 999 ready, not a placed call.
+4. **The route churn was smaller than predicted.** Act is served from a route *group*, `(act)`, which
+   does not appear in the URL — so `/` and `/cpr` did not move, and `/aed` did not either. Only the
+   locate, field and more routes changed. Seven `router.push` call sites were edited, not fifteen.
+5. **`about` stayed a pushed screen** inside More rather than being folded into Settings as a
+   section. It is long, and the ODbL wants the attribution reachable rather than merely present,
+   which a back button satisfies. The plan's "folds into More as a section" was an over-simplification.
+6. **The theme decision was duplicated in five places, not two** — the root layout, `use-theme`, the
+   map screen, and both platform scheme hooks. All of them now call one `resolveScheme`.
+7. **The Android adaptive icon was left alone.** Its background is still `create-expo-app` template
+   artwork — a pale-blue construction grid with the Expo default mark — so changing the background
+   colour would have half-fixed a placeholder and possibly made it worse. A real app icon is a
+   release task. The splash background *was* changed, because the splash icon is white and the old
+   `#208AEF` belonged to no direction.
+8. **Palette values are in-gamut and two were measured rather than copied.** The design's signal
+   chroma exceeds sRGB, so it is set to the most sRGB can hold at that lightness and hue. Rescue sits
+   at L58 rather than the design's L63 because white-on-red measured 3.93 there.
+

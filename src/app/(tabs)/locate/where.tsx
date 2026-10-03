@@ -57,7 +57,7 @@ export default function PositionScreen() {
           label="Open compass"
           hint="A bearing to walk on, if this device has a compass"
           testID="position-compass-link"
-          onPress={() => router.push('/compass')}
+          onPress={() => router.push('/locate/compass')}
         />
       }>
       <Text style={[styles.title, { color: theme.text }]}>Where I am</Text>

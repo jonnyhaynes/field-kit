@@ -52,7 +52,7 @@ export default function ActScreen() {
               label="Record incident"
               hint="Structured capture — SAMPLER, ABCDE, ETHANE, ASHICE"
               testID="act-record"
-              onPress={() => router.push('/record')}
+              onPress={() => router.push('/field')}
             />
           ) : null}
         </>
