@@ -35,7 +35,7 @@ tags:
 # system alert that stays up until it is answered — left unhandled it blocks the next flow as well as
 # this one. It asks once per scheme, so the tap has to be optional: on a second run the link opens
 # directly and a required tap would fail here.
-- openLink: fieldkit://record
+- openLink: fieldkit://field
 - tapOn:
     text: 'Open'
     optional: true

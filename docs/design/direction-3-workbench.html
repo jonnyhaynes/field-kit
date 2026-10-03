@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Kit — Direction 3: Workbench</title>
+<style>
+  /* ============================================================
+     DIRECTION 3 — WORKBENCH
+     A field instrument with compartments. Cool graphite and a
+     surveying lime, light-first. A tab bar gives the app places;
+     the Responder depth adds a compartment rather than a screen.
+     Red is still reserved for the emergency action alone.
+     ============================================================ */
+  :root {
+    --base:  oklch(97% 0.006 240);
+    --panel: oklch(100% 0 0);
+    --panel2: oklch(93% 0.008 240);
+    --ink:   oklch(20% 0.016 240);
+    --soft:  oklch(48% 0.015 240);
+    --line:  oklch(87% 0.010 240);
+    --accent: oklch(80% 0.17 125);
+    --accent-ink: oklch(22% 0.06 125);
+    --rescue: oklch(54% 0.21 27);
+    --rescue-ink: oklch(100% 0 0);
+    --bezel: oklch(89% 0.008 240);
+    --r: 12px;
+    --tap: 50px;
+    color-scheme: light dark;
+  }
+  .force-dark {
+    --base:  oklch(15% 0.012 240);
+    --panel: oklch(20% 0.014 240);
+    --panel2: oklch(25% 0.016 240);
+    --ink:   oklch(95% 0.008 240);
+    --soft:  oklch(72% 0.014 240);
+    --line:  oklch(31% 0.016 240);
+    --accent: oklch(88% 0.17 125);
+    --accent-ink: oklch(22% 0.06 125);
+    --rescue: oklch(64% 0.22 27);
+    --bezel: oklch(24% 0.012 240);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not(.force-light) {
+      --base:  oklch(15% 0.012 240);
+      --panel: oklch(20% 0.014 240);
+      --panel2: oklch(25% 0.016 240);
+      --ink:   oklch(95% 0.008 240);
+      --soft:  oklch(72% 0.014 240);
+      --line:  oklch(31% 0.016 240);
+      --accent: oklch(88% 0.17 125);
+      --accent-ink: oklch(22% 0.06 125);
+      --rescue: oklch(64% 0.22 27);
+      --bezel: oklch(24% 0.012 240);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 44px 24px 96px;
+    background: var(--base); color: var(--ink);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+
+  .kicker { font-size: 12px; font-weight: 650; letter-spacing: 0.11em; text-transform: uppercase;
+            color: var(--soft); margin: 0 0 12px; }
+  h1 { font-size: 35px; line-height: 1.1; margin: 0 0 14px; letter-spacing: -0.025em; font-weight: 720; }
+  .lede { color: var(--soft); max-width: 71ch; margin: 0 0 12px; }
+  .lede b { color: var(--ink); font-weight: 650; }
+  h2 { font-size: 24px; margin: 0 0 4px; letter-spacing: -0.02em; font-weight: 700; }
+  h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.11em; color: var(--soft);
+       margin: 0 0 15px; font-weight: 700; }
+  section { margin-top: 58px; }
+  .sub { color: var(--soft); max-width: 72ch; margin: 0 0 4px; font-size: 15px; }
+
+  .bet { margin-top: 24px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+  .bet div { border: 1px solid var(--line); border-radius: 16px; padding: 15px 18px; background: var(--panel); }
+  .bet .t { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em;
+            color: var(--soft); margin-bottom: 7px; }
+  .bet .v { font-size: 15px; line-height: 1.45; }
+  @media (max-width: 860px){ .bet { grid-template-columns: 1fr; } }
+
+  /* ---------- structure ---------- */
+  .struct { border: 1px solid var(--line); border-radius: 18px; padding: 24px; background: var(--panel); }
+  .tabs-demo { display: flex; gap: 10px; flex-wrap: wrap; }
+  .tabnode { flex: 1; min-width: 150px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+             background: var(--base); }
+  .tabnode .top { padding: 13px 16px; }
+  .tabnode .top .nm { font-size: 14px; font-weight: 700; }
+  .tabnode .top .ds { font-size: 11.5px; color: var(--soft); margin-top: 3px; line-height: 1.45; }
+  .tabnode .tbar { height: 26px; border-top: 1px solid var(--line); display: flex; align-items: center;
+                   justify-content: center; gap: 6px; background: var(--panel2); }
+  .tabnode .tbar i { width: 5px; height: 5px; border-radius: 50%; background: var(--soft); opacity: 0.5; }
+  .tabnode .tbar i.on { background: var(--accent); opacity: 1; width: 14px; border-radius: 3px; }
+  .tabnode.depth { border-style: dashed; }
+  .snote { font-size: 13.5px; color: var(--soft); margin: 18px 0 0; max-width: 78ch; line-height: 1.6; }
+  .snote b { color: var(--ink); font-weight: 650; }
+
+  /* ---------- phone frames ---------- */
+  .rail { display: flex; gap: 26px; overflow-x: auto; padding: 24px 2px 12px; align-items: flex-start; }
+  .step { flex: 0 0 auto; width: 320px; }
+  .phone { width: 320px; height: 704px; background: var(--bezel); border: 1px solid var(--line);
+           border-radius: 40px; padding: 11px; display: flex; flex-direction: column;
+           box-shadow: 0 1px 2px oklch(0% 0 0 / 0.10);
+           /* re-declare: a forced theme swaps tokens, but inherited colour was
+              already computed against the page theme. */
+           color: var(--ink); }
+  .screen { flex: 1; display: flex; flex-direction: column; border-radius: 30px; overflow: hidden;
+            background: var(--base); }
+  .status { display: flex; justify-content: space-between; padding: 9px 20px 2px; font-size: 11.5px;
+            font-weight: 650; color: var(--ink); }
+  .status .sig { letter-spacing: 2px; color: var(--soft); }
+  .bar { padding: 8px 18px 14px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .bar .back { font-size: 13px; color: var(--soft); font-weight: 600; }
+  .bar .t { font-size: 19px; font-weight: 720; letter-spacing: -0.015em; }
+  .bar .p { font-size: 10.5px; color: var(--soft); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+  .body { flex: 1; padding: 2px 16px 16px; display: flex; flex-direction: column; gap: 12px;
+          overflow-y: auto; scrollbar-width: none; }
+  .body::-webkit-scrollbar { display: none; }
+  .home { height: 18px; display: grid; place-items: center; }
+  .home i { width: 110px; height: 5px; border-radius: 3px; background: var(--ink); opacity: 0.3; }
+  .cap { font-size: 13px; color: var(--soft); margin-top: 13px; line-height: 1.55; }
+  .cap b { color: var(--ink); font-weight: 650; }
+
+  /* ---------- tab bar ---------- */
+  .tabbar { display: flex; border-top: 1px solid var(--line); background: var(--panel); padding: 8px 6px 2px; }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
+         font-size: 10px; font-weight: 650; color: var(--soft); letter-spacing: 0.02em; }
+  .tab.on { color: var(--ink); }
+  .glyph { width: 20px; height: 20px; display: grid; place-items: center; }
+  .g-act { width: 13px; height: 13px; border-radius: 4px; background: currentColor; }
+  .g-pin { width: 11px; height: 11px; border: 2.2px solid currentColor; border-radius: 50% 50% 50% 0;
+           transform: rotate(-45deg); }
+  .g-field { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5px; }
+  .g-field i { width: 7px; height: 7px; border-radius: 2px; background: currentColor; }
+  .g-more { display: flex; gap: 2.5px; }
+  .g-more i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+
+  /* ---------- primitives ---------- */
+  .q { font-size: 22px; font-weight: 720; line-height: 1.26; letter-spacing: -0.02em; }
+  .hint { font-size: 14px; color: var(--soft); line-height: 1.5; }
+  .btn { min-height: var(--tap); border-radius: var(--r); border: 1px solid var(--line);
+         background: var(--panel); color: var(--ink); font-size: 16px; font-weight: 650;
+         display: flex; align-items: center; justify-content: space-between; padding: 0 17px; gap: 10px;
+         text-align: left; }
+  .btn .go { color: var(--soft); font-weight: 400; font-size: 18px; }
+  .btn.accent { background: var(--accent); border-color: transparent; color: var(--accent-ink); font-weight: 700; }
+  .btn.sm { min-height: 46px; font-size: 14.5px; }
+  .rescue { min-height: 62px; border-radius: var(--r); border: none; background: var(--rescue);
+            color: var(--rescue-ink); font-size: 20px; font-weight: 750; letter-spacing: 0.005em;
+            display: flex; align-items: center; justify-content: center; }
+
+  .card { border: 1px solid var(--line); border-radius: var(--r); background: var(--panel);
+          padding: 15px 17px; display: flex; flex-direction: column; gap: 8px; }
+  .card .ct { font-size: 16px; font-weight: 700; }
+  .card .cb { font-size: 15px; line-height: 1.5; }
+  .cite { font-size: 12px; color: var(--soft); line-height: 1.45; }
+  .slot { border: 1px dashed var(--line); border-radius: var(--r); padding: 14px 16px; background: var(--panel2); }
+  .slot .st { font-size: 14.5px; font-weight: 700; margin-bottom: 5px; }
+  .slot .sb { font-size: 13px; color: var(--soft); line-height: 1.5; }
+
+  /* map — the signature surface of this direction */
+  .map { height: 250px; border-radius: var(--r); border: 1px solid var(--line); position: relative;
+         overflow: hidden; background: oklch(94% 0.012 240); }
+  .force-dark .map { background: oklch(21% 0.014 240); }
+  .map .water { position: absolute; right: -40px; bottom: -50px; width: 190px; height: 190px;
+                border-radius: 46% 54% 40% 60%; background: oklch(84% 0.05 240); }
+  .force-dark .map .water { background: oklch(32% 0.045 240); }
+  .map .green { position: absolute; left: -30px; top: -20px; width: 150px; height: 130px;
+                border-radius: 50% 50% 44% 56%; background: oklch(90% 0.045 145); }
+  .force-dark .map .green { background: oklch(27% 0.04 145); }
+  .map .road { position: absolute; background: oklch(99% 0.002 240); border-radius: 3px; }
+  .force-dark .map .road { background: oklch(39% 0.010 240); }
+  .map .road.r1 { left: -10px; right: -10px; top: 118px; height: 7px; transform: rotate(-7deg); }
+  .map .road.r2 { left: 96px; top: -10px; bottom: -10px; width: 5px; transform: rotate(11deg); }
+  .map .road.r3 { left: 20px; right: 60px; top: 62px; height: 3px; transform: rotate(4deg);
+                  background: oklch(96% 0.004 240); }
+  .force-dark .map .road.r3 { background: oklch(34% 0.010 240); }
+  .map .lbl { position: absolute; font-size: 9.5px; font-weight: 650; letter-spacing: 0.02em;
+              color: oklch(52% 0.02 240); }
+  .force-dark .map .lbl { color: oklch(72% 0.02 240); }
+  .map .me { position: absolute; left: 132px; top: 150px; width: 16px; height: 16px; border-radius: 50%;
+             background: var(--ink); border: 3px solid var(--panel);
+             box-shadow: 0 0 0 9px oklch(50% 0.02 240 / 0.14); }
+  .map .pin { position: absolute; width: 26px; height: 26px; border-radius: 50%;
+              background: var(--accent); color: var(--accent-ink); border: 2px solid var(--panel);
+              display: grid; place-items: center; font-size: 12px; font-weight: 800; }
+  .map .pin.p1 { left: 196px; top: 92px; }
+  .map .pin.p2 { left: 62px; top: 190px; opacity: 0.85; }
+  .map .attrib { position: absolute; right: 6px; bottom: 6px; font-size: 8.5px; color: oklch(52% 0.02 240); }
+  .force-dark .map .attrib { color: oklch(72% 0.02 240); }
+
+  .seg { display: flex; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden;
+         background: var(--panel2); }
+  .seg span { flex: 1; text-align: center; font-size: 13px; font-weight: 650; padding: 10px 0;
+              color: var(--soft); }
+  .seg span.on { background: var(--panel); color: var(--ink); }
+
+  .aed { border: 1px solid var(--line); border-radius: var(--r); background: var(--panel);
+         padding: 13px 15px; display: flex; align-items: center; gap: 12px; }
+  .aed .idx { flex: none; width: 26px; height: 26px; border-radius: 8px; background: var(--accent);
+              color: var(--accent-ink); display: grid; place-items: center; font-size: 12.5px; font-weight: 800; }
+  .aed .txt { flex: 1; }
+  .aed .n { font-size: 14.5px; font-weight: 700; }
+  .aed .v { font-size: 11.5px; color: var(--soft); margin-top: 2px; }
+  .aed .m { font-size: 16px; font-weight: 750; font-variant-numeric: tabular-nums;
+            font-family: ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: -0.01em; }
+  .disclaimer { border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 10px;
+                padding: 11px 13px; background: var(--panel2); font-size: 12px; line-height: 1.5; }
+  .disclaimer b { font-weight: 700; }
+  .attr { font-size: 11px; color: var(--soft); line-height: 1.5; }
+  .flag { font-size: 13px; color: var(--soft); font-weight: 650; text-align: center; }
+
+  .field { border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); padding: 14px 16px; }
+  .field .fl { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+               color: var(--soft); margin-bottom: 6px; }
+  .field .fv { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 24px; font-weight: 700;
+               letter-spacing: -0.02em; line-height: 1.2; }
+  .field .fv.sm { font-size: 18px; }
+  .field .fn { font-size: 12px; color: var(--soft); margin-top: 7px; line-height: 1.5; }
+
+  .beat { min-height: 168px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+          gap: 4px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); }
+  .beat .n { font-size: 66px; font-weight: 750; letter-spacing: -0.04em; font-variant-numeric: tabular-nums;
+             font-family: ui-monospace, "SF Mono", Menlo, monospace; line-height: 1; }
+  .beat .c { font-size: 12px; color: var(--soft); font-weight: 650; letter-spacing: 0.04em; }
+
+  .row { display: flex; align-items: center; gap: 11px; font-size: 15px; }
+  .key { flex: 0 0 28px; height: 28px; border-radius: 8px; background: var(--panel2); display: grid;
+         place-items: center; font-weight: 750; font-size: 12.5px; }
+  .key.on { background: var(--accent); color: var(--accent-ink); }
+  .lbl { flex: 1; font-weight: 600; }
+  .meta { font-size: 12px; color: var(--soft); }
+  .tag { display: inline-flex; align-items: center; font-size: 10.5px; font-weight: 750; padding: 3px 9px;
+         border-radius: 999px; background: var(--panel2); color: var(--soft); letter-spacing: 0.04em;
+         text-transform: uppercase; }
+  .tag.scene { background: var(--accent); color: var(--accent-ink); }
+  .qr { width: 148px; height: 148px; margin: 4px auto; border-radius: 12px; background: #fff;
+        display: grid; place-items: center; color: #6b6b6b; font-size: 11px; text-align: center; padding: 18px; }
+  .chans { display: flex; gap: 8px; }
+  .chans .ch { flex: 1; min-height: 46px; border: 1px solid var(--line); border-radius: var(--r);
+               background: var(--panel); display: grid; place-items: center; font-size: 13.5px; font-weight: 650; }
+
+  .gc { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 760px){ .gc { grid-template-columns: 1fr; } }
+  .gc .col { border: 1px solid var(--line); border-radius: 18px; padding: 22px 24px; background: var(--panel); }
+  .gc h4 { margin: 0 0 13px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;
+           color: var(--soft); font-weight: 700; }
+  .gc ul { margin: 0; padding-left: 18px; }
+  .gc li { margin: 8px 0; font-size: 14.8px; line-height: 1.55; }
+  .gc li b { font-weight: 700; }
+  .foot-note { margin-top: 46px; font-size: 13.5px; color: var(--soft); max-width: 80ch; line-height: 1.6; }
+  .foot-note b { color: var(--ink); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Field Kit · design direction 3 of 3</p>
+  <h1>Workbench</h1>
+  <p class="lede">
+    A field instrument with compartments. The app has <em>places</em> rather than a stack of pages: a
+    tab bar you can move around in, a map-first Locate surface, and a Field compartment that only
+    appears when the Responder depth is on. Cool graphite and a surveying lime, because this is
+    navigation and measurement equipment, not a hospital.
+  </p>
+  <p class="lede">
+    <b>The structural bet is the tab bar.</b> Directions 1 and 2 keep the app as one root screen with
+    everything pushed on top of it. This one gives the app a floor plan: Act is the default and the
+    loudest tab, but a responder can live in Locate while working, and the depth adds a compartment
+    instead of a link.
+  </p>
+
+  <div class="bet">
+    <div><div class="t">The bet</div><div class="v">Make the app navigable. The AED map and the capture forms deserve somewhere to live, not a back button.</div></div>
+    <div><div class="t">Structure</div><div class="v">Four tabs: Act · Locate · Field · More. Field appears with the Responder depth.</div></div>
+    <div><div class="t">Colour discipline</div><div class="v">Surveying lime for the tooling, red once for the emergency. No clinical blue, no teal.</div></div>
+  </div>
+
+  <section>
+    <h3>Structure</h3>
+    <div class="struct">
+      <div class="tabs-demo">
+        <div class="tabnode">
+          <div class="top"><div class="nm">Act</div><div class="ds">Call 999, CPR, defibrillators. The default tab, and the loudest thing on the app.</div></div>
+          <div class="tbar"><i class="on"></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="tabnode">
+          <div class="top"><div class="nm">Locate</div><div class="ds">Offline map, nearest defibrillators, where I am, compass, region packs.</div></div>
+          <div class="tbar"><i></i><i class="on"></i><i></i><i></i></div>
+        </div>
+        <div class="tabnode depth">
+          <div class="top"><div class="nm">Field <span class="tag">depth</span></div><div class="ds">Record incident and send: SAMPLER, ABCDE, ETHANE, ASHICE, QR and tags.</div></div>
+          <div class="tbar"><i></i><i></i><i class="on"></i><i></i></div>
+        </div>
+        <div class="tabnode">
+          <div class="top"><div class="nm">More</div><div class="ds">Settings, depth switch, the OpenStreetMap report queue, data and licences.</div></div>
+          <div class="tbar"><i></i><i></i><i></i><i class="on"></i></div>
+        </div>
+      </div>
+      <p class="snote">
+        <b>Depth is still not a mode, and the tab bar makes that literal.</b> Guided users get three
+        compartments; turning the Responder depth on adds a fourth. Act is untouched either way, and
+        it is the tab the app opens on. This is the one direction where the structure itself makes
+        the depth visible — which is either its best idea or its worst, depending on how much the
+        tab bar dilutes the single dominant action.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>The emergency path</h2>
+    <p class="sub">Act inside the tab shell, both themes, then CPR and the map-first Locate surface.</p>
+    <div class="rail">
+
+      <div class="step">
+        <div class="phone force-light"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="t">Someone needs help</span><span class="p">Offline</span></div>
+          <div class="body">
+            <div class="q">Are they awake and breathing normally?</div>
+            <div class="hint">If you’re not sure, treat it as no.</div>
+            <div class="card" style="padding:12px 14px">
+              <div class="cite">Guidance and defibrillator data are on this phone. Nothing here needs a signal.</div>
+            </div>
+          </div>
+          <div class="body" style="flex:none;padding-top:0">
+            <div class="rescue">Call 999</div>
+            <div class="btn accent">They’re not breathing<span class="go">›</span></div>
+            <div class="btn">Find nearest defibrillator<span class="go">›</span></div>
+          </div>
+          <div class="tabbar">
+            <span class="tab on"><span class="glyph"><span class="g-act"></span></span>Act</span>
+            <span class="tab"><span class="glyph"><span class="g-pin"></span></span>Locate</span>
+            <span class="tab"><span class="glyph"><span class="g-more"><i></i><i></i><i></i></span></span>More</span>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Act, light, Guided depth.</b> The lime is the action colour, the red is the
+          emergency, and the tab bar sits below both — a floor plan, not a competing call to action.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone force-dark"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="t">Someone needs help</span><span class="p">Responder</span></div>
+          <div class="body">
+            <div class="q">Are they awake and breathing normally?</div>
+            <div class="hint">If you’re not sure, treat it as no.</div>
+          </div>
+          <div class="body" style="flex:none;padding-top:0">
+            <div class="rescue">Call 999</div>
+            <div class="btn accent">They’re not breathing<span class="go">›</span></div>
+            <div class="btn">Find nearest defibrillator<span class="go">›</span></div>
+          </div>
+          <div class="tabbar">
+            <span class="tab on"><span class="glyph"><span class="g-act"></span></span>Act</span>
+            <span class="tab"><span class="glyph"><span class="g-pin"></span></span>Locate</span>
+            <span class="tab"><span class="glyph"><span class="g-field"><i></i><i></i><i></i><i></i></span></span>Field</span>
+            <span class="tab"><span class="glyph"><span class="g-more"><i></i><i></i><i></i></span></span>More</span>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Act, dark, Responder depth.</b> The only difference is a fourth tab. Act is
+          byte-for-byte the same screen, which is what “depth adds, never moves” should mean.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone force-light"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="back">‹ Act</span><span class="p">CPR</span></div>
+          <div class="body">
+            <div class="beat"><div class="n">110</div><div class="c">COMPRESSIONS PER MINUTE</div></div>
+            <div class="card">
+              <div class="ct">Compression pace</div>
+              <div class="cb">“Repeat these compressions at a rate of 100 to 120 times a minute
+                (approx. two per second).”</div>
+              <div class="cite">North West Ambulance Service · checked 27 Sep 2026</div>
+            </div>
+          </div>
+          <div class="body" style="flex:none;padding-top:0">
+            <div class="btn accent">Get a defibrillator<span class="go">›</span></div>
+          </div>
+          <div class="tabbar">
+            <span class="tab on"><span class="glyph"><span class="g-act"></span></span>Act</span>
+            <span class="tab"><span class="glyph"><span class="g-pin"></span></span>Locate</span>
+            <span class="tab"><span class="glyph"><span class="g-more"><i></i><i></i><i></i></span></span>More</span>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Compressions.</b> Pushed from Act, so it keeps Act lit in the tab bar — the
+          CPR and AED surfaces are Act territory, not a separate place.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone force-light"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="t">Locate</span><span class="p">2 nearby</span></div>
+          <div class="body">
+            <div class="seg"><span class="on">Map</span><span>Where I am</span><span>Compass</span></div>
+            <div class="map">
+              <span class="green"></span><span class="water"></span>
+              <span class="road r1"></span><span class="road r2"></span><span class="road r3"></span>
+              <span class="lbl" style="left:120px;top:104px">High Street</span>
+              <span class="lbl" style="left:24px;top:34px">Village</span>
+              <span class="me"></span>
+              <span class="pin p1">1</span>
+              <span class="pin p2">2</span>
+              <span class="attrib">© OpenStreetMap · Protomaps</span>
+            </div>
+            <div class="aed">
+              <span class="idx">1</span>
+              <div class="txt"><div class="n">Village hall, north door</div><div class="v">40° NE · never checked</div></div>
+              <div class="m">180 m</div>
+            </div>
+            <div class="aed">
+              <span class="idx" style="background:var(--panel2);color:var(--soft)">2</span>
+              <div class="txt"><div class="n">Phone box, High Street</div><div class="v">115° ESE · checked Mar 2024</div></div>
+              <div class="m">420 m</div>
+            </div>
+            <div class="disclaimer"><b>Unverified.</b> Public mapping, not the ambulance service.</div>
+          </div>
+          <div class="tabbar">
+            <span class="tab"><span class="glyph"><span class="g-act"></span></span>Act</span>
+            <span class="tab on"><span class="glyph"><span class="g-pin"></span></span>Locate</span>
+            <span class="tab"><span class="glyph"><span class="g-more"><i></i><i></i><i></i></span></span>More</span>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Locate — the signature screen.</b> Map, defibrillator and position on one
+          surface, with numbered pins tying the list to the map. The “walking to it” case is real
+          here: this is the screen a second rescuer holds while they move.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Where, record, send</h2>
+    <p class="sub">The position readouts, the Field compartment, and getting a report off the phone.</p>
+    <div class="rail">
+
+      <div class="step">
+        <div class="phone force-light"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="t">Locate</span><span class="p">On device</span></div>
+          <div class="body">
+            <div class="seg"><span>Map</span><span class="on">Where I am</span><span>Compass</span></div>
+            <div class="field"><div class="fl">Latitude, longitude</div>
+              <div class="fv sm">54.4609<br>-3.0886</div></div>
+            <div class="field"><div class="fl">OS grid reference</div>
+              <div class="fv">NY 2625 0625</div>
+              <div class="fn">Eight figures — accurate to roughly 10 m, the limit of the grid
+                transformation and of GPS.</div></div>
+            <div class="field"><div class="fl">what3words</div>
+              <div class="fn" style="margin:0">Not resolved. Needs a network.</div></div>
+            <div class="attr">Coordinates and the grid reference need no signal.</div>
+          </div>
+          <div class="tabbar">
+            <span class="tab"><span class="glyph"><span class="g-act"></span></span>Act</span>
+            <span class="tab on"><span class="glyph"><span class="g-pin"></span></span>Locate</span>
+            <span class="tab"><span class="glyph"><span class="g-more"><i></i><i></i><i></i></span></span>More</span>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Where I am</b> is a segment inside Locate rather than a pushed page, so the
+          map is always one tap off. The tab bar gives orientation a home.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone force-light"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="t">Field</span><span class="p">Responder</span></div>
+          <div class="body">
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div class="ct">Position</div><span class="tag">attached</span></div>
+              <div class="cb" style="color:var(--soft);font-size:13px">Recorded 09:38. Where the incident
+                was, not where you are now.</div>
+            </div>
+            <div class="row"><span class="tag scene">the casualty</span><span class="meta" style="margin-left:auto">2 of 6</span></div>
+            <div class="row"><div class="key on">S</div><div class="lbl">Signs and symptoms</div></div>
+            <div class="row"><div class="key">A</div><div class="lbl">Allergies and age</div></div>
+            <div class="row"><div class="key">M</div><div class="lbl">Medication</div></div>
+            <div class="row"><div class="key">P</div><div class="lbl">Past history</div></div>
+            <div class="row"><div class="key">L</div><div class="lbl">Last meal</div></div>
+            <div class="row"><div class="key">E</div><div class="lbl">Events</div></div>
+          </div>
+          <div class="body" style="flex:none;padding-top:0">
+            <div class="btn accent">Send report<span class="go">›</span></div>
+          </div>
+          <div class="tabbar">
+            <span class="tab"><span class="glyph"><span class="g-act"></span></span>Act</span>
+            <span class="tab"><span class="glyph"><span class="g-pin"></span></span>Locate</span>
+            <span class="tab on"><span class="glyph"><span class="g-field"><i></i><i></i><i></i><i></i></span></span>Field</span>
+            <span class="tab"><span class="glyph"><span class="g-more"><i></i><i></i><i></i></span></span>More</span>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Field.</b> The whole capture gets a room of its own, with the depth tag on
+          the header. A form of questions, never a set of instructions.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone force-dark"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="back">‹ Field</span><span class="p">ETHANE</span></div>
+          <div class="body">
+            <div class="qr">QR drawn on this phone. No network, no server.</div>
+            <div class="slot"><div class="st">Compact payload</div>
+              <div class="sb">ETHANE answers, position and times, compressed to fit one code.</div></div>
+            <div class="attr">Works with no signal, either side. A scanned report is kept apart from
+              your own record.</div>
+          </div>
+          <div class="body" style="flex:none;padding-top:0">
+            <div class="chans"><span class="ch">SMS</span><span class="ch">Email</span><span class="ch">WhatsApp</span></div>
+            <div class="btn accent">Share<span class="go">›</span></div>
+          </div>
+          <div class="tabbar">
+            <span class="tab"><span class="glyph"><span class="g-act"></span></span>Act</span>
+            <span class="tab"><span class="glyph"><span class="g-pin"></span></span>Locate</span>
+            <span class="tab on"><span class="glyph"><span class="g-field"><i></i><i></i><i></i><i></i></span></span>Field</span>
+            <span class="tab"><span class="glyph"><span class="g-more"><i></i><i></i><i></i></span></span>More</span>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Send report.</b> Shown in dark to prove the palette holds. The QR stays
+          black-on-white in both themes, because a code the camera has to read is not a place for
+          brand colour.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>What it gains, what it costs</h2>
+    <div class="gc">
+      <div class="col">
+        <h4>Gains</h4>
+        <ul>
+          <li><b>The AED map finally has a home.</b> Finding a defibrillator while walking is a
+            first-class job here, not a push off a list.</li>
+          <li><b>The Responder depth is visible in the structure,</b> which makes “adds, never moves”
+            something a user can actually see.</li>
+          <li><b>It scales.</b> Guidance, packs, notes and settings have compartments, so the app can
+            grow without Act growing with it.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>Costs</h4>
+        <ul>
+          <li><b>The tab bar competes with the emergency action.</b> This is the real risk: four
+            equally-weighted destinations at the bottom of the screen is exactly the “too many equal
+            calls to action” the brief warns about.</li>
+          <li><b>Call 999 is only on one tab.</b> The other directions can promise it is always on
+            screen; this one cannot, unless a dock is added on top of the tabs — two bars, which is
+            worse.</li>
+          <li><b>A map-first Locate needs position to be useful.</b> Indoors or with location off, the
+            signature screen is a blank map, so it needs a strong no-fix state to not feel broken.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot-note">
+    <b>How to read this file.</b> Light is the default; flip your OS appearance to see the dark
+    variant, and one frame is forced dark. The map is drawn in CSS — it is a stand-in for MapLibre,
+    present so the composition can be judged, not a proposal for how the map should be rendered.
+    Clinical strings are the real cited record or an honest content slot.
+  </p>
+
+</div>
+</body>
+</html>

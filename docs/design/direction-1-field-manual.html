@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Kit — Direction 1: Field Manual</title>
+<style>
+  /* ============================================================
+     DIRECTION 1 — FIELD MANUAL
+     Warm graphite + hi-vis amber. Flat, printed, type-driven.
+     This is the direction already built in the app, pushed.
+     Red has exactly one job: the emergency action.
+     ============================================================ */
+  :root {
+    --paper: oklch(97.2% 0.006 85);
+    --card:  oklch(99% 0.003 85);
+    --sunk:  oklch(94.5% 0.007 85);
+    --ink:   oklch(23% 0.012 85);
+    --soft:  oklch(46% 0.012 85);
+    --line:  oklch(89% 0.008 85);
+    --accent: oklch(80% 0.155 78);
+    --accent-ink: oklch(28% 0.06 78);
+    --rescue: oklch(48% 0.185 25);
+    --rescue-ink: oklch(99% 0.01 25);
+    --bezel: oklch(92% 0.006 85);
+    --r: 14px;
+    --tap: 52px;
+    color-scheme: light dark;
+  }
+  .force-dark, .is-dark {
+    --paper: oklch(19% 0.008 85);
+    --card:  oklch(24% 0.009 85);
+    --sunk:  oklch(28% 0.010 85);
+    --ink:   oklch(94% 0.006 85);
+    --soft:  oklch(70% 0.010 85);
+    --line:  oklch(33% 0.010 85);
+    --accent: oklch(82% 0.150 78);
+    --accent-ink: oklch(24% 0.05 78);
+    --rescue: oklch(58% 0.180 25);
+    --bezel: oklch(26% 0.008 85);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not(.force-light) {
+      --paper: oklch(19% 0.008 85);
+      --card:  oklch(24% 0.009 85);
+      --sunk:  oklch(28% 0.010 85);
+      --ink:   oklch(94% 0.006 85);
+      --soft:  oklch(70% 0.010 85);
+      --line:  oklch(33% 0.010 85);
+      --accent: oklch(82% 0.150 78);
+      --accent-ink: oklch(24% 0.05 78);
+      --rescue: oklch(58% 0.180 25);
+      --bezel: oklch(26% 0.008 85);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 44px 24px 96px;
+    background: var(--paper); color: var(--ink);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+
+  .kicker { font-size: 12px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--soft); margin: 0 0 10px; }
+  h1 { font-size: 34px; line-height: 1.12; margin: 0 0 12px; letter-spacing: -0.02em; }
+  .lede { color: var(--soft); max-width: 72ch; margin: 0 0 10px; }
+  .lede b { color: var(--ink); font-weight: 650; }
+  h2 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--soft);
+       margin: 0 0 14px; font-weight: 650; }
+  section { margin-top: 56px; }
+  .sub { color: var(--soft); max-width: 72ch; margin: 0 0 4px; font-size: 15px; }
+  .rule { height: 1px; background: var(--line); margin: 30px 0 0; }
+
+  .bet { margin-top: 22px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+  .bet div { border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; background: var(--card); }
+  .bet .t { font-size: 12px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--soft); margin-bottom: 6px; }
+  .bet .v { font-size: 15px; line-height: 1.4; }
+  @media (max-width: 860px){ .bet { grid-template-columns: 1fr; } }
+
+  /* ---------- structure diagram ---------- */
+  .struct { border: 1px solid var(--line); border-radius: 18px; padding: 22px; background: var(--card); }
+  .sroot { display: inline-block; border: 1.5px solid var(--rescue); border-radius: 12px; padding: 10px 16px;
+           font-weight: 700; font-size: 14px; background: var(--card); }
+  .sroot span { display: block; font-weight: 400; font-size: 11.5px; color: var(--soft); margin-top: 2px; }
+  .sarrow { color: var(--soft); font-size: 12px; padding: 10px 0 10px 14px; }
+  .srow { display: flex; flex-wrap: wrap; gap: 10px; }
+  .snode { border: 1px solid var(--line); border-radius: 12px; padding: 9px 14px; font-size: 13.5px;
+           font-weight: 600; background: var(--paper); }
+  .snode span { display: block; font-weight: 400; font-size: 11px; color: var(--soft); margin-top: 2px; }
+  .snode.depth { border-style: dashed; }
+  .snote { font-size: 13px; color: var(--soft); margin: 16px 0 0; max-width: 78ch; }
+  .snote b { color: var(--ink); font-weight: 650; }
+
+  /* ---------- phone frames ---------- */
+  .rail { display: flex; gap: 24px; overflow-x: auto; padding: 22px 2px 12px; align-items: flex-start; }
+  .step { flex: 0 0 auto; width: 320px; }
+  .phone {
+    width: 320px; height: 700px; background: var(--bezel); border: 1px solid var(--line);
+    border-radius: 38px; padding: 12px; display: flex; flex-direction: column;
+    box-shadow: 0 1px 2px oklch(0% 0 0 / 0.06);
+    /* colour must be re-declared here: a forced theme swaps the tokens, but an
+       inherited `color` was already computed against the page's own theme. */
+    color: var(--ink);
+  }
+  .screen { flex: 1; display: flex; flex-direction: column; border-radius: 27px; overflow: hidden;
+            background: var(--paper); position: relative; }
+  .status { display: flex; justify-content: space-between; padding: 9px 18px 2px; font-size: 11.5px;
+            font-weight: 600; color: var(--ink); }
+  .status .sig { letter-spacing: 2px; color: var(--soft); }
+  .bar { padding: 6px 16px 12px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .bar .back { font-size: 13px; color: var(--soft); font-weight: 500; }
+  .bar .t { font-size: 17px; font-weight: 650; }
+  .bar .p { font-size: 11px; color: var(--soft); letter-spacing: 0.03em; }
+  .body { flex: 1; padding: 6px 16px 16px; display: flex; flex-direction: column; gap: 12px;
+          overflow-y: auto; scrollbar-width: none; }
+  .body::-webkit-scrollbar { display: none; }
+  .foot { padding: 14px 16px 8px; border-top: 1px solid var(--line); display: flex;
+          flex-direction: column; gap: 9px; }
+  .home { height: 22px; display: grid; place-items: center; }
+  .home i { width: 108px; height: 5px; border-radius: 3px; background: var(--ink); opacity: 0.28; }
+  .cap { font-size: 12.5px; color: var(--soft); margin-top: 12px; line-height: 1.5; }
+  .cap b { color: var(--ink); font-weight: 650; }
+
+  /* ---------- primitives ---------- */
+  .q { font-size: 19px; font-weight: 650; line-height: 1.32; letter-spacing: -0.01em; }
+  .hint { font-size: 13.5px; color: var(--soft); line-height: 1.45; }
+  .btn { min-height: var(--tap); border-radius: var(--r); border: 1px solid var(--line);
+         background: var(--card); color: var(--ink); font-size: 16px; font-weight: 600;
+         display: flex; align-items: center; justify-content: space-between; padding: 0 17px; gap: 10px;
+         text-align: left; }
+  .btn .go { color: var(--soft); font-weight: 400; font-size: 17px; }
+  .btn.rescue { background: var(--rescue); border-color: transparent; color: var(--rescue-ink);
+                font-size: 19px; font-weight: 700; justify-content: center; min-height: 60px;
+                letter-spacing: 0.01em; }
+  .btn.accent { background: var(--accent); border-color: transparent; color: var(--accent-ink); }
+  .btn.sm { min-height: 46px; font-size: 14.5px; }
+  .btn .hintline { display: block; font-size: 12px; color: var(--soft); font-weight: 400; margin-top: 1px; }
+
+  .card { border: 1px solid var(--line); border-radius: var(--r); background: var(--card);
+          padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .card .ct { font-size: 16px; font-weight: 650; }
+  .card .cb { font-size: 15px; line-height: 1.5; }
+  .cite { font-size: 12px; color: var(--soft); line-height: 1.45; }
+
+  .slot { border: 1px dashed var(--line); border-radius: var(--r); padding: 14px 16px; background: var(--sunk); }
+  .slot .st { font-size: 14px; font-weight: 650; margin-bottom: 4px; }
+  .slot .sb { font-size: 13px; color: var(--soft); line-height: 1.45; }
+  .slot b { color: var(--ink); font-weight: 650; }
+
+  .offline { font-size: 12px; color: var(--soft); display: flex; align-items: center; gap: 7px;
+             padding: 9px 12px; border-radius: 10px; background: var(--sunk); line-height: 1.4; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--soft); flex: none; }
+  .dot.live { background: var(--accent); }
+
+  .beat { flex: 1; min-height: 190px; display: flex; flex-direction: column; align-items: center;
+          justify-content: center; gap: 6px; border: 1px solid var(--line); border-radius: 16px;
+          background: var(--card); }
+  .beat .n { font-size: 62px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
+             font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .beat .c { font-size: 12.5px; color: var(--soft); }
+  .beat .pill { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); margin-bottom: 8px; }
+
+  .aed { border: 1px solid var(--line); border-radius: var(--r); background: var(--card); padding: 13px 15px;
+         display: flex; flex-direction: column; gap: 3px; }
+  .aed .n { font-size: 15px; font-weight: 650; }
+  .aed .m { font-size: 13px; color: var(--soft); font-variant-numeric: tabular-nums; }
+  .aed .v { font-size: 11.5px; color: var(--soft); margin-top: 2px; }
+  .disclaimer { border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 12px;
+                padding: 12px 14px; background: var(--sunk); font-size: 12.5px; line-height: 1.5; }
+  .disclaimer b { font-weight: 700; }
+  .attr { font-size: 11px; color: var(--soft); line-height: 1.5; margin-top: auto; }
+  .flag { font-size: 13px; color: var(--rescue); font-weight: 600; }
+
+  .field { border: 1px solid var(--line); border-radius: var(--r); background: var(--card); padding: 14px 16px; }
+  .field .fl { font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.07em;
+               color: var(--soft); margin-bottom: 6px; }
+  .field .fv { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 24px; font-weight: 650;
+               letter-spacing: -0.01em; line-height: 1.2; }
+  .field .fv.sm { font-size: 18px; }
+  .field .fn { font-size: 12px; color: var(--soft); margin-top: 7px; line-height: 1.45; }
+
+  .row { display: flex; align-items: center; gap: 11px; font-size: 14px; }
+  .key { flex: 0 0 27px; height: 27px; border-radius: 8px; background: var(--sunk); display: grid;
+         place-items: center; font-weight: 700; font-size: 12.5px; }
+  .key.on { background: var(--ink); color: var(--paper); }
+  .lbl { flex: 1; }
+  .meta { font-size: 12px; color: var(--soft); }
+  .tag { display: inline-flex; align-items: center; font-size: 11px; font-weight: 650; padding: 3px 9px;
+         border-radius: 999px; background: var(--sunk); color: var(--soft); letter-spacing: 0.02em; }
+  .tag.scene { background: var(--accent); color: var(--accent-ink); }
+
+  .qr { width: 156px; height: 156px; margin: 4px auto; border-radius: 12px; background: #fff;
+        display: grid; place-items: center; color: #6b6b6b; font-size: 11px; text-align: center; padding: 18px;
+        border: 1px solid var(--line); }
+  .chans { display: flex; gap: 8px; }
+  .chans .ch { flex: 1; min-height: 46px; border: 1px solid var(--line); border-radius: var(--r);
+               background: var(--card); display: grid; place-items: center; font-size: 13.5px; font-weight: 600; }
+
+  /* ---------- gains / costs ---------- */
+  .gc { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 760px){ .gc { grid-template-columns: 1fr; } }
+  .gc .col { border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; background: var(--card); }
+  .gc h4 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--soft); }
+  .gc ul { margin: 0; padding-left: 18px; }
+  .gc li { margin: 7px 0; font-size: 14.5px; line-height: 1.5; }
+  .gc li b { font-weight: 650; }
+
+  .foot-note { margin-top: 44px; font-size: 13px; color: var(--soft); max-width: 80ch; line-height: 1.6; }
+  .foot-note b { color: var(--ink); font-weight: 650; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Field Kit · design direction 1 of 3</p>
+  <h1>Field Manual</h1>
+  <p class="lede">
+    A laminated reference card taped inside a rucksack. Warm paper, hairline rules, hi-vis amber on
+    the actions, and rescue red doing exactly one job. It is flat and type-driven: no icons, no
+    shadows, no imagery, because everything here is words that had to be exact.
+  </p>
+  <p class="lede">
+    <b>This is not a proposal to start over.</b> It is the palette and structure already built in the
+    app, pushed harder — sharper hierarchy on Act, a proper treatment for cited clinical content, and
+    a calmer defibrillator list. It is the low-risk option, and it is the one that already has a
+    merged implementation behind it.
+  </p>
+
+  <div class="bet">
+    <div><div class="t">The bet</div><div class="v">Calm beats loud. Under stress, a quiet screen you can read is worth more than an alarming one.</div></div>
+    <div><div class="t">Structure</div><div class="v">One root screen, three doors. Everything else is a pushed screen with a back button. No tabs.</div></div>
+    <div><div class="t">Colour discipline</div><div class="v">Amber for action, red once. Nothing else is coloured, ever.</div></div>
+  </div>
+
+  <section>
+    <h3>Structure</h3>
+    <div class="struct">
+      <div class="sroot">Act — “Someone needs help”<span>Root. Never pushed, never replaced. Identical in both depths.</span></div>
+      <div class="sarrow">↓ one tap, each an independent destination — never a step in a sequence</div>
+      <div class="srow">
+        <div class="snode">Start compressions<span>CPR + metronome</span></div>
+        <div class="snode">Nearest defibrillator<span>list → map</span></div>
+        <div class="snode">Where I am<span>lat/long · grid ref</span></div>
+        <div class="snode">Compass<span>bearing</span></div>
+        <div class="snode">Region packs<span>offline map detail</span></div>
+      </div>
+      <div class="sarrow">↓ revealed only when the Responder depth is on — <b>adds, never moves</b></div>
+      <div class="srow">
+        <div class="snode depth">Record incident<span>SAMPLER · ABCDE · ETHANE · ASHICE</span></div>
+        <div class="snode depth">Send report<span>QR · share sheet · NFC tag</span></div>
+        <div class="snode depth">Settings<span>depth switch · report queue</span></div>
+      </div>
+      <p class="snote">
+        <b>Depth is not a mode.</b> CPR and the defibrillator locator sit in the same place on Act for
+        everyone; turning the Responder depth on adds a fourth button and a Settings destination,
+        and changes nothing about the emergency path. The nav model is a single stack — a
+        back button is the whole of the way home.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>The emergency path</h2>
+    <p class="sub">Both themes shown side by side, then CPR and the defibrillator list.</p>
+    <div class="rail">
+
+      <div class="step">
+        <div class="phone force-light"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="t">Someone needs help</span></div>
+          <div class="body">
+            <div class="q">Are they awake and breathing normally?</div>
+            <div class="hint">If you’re not sure, treat it as no.</div>
+            <div class="offline"><span class="dot"></span>No signal needed — nothing on this screen uses the network.</div>
+          </div>
+          <div class="foot">
+            <div class="btn rescue">Call 999</div>
+            <div class="btn">They’re not breathing<span class="go">›</span></div>
+            <div class="btn">Find nearest defibrillator<span class="go">›</span></div>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Act, light.</b> One dominant action, two secondary destinations as full-width
+          rows. The offline line is a quiet fact, not a badge.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone force-dark"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="t">Someone needs help</span></div>
+          <div class="body">
+            <div class="q">Are they awake and breathing normally?</div>
+            <div class="hint">If you’re not sure, treat it as no.</div>
+            <div class="offline"><span class="dot"></span>No signal needed — nothing on this screen uses the network.</div>
+          </div>
+          <div class="foot">
+            <div class="btn rescue">Call 999</div>
+            <div class="btn">They’re not breathing<span class="go">›</span></div>
+            <div class="btn">Find nearest defibrillator<span class="go">›</span></div>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Act, dark.</b> The same screen at night. Warm graphite rather than blue-black,
+          so the amber and the red both stay warm and the screen doesn’t glare in a tent.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="back">‹ Act</span><span class="p">CPR</span></div>
+          <div class="body">
+            <div class="beat"><span class="pill"></span><div class="n">110</div><div class="c">compressions per minute</div></div>
+            <div class="card">
+              <div class="ct">Compression pace</div>
+              <div class="cb">“Repeat these compressions at a rate of 100 to 120 times a minute (approx. two per second).”</div>
+              <div class="cite">North West Ambulance Service · checked 27 Sep 2026</div>
+            </div>
+          </div>
+          <div class="foot"><div class="btn">Get a defibrillator<span class="go">›</span></div></div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>CPR.</b> The metronome is the screen. The guidance sits beneath it as a
+          reproduced record with its source and review date on the face of it — never rewritten here.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="back">‹ Act</span><span class="p">2 nearby</span></div>
+          <div class="body">
+            <div class="disclaimer"><b>Unverified.</b> This list comes from public mapping, not from the
+              ambulance service. A defibrillator may have been moved, removed, or locked away.</div>
+            <div class="aed">
+              <div class="n">Village hall, north door</div>
+              <div class="m">180 m · 40° NE</div>
+              <div class="v">Position never checked</div>
+            </div>
+            <div class="aed">
+              <div class="n">Phone box, High Street</div>
+              <div class="m">420 m · 115° ESE</div>
+              <div class="v">Position checked Mar 2024</div>
+            </div>
+            <div class="flag">Flag as inaccurate</div>
+            <div class="attr">Defibrillator data © OpenStreetMap contributors, ODbL.</div>
+          </div>
+          <div class="foot">
+            <div class="btn">Show on a map<span class="go">›</span></div>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Defibrillator list.</b> The disclaimer is honest and unmissable, but not
+          coloured — it is a rule and a sentence, so it does not compete with Call 999 for alarm.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Find, record, send</h2>
+    <p class="sub">Position maths, responder capture, and getting a report off the phone.</p>
+    <div class="rail">
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="back">‹ Map</span><span class="p">On device</span></div>
+          <div class="body">
+            <div class="field"><div class="fl">Latitude, longitude</div>
+              <div class="fv sm">54.4609<br>-3.0886</div></div>
+            <div class="field"><div class="fl">OS grid reference</div>
+              <div class="fv">NY 2625 0625</div>
+              <div class="fn">Eight figures — accurate to roughly 10 m. That is the limit of the grid
+                transformation and of GPS.</div></div>
+            <div class="field"><div class="fl">what3words</div>
+              <div class="fn" style="margin:0">Not resolved. Needs a network — tap to resolve and
+                store against this record.</div></div>
+            <div class="offline"><span class="dot"></span>Coordinates and the grid reference need no signal.</div>
+          </div>
+          <div class="foot"><div class="btn sm">Open compass<span class="go">›</span></div></div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Where I am.</b> Mono readouts a caller can read out loud. The what3words slot
+          is empty rather than stale — a cached address shown as “current” is the one thing that would
+          send help to the wrong place.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="back">‹ Act</span><span class="p">Responder</span></div>
+          <div class="body">
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div class="ct">Position</div><span class="tag">attached</span></div>
+              <div class="cb" style="color:var(--soft);font-size:13px">Recorded 09:38. This is where the
+                incident was, not where you are now.</div>
+            </div>
+            <div class="row"><span class="tag scene">the casualty</span><span class="meta" style="margin-left:auto">2 of 6 recorded</span></div>
+            <div class="row"><div class="key on">S</div><div class="lbl">Signs and symptoms</div></div>
+            <div class="row"><div class="key">A</div><div class="lbl">Allergies and age</div></div>
+            <div class="row"><div class="key">M</div><div class="lbl">Medication</div></div>
+            <div class="row"><div class="key">P</div><div class="lbl">Past history</div></div>
+            <div class="row"><div class="key">L</div><div class="lbl">Last meal</div></div>
+            <div class="row"><div class="key">E</div><div class="lbl">Events</div></div>
+          </div>
+          <div class="foot"><div class="btn sm">Send report<span class="go">›</span></div></div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Record incident.</b> A form of questions, never a set of instructions. ETHANE
+          and ASHICE each declare whether they describe the scene or the casualty.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="back">‹ Act</span><span class="p">ETHANE</span></div>
+          <div class="body">
+            <div class="qr">QR drawn on this phone. No network, no server.</div>
+            <div class="slot"><div class="st">Compact payload</div>
+              <div class="sb">ETHANE answers, position and times, compressed to fit one code. A report
+                too long for a code falls back to plain text over the share sheet.</div></div>
+            <div class="offline"><span class="dot"></span>Works with no signal, either side.</div>
+          </div>
+          <div class="foot">
+            <div class="chans"><span class="ch">SMS</span><span class="ch">Email</span><span class="ch">WhatsApp</span></div>
+            <div class="btn sm">Share<span class="go">›</span></div>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Send report.</b> QR is primary because it needs no network and crosses both
+          platforms. A report that arrives by scan is shown as its own thing, never merged.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>What it gains, what it costs</h2>
+    <div class="gc">
+      <div class="col">
+        <h4>Gains</h4>
+        <ul>
+          <li><b>Continuity.</b> The app already looks like this; nothing merged is thrown away.</li>
+          <li><b>It refuses the domain reflex.</b> Not white-and-teal. It reads like field equipment,
+            which is what it is.</li>
+          <li><b>Red stays meaningful.</b> One red thing on the whole app, so red itself is the signal.</li>
+          <li><b>Type carries everything,</b> so there is nothing to misread at arm’s length and
+            nothing to break at 200% zoom.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>Costs</h4>
+        <ul>
+          <li><b>It is quiet.</b> A frightened stranger may not immediately see the two secondary
+            destinations, because nothing about them shouts.</li>
+          <li><b>No iconography</b> means the AED path relies on reading, in the exact moment reading
+            is hardest.</li>
+          <li><b>The list is the only AED view.</b> Finding a defibrillator on a map is two taps and a
+            screen away, which is one too many when someone is walking.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot-note">
+    <b>How to read this file.</b> Frames are 320 × 700, drawn at roughly real size for a phone held
+    one-handed. Every frame is live HTML — resize the window, or hit ⌘+ to zoom, and it reflows. The
+    light theme follows your system setting; the second Act frame is forced dark so both can be seen
+    at once. Clinical strings are the real cited record or an honest content slot — never invented.
+  </p>
+
+</div>
+</body>
+</html>

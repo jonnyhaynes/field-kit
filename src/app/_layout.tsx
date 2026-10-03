@@ -1,9 +1,7 @@
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import { useColorScheme } from 'react-native';
 
-import { Colors } from '@/constants/theme';
-
-type Scheme = 'light' | 'dark';
+import { Colors, type Scheme } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 /** Navigation chrome follows the app palette rather than the platform default. */
 function navigationTheme(scheme: Scheme) {
@@ -24,30 +22,24 @@ function navigationTheme(scheme: Scheme) {
 }
 
 export default function RootLayout() {
-  const scheme: Scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+  // One source for the theme, shared with every component and with the map style. The scheme
+  // decision used to be made here *and* in use-theme *and* in the map, independently.
+  const scheme = useColorScheme();
   const palette = Colors[scheme];
 
   return (
     <ThemeProvider value={navigationTheme(scheme)}>
+      {/*
+        Everything except the tab shell is now pushed *inside* a tab's own stack, so the tab bar
+        stays visible with that tab lit. That is why the root stack holds one entry: a screen pushed
+        here would cover the tab bar, which is what the Act/CPR relationship must not do.
+      */}
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: palette.backgroundElement },
-          headerTintColor: palette.text,
-          headerTitleStyle: { fontSize: 17 },
+          headerShown: false,
           contentStyle: { backgroundColor: palette.background },
         }}>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="cpr" options={{ title: 'Start compressions' }} />
-        <Stack.Screen name="aed" options={{ title: 'Nearest defibrillator' }} />
-        <Stack.Screen name="map" options={{ title: 'Offline map' }} />
-        <Stack.Screen name="regions" options={{ title: 'Region packs' }} />
-        <Stack.Screen name="position" options={{ title: 'Where I am' }} />
-        <Stack.Screen name="compass" options={{ title: 'Compass' }} />
-        <Stack.Screen name="settings" options={{ title: 'Settings' }} />
-        <Stack.Screen name="record" options={{ title: 'Record incident' }} />
-        <Stack.Screen name="send" options={{ title: 'Send report' }} />
-        <Stack.Screen name="scan" options={{ title: 'Open a report' }} />
-        <Stack.Screen name="about" options={{ title: 'Data and licences' }} />
+        <Stack.Screen name="(tabs)" />
       </Stack>
     </ThemeProvider>
   );

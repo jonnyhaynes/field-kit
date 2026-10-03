@@ -5,7 +5,7 @@ import { Screen } from '@/components/screen';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { parseRegionsCatalogue } from '@/maps/regions';
-import catalogueJson from '../../assets/maps/regions.json';
+import catalogueJson from '../../../../assets/maps/regions.json';
 
 /**
  * Where the app says where its data comes from.

@@ -105,7 +105,7 @@ tags:
 
 # Turning the depth off closes the gate, so this is not a one-way door.
 #
-# Back to the Act screen first: this flow is standing on /record, and the settings link lives on the
+# Back to the Act screen first: this flow is standing on /field, and the settings link lives on the
 # AED screen behind it.
 - launchApp
 - extendedWaitUntil:

@@ -107,7 +107,7 @@ export default function RegionsScreen() {
           accessibilityRole="button"
           accessibilityLabel="Data and licences"
           testID="regions-about-link"
-          onPress={() => router.push('/about')}
+          onPress={() => router.push('/more/about')}
           style={({ pressed }) => [
             styles.secondary,
             { borderColor: theme.border },
