@@ -6,7 +6,7 @@ import { useDepth } from '@/capture/use-depth';
 import { TabGlyph } from '@/components/tab-glyph';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { TAB_LABELS, isTabVisible } from '@/navigation/tabs';
+import { TAB_LABELS, TAB_TEST_IDS, isTabVisible } from '@/navigation/tabs';
 
 export default function TabsLayout() {
   const palette = Colors[useColorScheme()];
@@ -53,6 +53,7 @@ export default function TabsLayout() {
         name="(act)"
         options={{
           title: TAB_LABELS.act,
+          tabBarButtonTestID: TAB_TEST_IDS.act,
           tabBarIcon: ({ color }) => <TabGlyph id="act" color={color} />,
         }}
       />
@@ -60,6 +61,7 @@ export default function TabsLayout() {
         name="locate"
         options={{
           title: TAB_LABELS.locate,
+          tabBarButtonTestID: TAB_TEST_IDS.locate,
           tabBarIcon: ({ color }) => <TabGlyph id="locate" color={color} />,
         }}
       />
@@ -67,6 +69,7 @@ export default function TabsLayout() {
         name="field"
         options={{
           title: TAB_LABELS.field,
+          tabBarButtonTestID: TAB_TEST_IDS.field,
           href: fieldVisible ? undefined : null,
           // Field is the depth's own tab, so it is marked rather than merely present.
           tabBarActiveTintColor: palette.accent,
@@ -77,6 +80,7 @@ export default function TabsLayout() {
         name="more"
         options={{
           title: TAB_LABELS.more,
+          tabBarButtonTestID: TAB_TEST_IDS.more,
           tabBarIcon: ({ color }) => <TabGlyph id="more" color={color} />,
         }}
       />

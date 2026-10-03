@@ -41,3 +41,18 @@ export const TAB_LABELS: Record<TabId, string> = {
   field: 'Field',
   more: 'More',
 };
+
+/**
+ * Test ids for the tab buttons.
+ *
+ * These exist so a flow can select a tab by id rather than by its visible label, and — the reason
+ * they earn their place — so a flow can assert the *order* with a relative selector. "Depth adds,
+ * never moves" is a claim about position, and a test that only counted tabs would not catch a bar
+ * that gained Field and quietly reordered the rest.
+ */
+export const TAB_TEST_IDS: Record<TabId, string> = {
+  act: 'tab-act',
+  locate: 'tab-locate',
+  field: 'tab-field',
+  more: 'tab-more',
+};

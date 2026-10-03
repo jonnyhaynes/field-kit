@@ -1,0 +1,38 @@
+# TC-01 — the emergency action is on every screen except Act.
+#
+# Why this flow exists: the merged direction's one structural decision is that the tab bar is always
+# present, and the Call 999 dock sits directly above it everywhere *except* Act, where the primary
+# button already is that action. The rule has exactly two halves and both are easy to lose without
+# anything failing: put the dock on Act and there are two red things on the most important screen;
+# leave it off the others and the promise that the emergency action can never be navigated away from
+# goes with it. Neither shows up in a type-check, a lint, or a unit test.
+#
+# Selected by testID rather than by label, because the dock and Act's button carry the same words and
+# a text selector would match either.
+appId: com.colouringcode.fieldkit
+tags:
+  - guided
+  - '35'
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: inuse
+
+# Act: the primary button is Call 999, so the dock is deliberately not rendered here at all.
+- assertVisible:
+    id: act-screen
+- assertNotVisible:
+    id: call-dock
+
+# Locate: the dock is back, so the call is one tap away from the map.
+- tapOn:
+    id: tab-locate
+- assertVisible:
+    id: call-dock
+
+# More: the furthest point from the emergency path, and the one most likely to be forgotten.
+- tapOn:
+    id: tab-more
+- assertVisible:
+    id: call-dock

@@ -323,4 +323,15 @@ Recorded here rather than left in the diff, per the repo's convention.
     `scrollUntilVisible` measures visibility against the screen and reports 100% for an element the
     footer is covering, so it scrolls zero times and then taps the footer. The flows now swipe
     explicitly. This is the accepted trade being paid, not a surprise.
+11. **`useDepth` was per-caller state, and the depth-gated tab exposed it.** It was plain `useState`
+    inside the hook, so every screen that asked for the depth got its own copy: turning the switch on
+    in Settings changed nothing anywhere else until the app was relaunched. That was survivable while
+    the depth only gated a button — the existing capture flow relaunches, which hid it — but it is not
+    survivable when the depth decides whether a whole *tab* exists, because the tab simply never
+    appeared. It is now one value for the whole app with a small subscriber set. This was found by
+    asserting the tab appears *after* the switch, which the two new `guided/` flows do.
+12. **The two assertions the plan asked for are written**, in `.maestro/guided/`: the dock is present
+    on Locate and More and absent on Act, and enabling the depth adds Field *between* Locate and More
+    with nothing else reordered. The order assertions are the ones that would have caught point 9 —
+    a tab count cannot see a bar that gained a tab and quietly moved the rest.
 
