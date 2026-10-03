@@ -38,7 +38,7 @@ export default function MapScreen() {
 
 function MapContent() {
   const theme = useTheme();
-  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+  const scheme = useColorScheme();
 
   const assets = useMapAssets(scheme);
   const position = useCurrentPosition();

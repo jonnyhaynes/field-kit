@@ -1,9 +1,7 @@
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import { useColorScheme } from 'react-native';
 
-import { Colors } from '@/constants/theme';
-
-type Scheme = 'light' | 'dark';
+import { Colors, type Scheme } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 /** Navigation chrome follows the app palette rather than the platform default. */
 function navigationTheme(scheme: Scheme) {
@@ -24,7 +22,9 @@ function navigationTheme(scheme: Scheme) {
 }
 
 export default function RootLayout() {
-  const scheme: Scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+  // One source for the theme, shared with every component and with the map style. The scheme
+  // decision used to be made here *and* in use-theme *and* in the map, independently.
+  const scheme = useColorScheme();
   const palette = Colors[scheme];
 
   return (

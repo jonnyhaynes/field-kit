@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useColorScheme as useRNColorScheme } from 'react-native';
 
+import { DefaultScheme, type Scheme, resolveScheme } from '@/constants/theme';
+
 /**
- * To support static rendering, this value needs to be re-calculated on the client side for web
+ * To support static rendering, this value needs to be re-calculated on the client side for web.
+ *
+ * The pre-hydration value is the app default, not `'light'`: the server has no colour scheme to
+ * read, and this app is dark-first, so dark is the value that does not flash the wrong theme on the
+ * first paint. The conversion itself is `resolveScheme`, shared with the native hook.
  */
-export function useColorScheme() {
+export function useColorScheme(): Scheme {
   const [hasHydrated, setHasHydrated] = useState(false);
 
   useEffect(() => {
@@ -17,9 +23,7 @@ export function useColorScheme() {
 
   const colorScheme = useRNColorScheme();
 
-  if (hasHydrated) {
-    return colorScheme;
-  }
+  if (!hasHydrated) return DefaultScheme;
 
-  return 'light';
+  return resolveScheme(colorScheme);
 }

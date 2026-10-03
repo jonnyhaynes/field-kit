@@ -24,6 +24,7 @@ export default function ActScreen() {
     <Screen
       testID="act-screen"
       withTopInset
+      dock={false}
       actions={
         <>
           <ActionButton
