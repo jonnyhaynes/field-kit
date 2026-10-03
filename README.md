@@ -104,21 +104,33 @@ content) and records it in `assets/maps/regions.json`, which is what ships. `--n
 prints the size without touching the catalogue, which is how the zoom level was chosen: measured at
 z12/z13/z14 rather than guessed. Publish with the `gh release create` line the script prints.
 
-## Why the screens look half-empty
+## Where the clinical content comes from
 
-**There is no clinical content, and that is the point.** Field Kit reproduces first aid guidance
-from a licensed source; it never writes its own. That licence is not in place yet, so every clinical
-value renders as an empty slot rather than an unattributed instruction. `npm test` fails if any
-record ships without its citation.
+**It is reproduced, never written.** Every clinical value in this app is a published source's own
+wording, attributed and dated on the screen that shows it: the compression rate, the compression steps
+and the AED guidance come from **North West Ambulance Service**, an NHS ambulance trust.
 
-The metronome is written and its tempo maths is tested, but it is dormant: it beats at the pace in
-the licensed record, and there is no such record yet. The screen says so instead of showing a number
-we chose ourselves.
+**The licence is the Open Government Licence.** NHS material is published under the OGL, which permits
+copying, adaptation and commercial use provided the source is attributed — so this needs no permission
+conversation, and it is why the app ships real guidance rather than an empty slot. Each record carries
+its publisher, its source URL and the date it was checked; `assertCited` refuses any record without
+them, and a test asserts the metronome's pace sits inside the range the source publishes.
+
+**The Resuscitation Council UK remains the intended authority** (plan §2.1). Their permission is free
+on application, and their wording will replace this under the same ids when it is in hand — one record
+per slot, not a screen change. Both are UK practice; the OGL route is what made a finished app possible
+without waiting.
+
+**One thing to confirm before release:** the OGL is the basis relied on here, and it is stated on the
+NHS England and NHS website terms rather than on the trust page the wording was taken from. Worth a
+line to NWAS, or a switch to a page whose terms are explicit.
 
 ## Not yet in place
 
-- **Clinical content** — blocked on the licence. See the plan, §2.1. This is the only thing gating
-  real work.
+- **Clinical content** — in, from North West Ambulance Service under the Open Government Licence, and
+  cited on screen. The Resuscitation Council UK remains the intended authority and their wording will
+  replace it under the same ids (§2.1). Confirm the trust page's terms, or RCUK's permission, before
+  release.
 - **A compass on real hardware** — the screen exists and is honest about a device without a
   magnetometer, but a simulator has none, so a real bearing has never been seen. The bearing and
   distance to nearby defibrillators are verified; the heading is not.
