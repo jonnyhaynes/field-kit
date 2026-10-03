@@ -114,6 +114,19 @@ to buy (§2.5). Nothing has to be built to receive the content: a cited record a
 source, review date and edition, and `assertCited` refuses anything missing them, so the CPR screen
 fills in the day the wording arrives.
 
+**Delivered — the content is in, under the OGL.** The three guidance slots carry **verbatim wording from
+North West Ambulance Service**, an NHS trust, cited to its source page and the date it was checked. NHS
+material is published under the **Open Government Licence**, which permits copying, adaptation and
+commercial use provided the source is attributed — so this needed no permission conversation, which is
+what made a finished app possible now rather than after an application.
+
+Two things are recorded rather than assumed. The metronome beats at **110**, the middle of the source's
+published 100–120 range: the range is theirs, the single number is this app's reading of it, and a test
+keeps it inside the range. And **RCUK remains the intended authority** — their permission is free on
+application, and their wording replaces this under the same ids, so a licensed outcome later is one
+record per slot rather than a screen change. Before release the trust page's own terms should be
+confirmed, since the OGL basis is stated on NHS England and NHS website terms rather than on that page.
+
 ### 2.2 what3words
 
 **Read, in Phase 3c.** Four things came out of the licence. The one that costs money matters more
