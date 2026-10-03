@@ -308,4 +308,19 @@ Recorded here rather than left in the diff, per the repo's convention.
 8. **Palette values are in-gamut and two were measured rather than copied.** The design's signal
    chroma exceeds sRGB, so it is set to the most sRGB can hold at that lightness and hue. Rescue sits
    at L58 rather than the design's L63 because white-on-red measured 3.93 there.
+9. **A conditional `Tabs.Screen` does not hide a tab, and that shipped a real §1 breach.** Expo Router
+   renders every route in the tab directory whether or not it is declared, so omitting Field from the
+   list only dropped its options: the tab still appeared, with a default label and a default icon,
+   **at the guided depth** — an untrained user meeting a capture surface, which is the one thing §1
+   exists to prevent. `href: null` is what removes it. The tab order was also being decided by the
+   router rather than by the declaration order, which put Field last. **Nothing in the four checks
+   could have caught this** — it took running the app and looking at the tab bar. Slice 4's "two new
+   assertions" (the dock's presence, the tab count) would have caught it, and are now the obvious
+   next flows to write.
+10. **The dock's cost is measured now, and it is real.** Every screen's pinned footer grew by ~60px,
+    which pushed the first defibrillator's flag control, the map's link rows and the Settings opt-in
+    switch below the fold. Users can scroll to all of them; six Maestro flows could not, because
+    `scrollUntilVisible` measures visibility against the screen and reports 100% for an element the
+    footer is covering, so it scrolls zero times and then taps the footer. The flows now swipe
+    explicitly. This is the accepted trade being paid, not a surprise.
 

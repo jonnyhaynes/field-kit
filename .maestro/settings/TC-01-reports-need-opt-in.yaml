@@ -38,12 +38,15 @@ tags:
 # A swipe, not `scrollUntilVisible`. The dock above the tab bar made the pinned footer taller, so the
 # first result's flag now sits just below the fold — but its frame still lands on the *screen*, so
 # Maestro reports "visibility percentage 1.0", scrolls zero times, and then taps coordinates that are
-# underneath the footer, hitting "Show on a map" instead. An explicit swipe is the only thing that
-# moves it. See the README's sixth lesson.
+# underneath the footer, hitting "Show on a map" instead. See the README's sixth lesson.
+#
+# The distance is deliberately small and the duration long. Its job is only to lift the flag clear of
+# the footer: a full-page swipe carries it under the navigation header instead, where the tap lands
+# on nothing and the flag is never applied — which looks like a reporting bug and is not one.
 - swipe:
-    start: '50%, 55%'
-    end: '50%, 18%'
-    duration: 500
+    start: '50%, 58%'
+    end: '50%, 44%'
+    duration: 800
 - tapOn:
     id: aed-flag-0
 
