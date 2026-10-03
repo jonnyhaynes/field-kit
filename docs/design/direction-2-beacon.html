@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Kit — Direction 2: Beacon</title>
+<style>
+  /* ============================================================
+     DIRECTION 2 — BEACON
+     Dark-first. Hi-vis amber on warm black, for a screen read at
+     arm's length, at night, one-handed. The emergency action never
+     leaves the bottom of the screen. Red still does one job.
+     ============================================================ */
+  :root {
+    --base:  oklch(15% 0.004 90);
+    --panel: oklch(20% 0.006 90);
+    --sunk:  oklch(25% 0.008 90);
+    --ink:   oklch(97% 0.006 90);
+    --soft:  oklch(76% 0.010 90);
+    --line:  oklch(31% 0.008 90);
+    --signal: oklch(85% 0.175 88);
+    --signal-ink: oklch(22% 0.05 88);
+    --rescue: oklch(64% 0.235 27);
+    --rescue-ink: oklch(100% 0 0);
+    --bezel: oklch(25% 0.006 90);
+    --r: 16px;
+    --tap: 56px;
+    color-scheme: dark light;
+  }
+  .force-light {
+    --base:  oklch(98.5% 0.004 90);
+    --panel: oklch(100% 0 0);
+    --sunk:  oklch(94% 0.006 90);
+    --ink:   oklch(17% 0.008 90);
+    --soft:  oklch(46% 0.010 90);
+    --line:  oklch(88% 0.008 90);
+    --signal: oklch(80% 0.165 88);
+    --signal-ink: oklch(22% 0.05 88);
+    --rescue: oklch(52% 0.215 27);
+    --bezel: oklch(90% 0.006 90);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not(.force-dark) {
+      --base:  oklch(98.5% 0.004 90);
+      --panel: oklch(100% 0 0);
+      --sunk:  oklch(94% 0.006 90);
+      --ink:   oklch(17% 0.008 90);
+      --soft:  oklch(46% 0.010 90);
+      --line:  oklch(88% 0.008 90);
+      --signal: oklch(80% 0.165 88);
+      --signal-ink: oklch(22% 0.05 88);
+      --rescue: oklch(52% 0.215 27);
+      --bezel: oklch(90% 0.006 90);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 44px 24px 96px;
+    background: var(--base); color: var(--ink);
+    font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+
+  .kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--signal); margin: 0 0 12px; }
+  h1 { font-size: 38px; line-height: 1.08; margin: 0 0 14px; letter-spacing: -0.025em; font-weight: 750; }
+  .lede { color: var(--soft); max-width: 70ch; margin: 0 0 12px; font-size: 17px; }
+  .lede b { color: var(--ink); font-weight: 700; }
+  h2 { font-size: 25px; margin: 0 0 4px; letter-spacing: -0.02em; font-weight: 750; }
+  h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--soft);
+       margin: 0 0 16px; font-weight: 750; }
+  section { margin-top: 60px; }
+  .sub { color: var(--soft); max-width: 72ch; margin: 0 0 4px; font-size: 16px; }
+
+  .bet { margin-top: 26px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+  .bet div { border: 1px solid var(--line); border-radius: var(--r); padding: 16px 18px; background: var(--panel); }
+  .bet .t { font-size: 11.5px; font-weight: 750; text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--signal); margin-bottom: 7px; }
+  .bet .v { font-size: 15.5px; line-height: 1.45; }
+  @media (max-width: 860px){ .bet { grid-template-columns: 1fr; } }
+
+  /* ---------- structure diagram ---------- */
+  .struct { border: 1px solid var(--line); border-radius: 20px; padding: 24px; background: var(--panel); }
+  .srow { display: flex; flex-wrap: wrap; gap: 12px; }
+  .snode { border: 1px solid var(--line); border-radius: 14px; background: var(--base); overflow: hidden;
+           min-width: 168px; }
+  .snode .top { padding: 11px 15px; font-size: 14px; font-weight: 700; }
+  .snode .top span { display: block; font-weight: 400; font-size: 11.5px; color: var(--soft); margin-top: 3px; }
+  .snode .docklet { height: 9px; background: var(--rescue); }
+  .snode.signal .docklet { background: var(--signal); }
+  .snode.depth .top { border-bottom: 1px dashed var(--line); }
+  .sarrow { color: var(--soft); font-size: 12.5px; padding: 14px 0 14px 4px; font-weight: 600; }
+  .snote { font-size: 13.5px; color: var(--soft); margin: 18px 0 0; max-width: 78ch; line-height: 1.6; }
+  .snote b { color: var(--ink); font-weight: 700; }
+
+  /* ---------- phone frames ---------- */
+  .rail { display: flex; gap: 26px; overflow-x: auto; padding: 24px 2px 12px; align-items: flex-start; }
+  .step { flex: 0 0 auto; width: 320px; }
+  .phone { width: 320px; height: 704px; background: var(--bezel); border: 1px solid var(--line);
+           border-radius: 40px; padding: 11px; display: flex; flex-direction: column;
+           box-shadow: 0 1px 2px oklch(0% 0 0 / 0.35);
+           /* re-declare: a forced theme swaps tokens, but inherited colour was
+              already computed against the page theme. */
+           color: var(--ink); }
+  .screen { flex: 1; display: flex; flex-direction: column; border-radius: 30px; overflow: hidden;
+            background: var(--base); }
+  .status { display: flex; justify-content: space-between; padding: 9px 20px 2px; font-size: 11.5px;
+            font-weight: 700; color: var(--ink); }
+  .status .sig { letter-spacing: 2px; color: var(--soft); }
+  .strip { margin: 6px 16px 0; padding: 8px 12px; border-radius: 10px; background: var(--sunk);
+           font-size: 11.5px; font-weight: 650; letter-spacing: 0.02em; color: var(--soft);
+           display: flex; align-items: center; gap: 8px; }
+  .strip .led { width: 8px; height: 8px; border-radius: 50%; background: var(--signal); flex: none; }
+  .bar { padding: 8px 18px 12px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .bar .back { font-size: 13.5px; color: var(--soft); font-weight: 600; }
+  .bar .t { font-size: 19px; font-weight: 750; letter-spacing: -0.01em; }
+  .bar .p { font-size: 11px; color: var(--soft); letter-spacing: 0.05em; text-transform: uppercase; font-weight: 700; }
+  .body { flex: 1; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 13px;
+          overflow-y: auto; scrollbar-width: none; }
+  .body::-webkit-scrollbar { display: none; }
+  /* the persistent dock: the emergency action is never off-screen */
+  .dock { padding: 12px 14px 8px; display: flex; flex-direction: column; gap: 10px;
+          border-top: 1px solid var(--line); }
+  .home { height: 20px; display: grid; place-items: center; }
+  .home i { width: 110px; height: 5px; border-radius: 3px; background: var(--ink); opacity: 0.3; }
+  .cap { font-size: 13px; color: var(--soft); margin-top: 13px; line-height: 1.55; }
+  .cap b { color: var(--ink); font-weight: 700; }
+
+  /* ---------- primitives ---------- */
+  .q { font-size: 23px; font-weight: 750; line-height: 1.24; letter-spacing: -0.02em; }
+  .hint { font-size: 14.5px; color: var(--soft); line-height: 1.5; }
+  .btn { min-height: var(--tap); border-radius: var(--r); border: 1px solid var(--line);
+         background: var(--panel); color: var(--ink); font-size: 17px; font-weight: 700;
+         display: flex; align-items: center; justify-content: space-between; padding: 0 19px; gap: 10px;
+         text-align: left; }
+  .btn .go { color: var(--soft); font-weight: 400; font-size: 19px; }
+  .btn.signal { background: var(--signal); border-color: transparent; color: var(--signal-ink); }
+  .btn.sm { min-height: 48px; font-size: 15px; }
+  .rescue { min-height: 64px; border-radius: var(--r); border: none; background: var(--rescue);
+            color: var(--rescue-ink); font-size: 21px; font-weight: 800; letter-spacing: 0.01em;
+            display: flex; align-items: center; justify-content: center; }
+  .rescue.slim { min-height: 52px; font-size: 17px; }
+
+  .card { border: 1px solid var(--line); border-radius: var(--r); background: var(--panel);
+          padding: 16px 18px; display: flex; flex-direction: column; gap: 9px; }
+  .card .ct { font-size: 17px; font-weight: 750; }
+  .card .cb { font-size: 15.5px; line-height: 1.5; }
+  .cite { font-size: 12px; color: var(--soft); line-height: 1.45; }
+  .slot { border: 1px dashed var(--line); border-radius: var(--r); padding: 15px 17px; background: var(--sunk); }
+  .slot .st { font-size: 15px; font-weight: 750; margin-bottom: 5px; }
+  .slot .sb { font-size: 13.5px; color: var(--soft); line-height: 1.5; }
+
+  .beat { flex: 1; min-height: 250px; display: flex; flex-direction: column; align-items: center;
+          justify-content: center; gap: 8px; border-radius: 20px; background: var(--panel); }
+  .beat .n { font-size: 96px; font-weight: 800; letter-spacing: -0.05em; font-variant-numeric: tabular-nums;
+             font-family: ui-monospace, "SF Mono", Menlo, monospace; line-height: 0.95; }
+  .beat .c { font-size: 14px; color: var(--soft); font-weight: 650; letter-spacing: 0.02em; }
+  .beat .pill { width: 22px; height: 22px; border-radius: 50%; background: var(--signal); margin-bottom: 14px;
+                box-shadow: 0 0 0 9px oklch(85% 0.175 88 / 0.16); }
+  .cmd { font-size: 27px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; }
+
+  .aed { border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); padding: 15px 17px;
+         display: flex; flex-direction: column; gap: 8px; }
+  .aed .n { font-size: 17px; font-weight: 750; }
+  .aed .d { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
+            font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .aed .d small { font-size: 17px; font-weight: 700; letter-spacing: 0; margin-left: 4px; }
+  .aed .v { font-size: 12px; color: var(--soft); }
+  .aed .bar-mini { height: 4px; border-radius: 2px; background: var(--sunk); overflow: hidden; }
+  .aed .bar-mini i { display: block; height: 100%; background: var(--signal); }
+  .notice { border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px; background: var(--sunk);
+            font-size: 12.5px; line-height: 1.5; color: var(--soft); }
+  .notice b { color: var(--ink); font-weight: 750; }
+  .attr { font-size: 11px; color: var(--soft); line-height: 1.5; }
+  .flag { font-size: 13.5px; color: var(--soft); font-weight: 650; text-align: center; }
+
+  .field { border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); padding: 15px 17px; }
+  .field .fl { font-size: 11px; font-weight: 750; text-transform: uppercase; letter-spacing: 0.1em;
+               color: var(--soft); margin-bottom: 7px; }
+  .field .fv { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 27px; font-weight: 750;
+               letter-spacing: -0.02em; line-height: 1.2; }
+  .field .fv.sm { font-size: 20px; }
+  .field .fn { font-size: 12.5px; color: var(--soft); margin-top: 8px; line-height: 1.5; }
+
+  .row { display: flex; align-items: center; gap: 12px; font-size: 15.5px; }
+  .key { flex: 0 0 30px; height: 30px; border-radius: 9px; background: var(--sunk); display: grid;
+         place-items: center; font-weight: 800; font-size: 13px; }
+  .key.on { background: var(--signal); color: var(--signal-ink); }
+  .lbl { flex: 1; font-weight: 600; }
+  .meta { font-size: 12.5px; color: var(--soft); }
+  .tag { display: inline-flex; align-items: center; font-size: 11px; font-weight: 750; padding: 4px 10px;
+         border-radius: 999px; background: var(--sunk); color: var(--soft); letter-spacing: 0.04em;
+         text-transform: uppercase; }
+  .tag.scene { background: var(--signal); color: var(--signal-ink); }
+  .qr { width: 150px; height: 150px; margin: 4px auto; border-radius: 14px; background: #fff;
+        display: grid; place-items: center; color: #6b6b6b; font-size: 11px; text-align: center; padding: 18px; }
+  .chans { display: flex; gap: 9px; }
+  .chans .ch { flex: 1; min-height: 48px; border: 1px solid var(--line); border-radius: var(--r);
+               background: var(--panel); display: grid; place-items: center; font-size: 14px; font-weight: 700; }
+
+  .gc { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 760px){ .gc { grid-template-columns: 1fr; } }
+  .gc .col { border: 1px solid var(--line); border-radius: 18px; padding: 22px 24px; background: var(--panel); }
+  .gc h4 { margin: 0 0 13px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.11em;
+           color: var(--signal); font-weight: 750; }
+  .gc ul { margin: 0; padding-left: 18px; }
+  .gc li { margin: 8px 0; font-size: 15px; line-height: 1.55; }
+  .gc li b { font-weight: 750; }
+  .foot-note { margin-top: 46px; font-size: 13.5px; color: var(--soft); max-width: 80ch; line-height: 1.6; }
+  .foot-note b { color: var(--ink); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Field Kit · design direction 2 of 3</p>
+  <h1>Beacon</h1>
+  <p class="lede">
+    A piece of hi-vis equipment. Dark by default, because the moment you need this you may be in a
+    tent, a car at night, or a hillside after the light has gone. Big type, warm black, one hi-vis
+    amber for action, and rescue red that never leaves the bottom of the screen.
+  </p>
+  <p class="lede">
+    <b>The structural bet is the dock.</b> Call 999 is pinned to the bottom of every screen in the
+    app, on the same principle as the emergency exit sign: you should never have to navigate to it,
+    and you should never have to remember where it was. Everything else is a full-bleed command
+    screen built to be read at arm’s length, one-handed.
+  </p>
+
+  <div class="bet">
+    <div><div class="t">The bet</div><div class="v">Loud and legible beats calm. Like hi-vis, you wear it precisely because it’s not subtle.</div></div>
+    <div><div class="t">Structure</div><div class="v">Command screens, not pages. A persistent red dock keeps the emergency action on every screen.</div></div>
+    <div><div class="t">Colour discipline</div><div class="v">Hi-vis amber for action, red for emergency, and nothing else coloured.</div></div>
+  </div>
+
+  <section>
+    <h3>Structure</h3>
+    <div class="struct">
+      <div class="srow">
+        <div class="snode signal">
+          <div class="top">Act — command screen<span>The whole first screen is actions</span></div>
+          <div class="docklet" style="background:var(--signal)"></div>
+        </div>
+        <div class="snode">
+          <div class="top">Compressions<span>One command per screen</span></div>
+          <div class="docklet"></div>
+        </div>
+        <div class="snode">
+          <div class="top">Defibrillator<span>Glanceable, one entry per card</span></div>
+          <div class="docklet"></div>
+        </div>
+        <div class="snode">
+          <div class="top">Where I am<span>Readouts a caller can hear</span></div>
+          <div class="docklet"></div>
+        </div>
+        <div class="snode depth">
+          <div class="top">Record · Send<span>Revealed by the Responder depth</span></div>
+          <div class="docklet"></div>
+        </div>
+      </div>
+      <div class="sarrow">Every node above carries the same red dock at its bottom edge — shown as the red bar. That is the whole structure.</div>
+      <p class="snote">
+        <b>Depth is still not a mode.</b> The dock is identical for everyone; the Responder depth adds
+        Record and Send behind it, and the first two actions never move. The difference from
+        Direction 1 is that the emergency call is not a screen you return to — it is furniture.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>The emergency path</h2>
+    <p class="sub">Act in both themes, then one command per screen for CPR, then the defibrillator.</p>
+    <div class="rail">
+
+      <div class="step">
+        <div class="phone force-dark"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="strip"><span class="led"></span>Offline · guidance and defibrillators on this phone</div>
+          <div class="body">
+            <div class="q">Are they awake and breathing normally?</div>
+            <div class="hint">If you’re not sure, treat it as no.</div>
+          </div>
+          <div class="dock">
+            <div class="rescue">Call 999</div>
+            <div class="btn signal">They’re not breathing<span class="go">›</span></div>
+            <div class="btn">Find nearest defibrillator<span class="go">›</span></div>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Act, dark — the default.</b> The question is the only text; the three
+          actions fill the bottom half. The status strip states the offline fact once and stays.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone force-light"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="strip"><span class="led"></span>Offline · guidance and defibrillators on this phone</div>
+          <div class="body">
+            <div class="q">Are they awake and breathing normally?</div>
+            <div class="hint">If you’re not sure, treat it as no.</div>
+          </div>
+          <div class="dock">
+            <div class="rescue">Call 999</div>
+            <div class="btn signal">They’re not breathing<span class="go">›</span></div>
+            <div class="btn">Find nearest defibrillator<span class="go">›</span></div>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Act, light.</b> Daylight is the variant here, not the default — the same
+          system, with the amber darkened so it holds contrast on white.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone force-dark"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="back">‹ Act</span><span class="p">CPR</span></div>
+          <div class="body">
+            <div class="cmd">Push hard and fast in the centre of the chest.</div>
+            <div class="beat"><span class="pill"></span><div class="n">110</div><div class="c">PER MINUTE · KEEP GOING</div></div>
+          </div>
+          <div class="dock">
+            <div class="btn signal">Get a defibrillator<span class="go">›</span></div>
+            <div class="rescue slim">Call 999</div>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Compressions.</b> One command per screen, and the number is big enough to
+          read from the floor. The wording is the cited record; the pace is this app’s reading of it.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone force-dark"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="back">‹ Act</span><span class="p">Nearest</span></div>
+          <div class="body">
+            <div class="notice"><b>Unverified.</b> Public mapping, not the ambulance service. It may
+              have moved, been removed, or be locked away.</div>
+            <div class="aed">
+              <div class="n">Village hall, north door</div>
+              <div class="d">180<small>m</small></div>
+              <div class="bar-mini"><i style="width:22%"></i></div>
+              <div class="v">40° NE · position never checked</div>
+            </div>
+            <div class="aed">
+              <div class="n">Phone box, High Street</div>
+              <div class="d">420<small>m</small></div>
+              <div class="bar-mini"><i style="width:52%"></i></div>
+              <div class="v">115° ESE · checked Mar 2024</div>
+            </div>
+            <div class="flag">Flag as inaccurate</div>
+            <div class="attr">Defibrillator data © OpenStreetMap contributors, ODbL.</div>
+          </div>
+          <div class="dock">
+            <div class="btn signal">Show on a map<span class="go">›</span></div>
+            <div class="rescue slim">Call 999</div>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Defibrillator.</b> Distance is the largest thing on each card, with a small
+          bar showing relative closeness. The disclaimer is honest but muted, so red stays the alarm.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Find, record, send</h2>
+    <p class="sub">The dock follows you: position, capture and transfer all keep Call 999 in reach.</p>
+    <div class="rail">
+
+      <div class="step">
+        <div class="phone force-dark"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="back">‹ Map</span><span class="p">On device</span></div>
+          <div class="body">
+            <div class="field"><div class="fl">Latitude, longitude</div>
+              <div class="fv sm">54.4609<br>-3.0886</div></div>
+            <div class="field"><div class="fl">OS grid reference</div>
+              <div class="fv">NY 2625 0625</div>
+              <div class="fn">Eight figures — accurate to roughly 10 m, the limit of the grid
+                transformation and of GPS.</div></div>
+            <div class="field"><div class="fl">what3words</div>
+              <div class="fn" style="margin:0">Not resolved. Needs a network.</div></div>
+          </div>
+          <div class="dock">
+            <div class="btn signal">Open compass<span class="go">›</span></div>
+            <div class="rescue slim">Call 999</div>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Where I am.</b> Readouts sized for reading aloud on a call — and the call is
+          right there, in case the phone is about to be handed over.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone force-dark"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="back">‹ Act</span><span class="p">Responder</span></div>
+          <div class="body">
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div class="ct">Position</div><span class="tag">attached</span></div>
+              <div class="cb" style="color:var(--soft);font-size:13.5px">Recorded 09:38. Where the
+                incident was, not where you are now.</div>
+            </div>
+            <div class="row"><span class="tag scene">the casualty</span><span class="meta" style="margin-left:auto">2 of 6</span></div>
+            <div class="row"><div class="key on">S</div><div class="lbl">Signs and symptoms</div></div>
+            <div class="row"><div class="key">A</div><div class="lbl">Allergies and age</div></div>
+            <div class="row"><div class="key">M</div><div class="lbl">Medication</div></div>
+            <div class="row"><div class="key">P</div><div class="lbl">Past history</div></div>
+            <div class="row"><div class="key">L</div><div class="lbl">Last meal</div></div>
+          </div>
+          <div class="dock">
+            <div class="btn signal">Send report<span class="go">›</span></div>
+            <div class="rescue slim">Call 999</div>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Record incident.</b> A tapered capture form with the depth tag on the face of
+          it. It records observations and never suggests a treatment.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone force-dark"><div class="screen">
+          <div class="status"><span>9:41</span><span class="sig">▮▮▮ ▮</span></div>
+          <div class="bar"><span class="back">‹ Act</span><span class="p">ETHANE</span></div>
+          <div class="body">
+            <div class="qr">QR drawn on this phone. No network, no server.</div>
+            <div class="slot"><div class="st">Compact payload</div>
+              <div class="sb">ETHANE answers, position and times, compressed to fit one code.</div></div>
+            <div class="notice">Works with no signal, either side. A scanned report is shown as its
+              own thing, never merged into your record.</div>
+          </div>
+          <div class="dock">
+            <div class="chans"><span class="ch">SMS</span><span class="ch">Email</span><span class="ch">WhatsApp</span></div>
+            <div class="btn signal">Share<span class="go">›</span></div>
+            <div class="rescue slim">Call 999</div>
+          </div>
+          <div class="home"><i></i></div>
+        </div></div>
+        <p class="cap"><b>Send report.</b> The dock is doing real work here: a responder handing a
+          phone to a bystander keeps the call action at the bottom of the screen.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>What it gains, what it costs</h2>
+    <div class="gc">
+      <div class="col">
+        <h4>Gains</h4>
+        <ul>
+          <li><b>The emergency action is never lost.</b> No matter how deep someone navigates, Call 999
+            is one tap at the bottom of the screen.</li>
+          <li><b>It survives the arm’s-length case</b> — phone on the ground, in the dark, one hand busy.
+            Distance and pace are readable from further away than a body-text screen allows.</li>
+          <li><b>The night case is the default,</b> not an afterthought, and the amber holds its
+            contrast on both themes.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>Costs</h4>
+        <ul>
+          <li><b>The dock invites a mis-tap.</b> A red call button always under the thumb needs the
+            confirmation sheet the plan already specifies, or one brush dials 999.</li>
+          <li><b>It spends a lot of screen on actions.</b> Reference content, which is most of the app,
+            gets less room than it does today.</li>
+          <li><b>Bigger, louder, more colour.</b> That is the right trade at 2am and arguably the wrong
+            one on a calm weekday, so it is a decision about the worst moment, not the average one.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot-note">
+    <b>How to read this file.</b> Dark is the default; add or remove dark mode in your OS to flip the
+    pages, and the second Act frame is forced light so both can be compared. Frames are 320 × 704. The
+    clinical strings are the real cited record or an honest content slot — never invented.
+  </p>
+
+</div>
+</body>
+</html>

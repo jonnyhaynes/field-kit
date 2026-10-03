@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Kit — three directions, one decision</title>
+<style>
+  :root {
+    --paper: oklch(97.2% 0.006 85);
+    --card:  oklch(99% 0.003 85);
+    --sunk:  oklch(94.5% 0.007 85);
+    --ink:   oklch(23% 0.012 85);
+    --soft:  oklch(46% 0.012 85);
+    --line:  oklch(89% 0.008 85);
+    --accent: oklch(80% 0.155 78);
+    --accent-ink: oklch(28% 0.06 78);
+    --rescue: oklch(48% 0.185 25);
+    --rescue-ink: oklch(99% 0.01 25);
+    --d1: oklch(80% 0.155 78);
+    --d2: oklch(72% 0.17 85);
+    --d3: oklch(80% 0.17 125);
+    --r: 14px;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: oklch(19% 0.008 85);
+      --card:  oklch(24% 0.009 85);
+      --sunk:  oklch(28% 0.010 85);
+      --ink:   oklch(94% 0.006 85);
+      --soft:  oklch(70% 0.010 85);
+      --line:  oklch(33% 0.010 85);
+      --accent: oklch(82% 0.150 78);
+      --accent-ink: oklch(24% 0.05 78);
+      --rescue: oklch(58% 0.180 25);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 44px 24px 96px;
+    background: var(--paper); color: var(--ink);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+
+  .kicker { font-size: 12px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--soft); margin: 0 0 10px; }
+  h1 { font-size: 32px; line-height: 1.14; margin: 0 0 12px; letter-spacing: -0.02em; }
+  .lede { color: var(--soft); max-width: 74ch; margin: 0 0 10px; }
+  .lede b { color: var(--ink); font-weight: 650; }
+  h2 { font-size: 21px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--soft);
+       margin: 0 0 14px; font-weight: 650; }
+  section { margin-top: 52px; }
+  .sub { color: var(--soft); margin: 0 0 16px; font-size: 15px; max-width: 76ch; }
+
+  /* ---- three cards ---- */
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+  @media (max-width: 880px){ .cards { grid-template-columns: 1fr; } }
+  .dc { border: 1px solid var(--line); border-radius: 16px; background: var(--card); overflow: hidden;
+        display: flex; flex-direction: column; }
+  .dc .swatch { height: 7px; }
+  .dc .in { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .dc .nm { font-size: 20px; font-weight: 700; letter-spacing: -0.015em; }
+  .dc .bet { font-size: 14px; line-height: 1.5; }
+  .dc .cost { font-size: 13px; color: var(--soft); line-height: 1.5; }
+  .dc .cost b { color: var(--ink); font-weight: 650; }
+  .dc a { margin-top: auto; font-size: 14px; font-weight: 650; color: var(--ink);
+          text-decoration: none; border-bottom: 1px solid var(--accent); align-self: flex-start;
+          padding-bottom: 1px; }
+  .dc .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--soft); }
+
+  /* ---- tables ---- */
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 11px 14px 11px 0; border-bottom: 1px solid var(--line);
+           vertical-align: top; }
+  thead th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--soft);
+             font-weight: 650; padding-bottom: 8px; }
+  tbody th { font-weight: 650; white-space: nowrap; padding-right: 20px; }
+  td, tbody th { line-height: 1.5; }
+  .grp td, .grp th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em;
+                     color: var(--soft); font-weight: 650; padding-top: 22px; border-bottom: none; }
+  .c1 { border-left: 3px solid var(--d1); padding-left: 12px; }
+  .c2 { border-left: 3px solid var(--d2); padding-left: 12px; }
+  .c3 { border-left: 3px solid var(--d3); padding-left: 12px; }
+  .same { color: var(--soft); }
+  @media (max-width: 880px){
+    table, thead, tbody, tr, th, td { display: block; }
+    thead { display: none; }
+    tbody th { white-space: normal; padding-bottom: 4px; }
+    td { padding-top: 4px; padding-bottom: 10px; }
+    .grp td { border-bottom: 1px solid var(--line); }
+  }
+
+  ul { margin: 8px 0 0; padding-left: 20px; }
+  li { margin: 7px 0; }
+  .note { font-size: 13.5px; color: var(--soft); margin: 16px 0 0; max-width: 80ch; line-height: 1.6; }
+  .note b { color: var(--ink); font-weight: 650; }
+
+  .rec { margin-top: 40px; border: 1px solid var(--line); border-left: 4px solid var(--accent);
+         border-radius: 14px; padding: 22px 24px; background: var(--card); }
+  .rec h2 { margin-bottom: 10px; }
+  .rec p { max-width: 80ch; margin: 0 0 12px; }
+  .rec p:last-child { margin-bottom: 0; }
+
+  .gap { border: 1px dashed var(--line); border-radius: 14px; padding: 20px 22px; margin-top: 20px;
+         background: var(--sunk); }
+  .gap h3 { margin-bottom: 10px; }
+  .gap ul { margin: 0; }
+  .gap li { font-size: 13.5px; color: var(--soft); }
+  .gap li b { color: var(--ink); font-weight: 650; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Field Kit · design review</p>
+  <h1>Three directions, one decision</h1>
+  <p class="lede">
+    The three prototype files each show the same jobs — Act, CPR, the defibrillator list, where I am,
+    responder capture, send — so they can be compared like for like. This page is the comparison:
+    what each direction does with the same information architecture, and where each of the things
+    you originally asked for ends up.
+  </p>
+  <p class="lede">
+    <b>What is not being decided here:</b> depth is not a mode, red is the emergency action and
+    nothing else, offline is default, and clinical wording is reproduced and cited. All three respect
+    those. The decision is narrower than it looks: <b>how loud the app is, and whether the emergency
+    action is a screen you return to or a piece of furniture.</b>
+  </p>
+
+  <div class="rec" style="margin-top:26px;border-left-color:var(--rescue)">
+    <h2>Decided since this page was written</h2>
+    <p>
+      <b>Beacon’s idea, on Workbench’s bottom tab navigation and sub-tabs.</b> That includes the tab
+      bar this page argued against, which is the owner’s call and a reasonable one — the tab bar is
+      what gives the AED map and the capture forms a home.
+    </p>
+    <p>
+      The conflict it created is resolved in
+      <a href="direction-merged-beacon-tabs.html" style="color:var(--ink);font-weight:650">the merged
+      prototype</a>: the tab bar is always present, and the red Call 999 dock sits above it on every
+      screen <b>except Act</b>, so there is exactly one red thing on any screen. The visual style is
+      explicitly still open.
+    </p>
+    <p>
+      <b>The recommendation below is kept as the reasoning, not as the decision.</b>
+    </p>
+  </div>
+
+  <section>
+    <h3>The three</h3>
+    <div class="cards">
+      <div class="dc">
+        <div class="swatch" style="background:var(--d1)"></div>
+        <div class="in">
+          <div class="nm">1 · Field Manual</div>
+          <div class="bet">Calm beats loud. Warm graphite, hi-vis amber on the actions, red used once.
+            One root screen, three doors, a back button home.</div>
+          <div class="cost"><b>Cost:</b> it is quiet. A frightened stranger may not see the two
+            secondary destinations, because nothing about them shouts.</div>
+          <a href="direction-1-field-manual.html">Open the prototype →</a>
+          <div class="mono">direction-1-field-manual.html</div>
+        </div>
+      </div>
+      <div class="dc">
+        <div class="swatch" style="background:var(--d2)"></div>
+        <div class="in">
+          <div class="nm">2 · Beacon</div>
+          <div class="bet">Loud and legible. Dark by default, hi-vis amber, big type. The red Call 999
+            action is pinned to the bottom of every screen.</div>
+          <div class="cost"><b>Cost:</b> a red call button always under the thumb needs the
+            confirmation sheet, or one brush dials 999.</div>
+          <a href="direction-2-beacon.html">Open the prototype →</a>
+          <div class="mono">direction-2-beacon.html</div>
+        </div>
+      </div>
+      <div class="dc">
+        <div class="swatch" style="background:var(--d3)"></div>
+        <div class="in">
+          <div class="nm">3 · Workbench</div>
+          <div class="bet">Make it navigable. Four tabs — Act, Locate, Field, More — with a map-first
+            Locate and the depth adding a tab.</div>
+          <div class="cost"><b>Cost:</b> the tab bar competes with the emergency action, and Call 999
+            is only reachable from one tab.</div>
+          <a href="direction-3-workbench.html">Open the prototype →</a>
+          <div class="mono">direction-3-workbench.html</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Where the same jobs land</h2>
+    <p class="sub">Every row is a job the app already does. The question is what each direction makes
+      of it.</p>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:22%">Job</th>
+          <th style="width:26%">1 · Field Manual</th>
+          <th style="width:26%">2 · Beacon</th>
+          <th style="width:26%">3 · Workbench</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="grp"><td colspan="4">The emergency path</td></tr>
+        <tr>
+          <th>Call 999</th>
+          <td class="c1">The dominant action on the Act root screen. Reachable only by returning to Act.</td>
+          <td class="c2">The single dominant action on Act, <b>and</b> a red dock pinned to the bottom of every other screen.</td>
+          <td class="c3">The dominant action on the Act tab. Not reachable from the other three tabs.</td>
+        </tr>
+        <tr>
+          <th>Secondary doors</th>
+          <td class="c1">Two full-width rows under Call 999: compressions, defibrillator.</td>
+          <td class="c2">Two dock buttons above Call 999: compressions, defibrillator.</td>
+          <td class="c3">Two full-width buttons inside the Act tab, below Call 999.</td>
+        </tr>
+        <tr>
+          <th>Compressions</th>
+          <td class="c1">Pushed screen. Metronome is the screen; the cited pace record sits under it.</td>
+          <td class="c2">A command screen. One instruction, then the number, with the dock still live.</td>
+          <td class="c3">Pushed from Act, so Act stays lit in the tab bar — CPR is Act territory.</td>
+        </tr>
+        <tr>
+          <th>Defibrillators</th>
+          <td class="c1">A list. Distance, bearing, verification date, unverified disclaimer. The map is a second tap.</td>
+          <td class="c2">A glanceable list where distance is the largest element on each card. The map is a second tap.</td>
+          <td class="c3">Map-first in the Locate tab, numbered pins tied to the list beneath it. This is the surface that changes most.</td>
+        </tr>
+
+        <tr class="grp"><td colspan="4">Find and orient</td></tr>
+        <tr>
+          <th>Where I am</th>
+          <td class="c1">Pushed screen. Mono readouts: lat/long, eight-figure grid ref, what3words.</td>
+          <td class="c2">Pushed screen, readouts sized for reading aloud down a phone line.</td>
+          <td class="c3">A segment inside the Locate tab, one tap from the map.</td>
+        </tr>
+        <tr>
+          <th>Compass</th>
+          <td class="c1">Pushed from “Where I am”, with the no-compass state.</td>
+          <td class="c2">Pushed from “Where I am”.</td>
+          <td class="c3">A segment inside Locate, beside the map.</td>
+        </tr>
+        <tr>
+          <th>Offline map and region packs</th>
+          <td class="c1">Map is a pushed screen; packs have their own screen off it.</td>
+          <td class="c2">Map is a pushed screen; packs have their own screen off it.</td>
+          <td class="c3">The map <em>is</em> the Locate tab, so packs and position hang off the same surface.</td>
+        </tr>
+        <tr>
+          <th>what3words</th>
+          <td colspan="3" class="same">Identical in all three: resolved only when asked, tied to the point it was taken at, never cached and shown as current.</td>
+        </tr>
+
+        <tr class="grp"><td colspan="4">Responder depth</td></tr>
+        <tr>
+          <th>Access to capture</th>
+          <td class="c1">A fourth button on Act, plus a Settings entry. The emergency path is unchanged.</td>
+          <td class="c2">A fourth dock button. The emergency path is unchanged.</td>
+          <td class="c3">A fourth tab, Field. The emergency path is unchanged, but the depth is visible in the structure.</td>
+        </tr>
+        <tr>
+          <th>Forms and send</th>
+          <td class="c1">Pushed screens: SAMPLER/ABCDE/ETHANE/ASHICE, then send.</td>
+          <td class="c2">Pushed screens, with Call 999 still in the dock while a report is written.</td>
+          <td class="c3">A compartment of its own: capture and send both live under Field.</td>
+        </tr>
+
+        <tr class="grp"><td colspan="4">Everything else</td></tr>
+        <tr>
+          <th>Settings, reports, scan, about</th>
+          <td class="c1">Pushed from Act.</td>
+          <td class="c2">Pushed from Act, dock still live.</td>
+          <td class="c3">Under the More tab; scan sits with Field, because it is a report arriving.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Against what you originally asked for</h2>
+    <p class="sub">Structural, not visual — so this holds whichever direction wins.</p>
+    <table>
+      <thead><tr><th style="width:30%">Asked for</th><th>Where it lives</th></tr></thead>
+      <tbody>
+        <tr><th>AED lookup</th><td>Defibrillator list, one tap from Act in every direction; the offline map and bearings sit beside it. Direction 3 makes this a map-first tab instead of a list.</td></tr>
+        <tr><th>what3words</th><td>Resolved on demand, stored against the record with its sample time, never shown as your current position. Same in all three.</td></tr>
+        <tr><th>Grid reference</th><td>On-device, eight figures, with the coverage limit stated rather than a reference for the wrong country. Same in all three.</td></tr>
+        <tr><th>Compass</th><td>Present, with the calibration warning and the honest no-compass state. Same in all three; only where it sits changes.</td></tr>
+        <tr><th>Call emergency services</th><td>The dominant action on launch in every direction. Direction 2 additionally keeps it on screen everywhere.</td></tr>
+        <tr><th>The card’s capture, sendable</th><td>SAMPLER, ABCDE, ETHANE and ASHICE behind the Responder depth, then QR, share sheet or NFC tag. Same in all three.</td></tr>
+        <tr><th>Works fully offline</th><td>Guidance, defibrillator data, position maths and reports are all local. Only what3words resolution and pack downloads want a network, and both degrade visibly. Same in all three.</td></tr>
+        <tr><th>UK first, expandable</th><td>Only the OS grid reference and the AED dataset are UK-bound, and both sit behind the same interface as everything else. Same in all three.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="rec">
+    <h2>What I’d ship</h2>
+    <p>
+      <b>Beacon’s dock, Field Manual’s palette and restraint, Workbench’s Locate tab.</b> That is a
+      real recommendation, not a blend for its own sake: each direction got one thing right and one
+      thing wrong, and they are different things.
+    </p>
+    <p>
+      Beacon is right that this app is used badly — one-handed, in poor light, by someone who may not
+      be trained — and the dock is the honest fix for the fact that the current build keeps the most
+      important action behind a back button. Field Manual is right that red and amber should stay
+      scarce, and that type alone can carry a screen. Workbench is right that “walk to the
+      defibrillator” should be one surface, not two taps and a screen.
+    </p>
+    <p>
+      The one thing I would not take is Workbench’s tab bar. Four equally weighted destinations at the
+      bottom of the screen is exactly the “too many equal calls to action” the brief warns about, and
+      it is the only idea here that makes the emergency path worse rather than better.
+    </p>
+  </div>
+
+  <div class="gap">
+    <h3>What these prototypes deliberately do not settle</h3>
+    <ul>
+      <li><b>The map is drawn in CSS.</b> It exists so Direction 3’s composition can be judged; it is not a proposal for how MapLibre should render.</li>
+      <li><b>Settings, region packs, scan and about are nodes in the structure diagrams, not frames.</b> They are built and their copy is unchanged by this decision, so they were left out to keep the rails comparable.</li>
+      <li><b>No motion.</b> Transitions, the metronome’s beat and the dock’s behaviour under a scroll are all unspecified here.</li>
+      <li><b>Not run on a device.</b> These were rendered in a headless browser and looked at; nothing has been through Maestro or a real phone.</li>
+    </ul>
+  </div>
+
+  <p class="note">
+    <b>Read them in this order:</b> this page, then the direction you are most drawn to, then the one
+    you are least drawn to — the second read is where the objections show up. Say which way you want
+    to go and I will fold it into <span class="mono">src/constants/theme.ts</span> and the screens, and
+    update the plan’s design section.
+  </p>
+
+</div>
+</body>
+</html>
