@@ -13,3 +13,12 @@ export {
   GUIDANCE_IDS,
   type GuidanceId,
 } from './guidance';
+export {
+  DRAFTS,
+  DRAFT_DISCLAIMER,
+  draftCompressionPaceBpm,
+  draftContentEnabled,
+  draftProblems,
+  getDraft,
+  type DraftRecord,
+} from './drafts';

@@ -114,6 +114,20 @@ to buy (§2.5). Nothing has to be built to receive the content: a cited record a
 source, review date and edition, and `assertCited` refuses anything missing them, so the CPR screen
 fills in the day the wording arrives.
 
+**The prototype tier — draft content, and what it does not change.** Sign-off cannot come before there
+is something designed to sign off, so the three guidance slots can be filled with **draft wording**
+under `EXPO_PUBLIC_PROTOTYPE_CONTENT=1`. It is off in every default build, and the guards are what make
+it safe to have: drafts live in their own corpus so `assertCited` and the empty-corpus tripwire keep
+protecting the shipped path untouched; a cited record always wins over a draft for the same slot, so the
+prototype cannot outlive the permission it is waiting for; every card and banner says *draft*; and the
+bodies describe what belongs in the slot rather than telling anyone what to do — a test enforces both
+halves. The drafts are **deleted** when RCUK's wording arrives, under the same ids.
+
+**This does not change the rule, and it is the closest the project has come to it.** Shipped guidance is
+still reproduced rather than authored. What is authored here is a placeholder for a screen, marked as
+one everywhere it appears, and there is one attributed figure in it — RCUK's published compression rate,
+recorded in `sourceFigure` so that the figure's provenance and the wording's lack of one stay separate.
+
 ### 2.2 what3words
 
 **Read, in Phase 3c.** Four things came out of the licence. The one that costs money matters more

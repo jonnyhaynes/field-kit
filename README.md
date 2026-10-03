@@ -70,6 +70,7 @@ Nothing is required to run the app. One optional variable:
 
 | Variable | What it does |
 | --- | --- |
+| `EXPO_PUBLIC_PROTOTYPE_CONTENT` | Set to `1` to show **draft clinical wording for design review**. Off unless set, and no release build sets it. The drafts fill the three guidance slots with wording we wrote — marked as draft everywhere it appears, with a banner on the CPR screen — so the app can be fully designed and then taken to a clinician for sign-off. It is the one place this project does not reproduce guidance, and the plan (§2.1) records the guards: a separate corpus, so the citation gate keeps protecting the shipped path; a label on every card; and deletion the moment RCUK's wording exists. Put it in `.env`, which is gitignored. |
 | `EXPO_PUBLIC_WHAT3WORDS_KEY` | A what3words API key, for resolving a location on "Where I am". **It needs a plan that can convert coordinates to a word address** — the free tier cannot, and answers `402 QuotaExceeded`. That was checked against the live API rather than inferred from the docs. Without a working key the screen says so. Put it in `.env`, which is gitignored — never in the repo. Note that an `EXPO_PUBLIC_` value is inlined into the JS bundle at build time, so it is not a secret: anyone with a build can spend the quota. |
 
 ## Checks
