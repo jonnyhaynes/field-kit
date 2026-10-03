@@ -41,7 +41,7 @@ first flow that lands there runs; `capture/` and `transfer/` were the last to be
 - Anything a flow needs to explain goes in a comment at the top of the flow, not in a commit
   message — the next person reads the flow.
 
-## Five things the device taught us
+## Six things the device taught us
 
 Learned by running these, each after a failure that looked like a product bug and was a test bug.
 
@@ -69,3 +69,10 @@ Learned by running these, each after a failure that looked like a product bug an
    non-interactive element does dismiss it, because a `Screen`'s `ScrollView` is
    `keyboardShouldPersistTaps="handled"`; where even that is unreliable, relaunching the app avoids the
    keyboard altogether, at the cost of a slower flow.
+6. **A pinned footer covers what is under it, and `extendedWaitUntil visible` does not notice.**
+   Adding the dock above the tab bar made every screen's footer taller, so content that used to sit
+   above the fold — the first defibrillator's flag control, the map's link rows — moved underneath
+   it. Maestro taps an element's *reported* coordinates, so those taps hit the footer button instead
+   and the flow failed a step later with something unrelated: the AED flow ended up on the map
+   because its flag tap landed on "Show on a map". The fix is lesson 2's fix, `scrollUntilVisible`
+   before the tap. This is also the dock's honest cost, measured rather than assumed.

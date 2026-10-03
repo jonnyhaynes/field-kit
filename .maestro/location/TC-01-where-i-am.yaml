@@ -23,10 +23,13 @@ tags:
     id: aed-screen
 - tapOn:
     id: aed-map
-- extendedWaitUntil:
-    visible:
-      id: map-position-link
-    timeout: 60000
+# The start point matters: it must be in the ScrollView's text area *below the map*, because a swipe
+# that begins over the MapLibre view pans the map instead of scrolling the page. The dock made the
+# footer taller, so the link rows are below the fold and no longer reachable without a scroll.
+- swipe:
+    start: '50%, 76%'
+    end: '50%, 28%'
+    duration: 500
 - tapOn:
     id: map-position-link
 

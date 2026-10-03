@@ -6,7 +6,7 @@ import { useDepth } from '@/capture/use-depth';
 import { TabGlyph } from '@/components/tab-glyph';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { TAB_LABELS, TAB_ROUTE_NAMES, isTabVisible, visibleTabs } from '@/navigation/tabs';
+import { TAB_LABELS, isTabVisible } from '@/navigation/tabs';
 
 export default function TabsLayout() {
   const palette = Colors[useColorScheme()];
@@ -28,6 +28,8 @@ export default function TabsLayout() {
     previousDepth.current = depth;
   }, [depth, pathname]);
 
+  const fieldVisible = isTabVisible(depth, 'field');
+
   return (
     <Tabs
       screenOptions={{
@@ -39,19 +41,45 @@ export default function TabsLayout() {
           borderTopColor: palette.border,
         },
       }}>
-      {visibleTabs(depth).map((tab) => (
-        <Tabs.Screen
-          key={tab}
-          name={TAB_ROUTE_NAMES[tab]}
-          options={{
-            title: TAB_LABELS[tab],
-            // Field is the depth's own tab, so it is marked rather than merely present.
-            tabBarActiveTintColor:
-              isTabVisible(depth, 'field') && tab === 'field' ? palette.accent : palette.text,
-            tabBarIcon: ({ color }) => <TabGlyph id={tab} color={color} />,
-          }}
-        />
-      ))}
+      {/*
+        Order is fixed by these declarations, and every route in this directory renders as a tab
+        whether or not it is declared — which is the trap worth naming. A *conditional*
+        <Tabs.Screen> does not hide Field; it only drops its options, so the tab still appears with
+        a default label and a default icon, appended to the end of the bar. It did exactly that at
+        the guided depth, which is the thing §1 forbids. `href: null` is what removes it, and it
+        leaves the route resolvable so the redirect above still works.
+      */}
+      <Tabs.Screen
+        name="(act)"
+        options={{
+          title: TAB_LABELS.act,
+          tabBarIcon: ({ color }) => <TabGlyph id="act" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="locate"
+        options={{
+          title: TAB_LABELS.locate,
+          tabBarIcon: ({ color }) => <TabGlyph id="locate" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="field"
+        options={{
+          title: TAB_LABELS.field,
+          href: fieldVisible ? undefined : null,
+          // Field is the depth's own tab, so it is marked rather than merely present.
+          tabBarActiveTintColor: palette.accent,
+          tabBarIcon: ({ color }) => <TabGlyph id="field" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{
+          title: TAB_LABELS.more,
+          tabBarIcon: ({ color }) => <TabGlyph id="more" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }

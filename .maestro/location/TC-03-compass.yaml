@@ -26,10 +26,11 @@ tags:
     id: aed-screen
 - tapOn:
     id: aed-map
-- extendedWaitUntil:
-    visible:
-      id: map-position-link
-    timeout: 60000
+# See TC-01: the swipe must start below the map, or the map pans instead of the page scrolling.
+- swipe:
+    start: '50%, 76%'
+    end: '50%, 28%'
+    duration: 500
 - tapOn:
     id: map-position-link
 - assertVisible:

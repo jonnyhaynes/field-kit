@@ -29,10 +29,13 @@ tags:
     id: act-aed
 
 # Flag an entry, so there is something waiting to read.
-- extendedWaitUntil:
-    visible:
-      id: aed-flag-0
-    timeout: 60000
+#
+# Swiped rather than scrolled to, for the reason in TC-01: the element reports as fully visible while
+# actually sitting under the taller pinned footer. See the README's sixth lesson.
+- swipe:
+    start: '50%, 55%'
+    end: '50%, 18%'
+    duration: 500
 - tapOn:
     id: aed-flag-0
 
@@ -46,6 +49,13 @@ tags:
 # Opt in. This shows the reports; it sends nothing.
 - tapOn:
     id: settings-osm-opt-in
+
+# Swipe before waiting. The dock made the pinned footer taller, so the report is below the fold now
+# and `extendedWaitUntil visible` would never become true however long it waited.
+- swipe:
+    start: '50%, 70%'
+    end: '50%, 26%'
+    duration: 500
 - extendedWaitUntil:
     visible:
       id: settings-note-0
