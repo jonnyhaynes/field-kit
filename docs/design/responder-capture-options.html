@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Kit — the responder capture form</title>
+<style>
+  /* Dark-first, in the app's own palette, so these frames read like the thing they describe. */
+  :root {
+    --base:   oklch(14% 0.008 250);
+    --panel:  oklch(19% 0.010 250);
+    --panel2: oklch(24% 0.012 250);
+    --line:   oklch(30% 0.014 250);
+    --ink:    oklch(97% 0.004 250);
+    --soft:   oklch(74% 0.012 250);
+    --signal: oklch(80% 0.168 72);
+    --signal-ink: oklch(20% 0.047 72);
+    --rescue: oklch(58% 0.237 27);
+    --rescue-ink: oklch(100% 0 0);
+    --good: oklch(78% 0.14 150);
+    --r: 15px;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 44px 24px 96px; background: var(--base); color: var(--ink);
+    font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+  .kicker { font-size: 12px; font-weight: 750; letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--signal); margin: 0 0 12px; }
+  h1 { font-size: 36px; line-height: 1.1; margin: 0 0 14px; letter-spacing: -0.025em; font-weight: 750; }
+  h2 { font-size: 24px; margin: 0 0 6px; letter-spacing: -0.02em; font-weight: 730; }
+  h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--soft);
+       margin: 0 0 14px; font-weight: 730; }
+  section { margin-top: 56px; }
+  .lede { color: var(--soft); max-width: 76ch; margin: 0 0 12px; }
+  .lede b { color: var(--ink); font-weight: 700; }
+  .sub { color: var(--soft); max-width: 76ch; margin: 0 0 6px; font-size: 16px; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin-top: 8px; }
+  th, td { text-align: left; padding: 11px 16px 11px 0; border-bottom: 1px solid var(--line);
+           vertical-align: top; }
+  thead th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--soft);
+             font-weight: 730; }
+  tbody th { font-weight: 700; white-space: nowrap; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .rail { display: flex; gap: 26px; overflow-x: auto; padding: 22px 2px 6px; align-items: flex-start; }
+  .step { flex: 0 0 auto; width: 320px; }
+  .phone { width: 320px; height: 660px; background: oklch(23% 0.010 250); border: 1px solid var(--line);
+           border-radius: 38px; padding: 11px; display: flex; flex-direction: column; color: var(--ink); }
+  .screen { flex: 1; display: flex; flex-direction: column; border-radius: 27px; overflow: hidden;
+            background: var(--base); }
+  .bar { padding: 14px 18px 12px; text-align: center; font-size: 15px; font-weight: 700;
+         border-bottom: 1px solid var(--line); background: var(--panel); }
+  .body { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; }
+  .foot { border-top: 1px solid var(--line); padding: 10px 14px 8px; display: flex;
+          flex-direction: column; gap: 8px; }
+  .tabbar { display: flex; border-top: 1px solid var(--line); background: var(--panel); padding: 8px 4px 4px; }
+  .tab { flex: 1; text-align: center; font-size: 10px; font-weight: 700; color: var(--soft); }
+  .tab.on { color: var(--ink); }
+  .tab.depth { color: var(--signal); }
+  .cap { font-size: 13px; color: var(--soft); margin-top: 12px; line-height: 1.55; }
+  .cap b { color: var(--ink); font-weight: 700; }
+
+  .h1s { font-size: 24px; font-weight: 750; letter-spacing: -0.02em; }
+  .card { border: 1px solid var(--line); border-radius: var(--r); background: var(--panel);
+          padding: 13px 15px; display: flex; flex-direction: column; gap: 7px; }
+  .card .ht { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .card .mn { font-size: 18px; font-weight: 750; letter-spacing: 0.02em; }
+  .card .purpose { font-size: 13px; color: var(--soft); line-height: 1.45; }
+  .tag { font-size: 10.5px; font-weight: 750; text-transform: uppercase; letter-spacing: 0.05em;
+         padding: 3px 8px; border-radius: 999px; background: var(--panel2); color: var(--soft); }
+  .tag.scene { background: var(--signal); color: var(--signal-ink); }
+  .prog { font-size: 12px; color: var(--soft); font-variant-numeric: tabular-nums; }
+  .flabel { font-size: 14px; font-weight: 650; }
+  .fnote { font-size: 11.5px; color: var(--soft); }
+  .input { min-height: 42px; border: 1px solid var(--line); border-radius: 10px; background: var(--base);
+           display: flex; align-items: center; padding: 0 10px; font-size: 13px; color: var(--soft); }
+  .chips { display: flex; gap: 7px; flex-wrap: wrap; }
+  .chip { border: 1px solid var(--line); border-radius: 10px; min-height: 38px; display: flex;
+          align-items: center; padding: 0 12px; font-size: 13px; }
+
+  .seg { display: flex; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden;
+         background: var(--panel2); }
+  .seg span { flex: 1; text-align: center; font-size: 11.5px; font-weight: 700; padding: 9px 2px;
+              color: var(--soft); }
+  .seg span.on { background: var(--panel); color: var(--ink); }
+  .chiprow { display: flex; gap: 7px; overflow: hidden; }
+  .chiprow .c { border: 1px solid var(--line); border-radius: 999px; padding: 7px 11px; font-size: 12px;
+                font-weight: 700; color: var(--soft); white-space: nowrap; }
+  .chiprow .c.on { background: var(--signal); border-color: transparent; color: var(--signal-ink); }
+  .chiprow .c small { font-weight: 600; opacity: 0.75; margin-left: 5px; }
+
+  .row { display: flex; align-items: center; gap: 11px; border: 1px solid var(--line);
+         border-radius: var(--r); background: var(--panel); padding: 12px 14px; }
+  .row .txt { flex: 1; }
+  .row .go { color: var(--soft); font-weight: 400; }
+  .letter { font-size: 12px; font-weight: 800; color: var(--soft); letter-spacing: 0.08em;
+            text-transform: uppercase; margin-top: 4px; }
+
+  .btn { border-radius: var(--r); min-height: 48px; display: flex; align-items: center;
+         justify-content: center; font-size: 16px; font-weight: 700; }
+  .btn.signal { background: var(--signal); color: var(--signal-ink); }
+  .btn.ghost { border: 1px solid var(--line); color: var(--ink); }
+  .btn.dock { background: var(--rescue); color: var(--rescue-ink); min-height: 50px; }
+
+  .problems { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
+  @media (max-width: 860px) { .problems { grid-template-columns: 1fr; } }
+  .pc { border: 1px solid var(--line); border-left: 3px solid var(--rescue); border-radius: 14px;
+        padding: 16px 18px; background: var(--panel); }
+  .pc .t { font-size: 15px; font-weight: 730; margin-bottom: 6px; }
+  .pc .b { font-size: 14px; color: var(--soft); line-height: 1.5; }
+  .pc .b b { color: var(--ink); font-weight: 700; }
+
+  .opts { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; margin-top: 20px; }
+  @media (max-width: 1000px) { .opts { grid-template-columns: 1fr; } }
+  .opt { border: 1px solid var(--line); border-radius: 16px; background: var(--panel); padding: 18px 20px; }
+  .opt h4 { margin: 0 0 8px; font-size: 17px; font-weight: 730; }
+  .opt p { margin: 0 0 10px; font-size: 14px; color: var(--soft); line-height: 1.55; }
+  .opt p b { color: var(--ink); font-weight: 700; }
+  .opt .verdict { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+  .pick { color: var(--good); }
+  .no { color: var(--rescue); }
+
+  .rec { margin-top: 40px; border: 1px solid var(--line); border-left: 4px solid var(--signal);
+         border-radius: 16px; padding: 22px 24px; background: var(--panel); }
+  .rec h2 { margin-bottom: 12px; }
+  .rec p { max-width: 84ch; margin: 0 0 12px; font-size: 16px; }
+  .rec p:last-child { margin: 0; }
+  .rec b { font-weight: 700; }
+  ul { margin: 8px 0 0; padding-left: 20px; }
+  li { margin: 7px 0; }
+  .foot-note { margin-top: 44px; font-size: 13.5px; color: var(--soft); max-width: 84ch; line-height: 1.6; }
+  .foot-note b { color: var(--ink); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Field Kit · responder capture</p>
+  <h1>The capture form is 47 fields on one screen</h1>
+  <p class="lede">
+    Looked at on the simulator rather than imagined. The Field tab renders all four mnemonics as
+    cards in a single scroll: <b>SAMPLER 8 fields, ABCDE 21, ETHANE 8, ASHICE 10</b>. That is the
+    whole complaint, measured — and it is worse than "a lot", because the four are not alternatives
+    to each other in any way the screen admits.
+  </p>
+  <p class="lede">
+    Everything below is the same palette and type as the app, so these frames can be compared with
+    what is actually on the phone.
+  </p>
+
+  <section>
+    <h3>What the screen is today</h3>
+    <div class="rail">
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar">Record incident</div>
+          <div class="body">
+            <div class="h1s">Record incident</div>
+            <div class="card">
+              <div class="ht"><span class="mn" style="font-size:16px">Position</span></div>
+              <div class="purpose">No position attached to this report yet.</div>
+              <div class="input">No position fix yet</div>
+            </div>
+            <div class="card">
+              <div class="ht"><span class="mn">SAMPLER</span><span class="tag">the casualty</span></div>
+              <div class="purpose">History from a casualty who is alert enough to answer.</div>
+              <div class="prog">0 of 8 recorded</div>
+              <div class="flabel">Signs and symptoms, in their own words</div>
+              <div class="input" style="min-height:56px"></div>
+              <div class="flabel">Allergies, and what happened</div>
+            </div>
+          </div>
+          <div class="foot">
+            <div class="btn signal">Send report</div>
+            <div class="btn dock">Call 999</div>
+          </div>
+          <div class="tabbar">
+            <span class="tab">Act</span><span class="tab">Locate</span>
+            <span class="tab on depth">Field</span><span class="tab">More</span>
+          </div>
+        </div></div>
+        <p class="cap"><b>Today.</b> The first screen of a 47-field scroll. ABCDE, ETHANE and ASHICE
+          are somewhere below, and nothing says how far.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar">Record incident</div>
+          <div class="body">
+            <div class="card" style="gap:9px">
+              <div class="ht"><span class="mn">ABCDE</span><span class="tag">the casualty</span></div>
+              <div class="prog">11 of 21 recorded</div>
+              <div class="letter">C · Circulation</div>
+              <div class="flabel">Pulse, if you can feel one</div>
+              <div class="chips"><span class="chip">Present</span><span class="chip">Absent</span><span class="chip">Not checked</span></div>
+              <div class="flabel">Blood glucose (mmol/L)</div>
+              <div class="fnote">Needs equipment you may not have.</div>
+              <div class="input"></div>
+              <div class="flabel">Injuries found, head to toe</div>
+              <div class="input" style="min-height:56px"></div>
+            </div>
+            <div class="card">
+              <div class="ht"><span class="mn">ETHANE</span><span class="tag scene">the scene</span></div>
+              <div class="prog">0 of 8 recorded</div>
+            </div>
+          </div>
+          <div class="foot">
+            <div class="btn signal">Send report</div>
+            <div class="btn dock">Call 999</div>
+          </div>
+          <div class="tabbar">
+            <span class="tab">Act</span><span class="tab">Locate</span>
+            <span class="tab on depth">Field</span><span class="tab">More</span>
+          </div>
+        </div></div>
+        <p class="cap"><b>Half way down.</b> ABCDE alone is taller than two screens. A responder who
+          wants ASHICE scrolls past all of it, and a responder who is <em>in</em> ABCDE cannot see
+          how much of it is left.</p>
+      </div>
+    </div>
+
+    <div class="problems">
+      <div class="pc"><div class="t">There is nowhere to be</div><div class="b">
+        Four mnemonics, one scroll, no index and no position indicator. You cannot tell whether you
+        are at the start, the middle, or one card from the end — and <b>ABCDE alone is 45% of the
+        form</b>.</div></div>
+      <div class="pc"><div class="t">The four are not interchangeable</div><div class="b">
+        A responder at a cardiac arrest wants ABCDE; at handover, ASHICE; for a scene report,
+        ETHANE. Those are different jobs on different incidents, and the screen presents them as one
+        continuous document. <b>Nobody fills all four in.</b></div></div>
+      <div class="pc"><div class="t">"Send report" competes with Call 999</div><div class="b">
+        Two full-width pinned buttons, and the upper one is the signal colour. It is there from
+        <b>zero answers</b>, occupying ~120px of the viewport and sitting above the one action that
+        must never be missed.</div></div>
+      <div class="pc"><div class="t">"Record incident" is said twice</div><div class="b">
+        The navigation header and the body heading are identical, which spends a third of the first
+        screen on nothing. Locate does not do this.</div></div>
+      <div class="pc"><div class="t">Progress is a grey sentence</div><div class="b">
+        <b>"0 of 7 recorded"</b> is the only progress signal, it is the least prominent text in the
+        card, and it scrolls away the moment you start working.</div></div>
+      <div class="pc"><div class="t">The mnemonic's own structure is flattened</div><div class="b">
+        A-B-C-D-E is a sequence of five stages, and the screen renders it as one card of 21 fields.
+        <b>The structure that makes the mnemonic memorable is exactly what is thrown away.</b></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h3>The four forms, for scale</h3>
+    <table>
+      <thead><tr><th>Form</th><th>Describes</th><th>Fields</th><th>Used when</th></tr></thead>
+      <tbody>
+        <tr><th>SAMPLER</th><td>the casualty</td><td class="num">8</td><td>A casualty alert enough to answer questions.</td></tr>
+        <tr><th>ABCDE</th><td>the casualty</td><td class="num">21</td><td>The primary survey. The longest by far, and the one with its own internal order.</td></tr>
+        <tr><th>ETHANE</th><td>the scene</td><td class="num">8</td><td>A situation report to a control room or second crew.</td></tr>
+        <tr><th>ASHICE</th><td>the casualty</td><td class="num">10</td><td>Handover, as the patient leaves.</td></tr>
+      </tbody>
+    </table>
+    <p class="sub" style="margin-top:12px">
+      Three describe a casualty and one describes a scene; the app already knows this and shows it
+      as a tag. That distinction is the beginning of a menu, not a detail on a card.
+    </p>
+  </section>
+
+  <section>
+    <h2>Three ways to fix it</h2>
+    <p class="sub">Same fields, same data, three different answers to "where am I and what is left".</p>
+
+    <div class="rail">
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar">Record incident</div>
+          <div class="body">
+            <div class="chiprow">
+              <span class="c on">SAMPLER<small>0/8</small></span>
+              <span class="c">ABCDE<small>0/21</small></span>
+              <span class="c">ETHANE<small>0/8</small></span>
+            </div>
+            <div class="card">
+              <div class="ht"><span class="mn">SAMPLER</span><span class="tag">the casualty</span></div>
+              <div class="purpose">History from a casualty who is alert enough to answer.</div>
+              <div class="flabel">Signs and symptoms, in their own words</div>
+              <div class="input" style="min-height:56px"></div>
+              <div class="flabel">Allergies, and what happened</div>
+              <div class="input" style="min-height:56px"></div>
+            </div>
+          </div>
+          <div class="foot">
+            <div class="btn ghost">Send report · 0 answered</div>
+            <div class="btn dock">Call 999</div>
+          </div>
+          <div class="tabbar">
+            <span class="tab">Act</span><span class="tab">Locate</span>
+            <span class="tab on depth">Field</span><span class="tab">More</span>
+          </div>
+        </div></div>
+        <p class="cap"><b>Option A — one mnemonic at a time.</b> The same in-page tabs Locate just
+          gained, with progress on each chip.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar">Record incident</div>
+          <div class="body">
+            <div class="h1s" style="font-size:20px">Nothing recorded yet</div>
+            <div class="row"><div class="txt"><div class="mn" style="font-size:16px">SAMPLER</div>
+              <div class="purpose">History from a casualty who can answer</div></div>
+              <span class="prog">0/8</span><span class="go">›</span></div>
+            <div class="row"><div class="txt"><div class="mn" style="font-size:16px">ABCDE</div>
+              <div class="purpose">Primary survey — A, B, C, D, E</div></div>
+              <span class="prog">0/21</span><span class="go">›</span></div>
+            <div class="row"><div class="txt"><div class="mn" style="font-size:16px">ETHANE</div>
+              <div class="purpose">Situation report — the scene</div></div>
+              <span class="prog">0/8</span><span class="go">›</span></div>
+            <div class="row"><div class="txt"><div class="mn" style="font-size:16px">ASHICE</div>
+              <div class="purpose">Handover — the casualty leaving</div></div>
+              <span class="prog">0/10</span><span class="go">›</span></div>
+          </div>
+          <div class="foot"><div class="btn dock">Call 999</div></div>
+          <div class="tabbar">
+            <span class="tab">Act</span><span class="tab">Locate</span>
+            <span class="tab on depth">Field</span><span class="tab">More</span>
+          </div>
+        </div></div>
+        <p class="cap"><b>Option B — an index of four.</b> The tab is a menu, not a document. Each
+          row is a form you can go to; the progress is the content.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar">ABCDE</div>
+          <div class="body">
+            <div class="chiprow"><span class="c">A<small>1/2</small></span><span class="c on">B<small>2/4</small></span>
+              <span class="c">C<small>0/5</small></span><span class="c">D<small>0/4</small></span>
+              <span class="c">E<small>0/6</small></span></div>
+            <div class="card">
+              <div class="ht"><span class="mn" style="font-size:16px">Breathing</span>
+                <span class="prog">2 of 4</span></div>
+              <div class="flabel">Is the chest rising evenly?</div>
+              <div class="chips"><span class="chip">Yes</span><span class="chip">No</span><span class="chip">Not checked</span></div>
+              <div class="flabel">Breaths per minute</div>
+              <div class="input">16</div>
+            </div>
+            <div class="prog">3 of 21 recorded in ABCDE</div>
+          </div>
+          <div class="foot">
+            <div class="btn ghost">Send report · 3 answered</div>
+            <div class="btn dock">Call 999</div>
+          </div>
+          <div class="tabbar">
+            <span class="tab">Act</span><span class="tab">Locate</span>
+            <span class="tab on depth">Field</span><span class="tab">More</span>
+          </div>
+        </div></div>
+        <p class="cap"><b>Option B, inside ABCDE.</b> The largest form keeps the mnemonic's own
+          structure — A, B, C, D, E as stages — instead of flattening it into 21 rows.</p>
+      </div>
+    </div>
+
+    <div class="opts">
+      <div class="opt">
+        <h4>A · One form at a time</h4>
+        <p>The four become in-page tabs, the way Locate now works. One mnemonic's fields on screen;
+          chips carry progress.</p>
+        <p><b>Gain:</b> consistent with the navigation just built, and 8–21 fields instead of 47.</p>
+        <p><b>Cost:</b> four long labels in one control is cramped on a 320px screen, and a chip row
+          that scrolls hides the form you cannot see. It also assumes you know which mnemonic you
+          want before you start.</p>
+        <div class="verdict">Viable, but it is a switch, not a map</div>
+      </div>
+      <div class="opt">
+        <h4>B · An index of four</h4>
+        <p>Field is a menu. Each row names a mnemonic, what it describes, and how far along it is;
+          opening one gives it a focused screen with its own header.</p>
+        <p><b>Gain:</b> the screen is four lines instead of 47 fields, progress is the content,
+          and a responder who needs only ASHICE taps once. It matches how the forms are actually
+          used — one per incident.</p>
+        <p><b>Cost:</b> one more tap to reach any form, and you cannot see two forms at once.</p>
+        <div class="verdict pick">What I would ship</div>
+      </div>
+      <div class="opt">
+        <h4>C · An accordion</h4>
+        <p>All four stay on one screen, collapsed to a header each, expanding in place.</p>
+        <p><b>Gain:</b> scope visible at a glance with no navigation at all.</p>
+        <p><b>Cost:</b> expanding the longest form still pushes the rest off screen, so the benefit
+          evaporates exactly where it is needed. Expanding state inside a scroll view is also
+          fiddly to get right.</p>
+        <div class="verdict no">Looks tidy, fails at 21 fields</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Three fixes that hold whichever structure wins</h2>
+    <div class="problems">
+      <div class="pc" style="border-left-color:var(--good)">
+        <div class="t">Send report leaves the pinned footer</div>
+        <div class="b">It should not be a permanent primary above Call 999. Put it <b>in the header
+          with its count</b> — "Send · 3 answered" — and leave the footer to the emergency action
+          alone. The report is still always reachable, and the screen stops having two strongest
+          buttons.</div>
+      </div>
+      <div class="pc" style="border-left-color:var(--good)">
+        <div class="t">One title, not two</div>
+        <div class="b">Drop the body heading and keep the navigation header, or the reverse. Two
+          identical headings on one screen is the clearest sign the layout was never looked at on a
+          phone.</div>
+      </div>
+      <div class="pc" style="border-left-color:var(--good)">
+        <div class="t">Progress becomes a property of the form</div>
+        <div class="b">The count belongs on the row or chip that names the form, so it is visible
+          <b>while you are deciding</b> which one to open, and while you are inside it — not only
+          when you happen to scroll past the card's header.</div>
+      </div>
+      <div class="pc" style="border-left-color:var(--good)">
+        <div class="t">Not everything needs the same weight</div>
+        <div class="b">Eighteen of ABCDE's fields are optional-by-nature. Some are
+          <b>equipment-dependent</b> and say so; those could sit behind a "needs kit" disclosure so
+          a first aider without a cuff or a thermometer is not scrolling past fields they cannot
+          answer.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="rec">
+    <h2>What I would ship</h2>
+    <p>
+      <b>Option B, with the Send button moved into the header.</b> The tab becomes a short menu of
+      the four things the Responder depth actually provides, each with what it describes and how far
+      along it is; opening one gives it the whole screen. ABCDE keeps A-B-C-D-E as stages, because
+      that structure is the mnemonic.
+    </p>
+    <p>
+      The reason is not that four rows are prettier than 47 fields. It is that the screen should say
+      <b>which tool you are picking up</b>, and the current one says "here is a very long form" —
+      which is not true of any single incident.
+    </p>
+    <p>
+      I would not do Option C. It reads well as a sketch and collapses as soon as ABCDE is opened,
+      which is the only case that matters.
+    </p>
+  </div>
+
+  <div class="pc" style="border-left-color:var(--signal); margin-top: 28px">
+    <div class="t">What I need from you before building any of it</div>
+    <div class="b">
+      <b>This is a design decision, so it needs your call rather than my implementation.</b> The
+      structure changes the routes (a focused form is a pushed screen), two Maestro flows
+      (<code>record-mnemonic-*</code> selectors, which currently assume all four are on one page) and
+      the Send path. If you want B, it is a plan-first change of its own — I would not fold it into
+      the tab-navigation PR, which is already large and waiting on review.
+    </div>
+  </div>
+
+  <p class="foot-note">
+    <b>How to read this.</b> The frames above are 320 × 660 and drawn in the app's own palette and
+    type. The field counts are counted from <span style="font-family:ui-monospace,monospace">src/capture/forms.ts</span>,
+    not estimated, and the "today" frames follow the real screen, which was captured on the iOS
+    simulator rather than remembered.
+  </p>
+
+</div>
+</body>
+</html>
