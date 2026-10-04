@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ActionButton } from '@/components/action-button';
@@ -23,7 +22,7 @@ import { useAddress } from '@/what3words/use-address';
  * The latitude and longitude are rendered from a `CurrentPosition`, so the type — not a comment —
  * is what stops a recorded location being shown here as though it were where you are standing.
  */
-export default function PositionScreen() {
+export function WhereScreen({ onOpenCompass }: { onOpenCompass: () => void }) {
   const theme = useTheme();
   const position = useCurrentPosition();
 
@@ -57,7 +56,7 @@ export default function PositionScreen() {
           label="Open compass"
           hint="A bearing to walk on, if this device has a compass"
           testID="position-compass-link"
-          onPress={() => router.push('/locate/compass')}
+          onPress={onOpenCompass}
         />
       }>
       <Text style={[styles.title, { color: theme.text }]}>Where I am</Text>

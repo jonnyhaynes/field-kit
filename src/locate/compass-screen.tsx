@@ -31,7 +31,7 @@ import { useCurrentPosition } from '@/location/current-position';
  */
 const RESULT_LIMIT = 3;
 
-export default function CompassScreen() {
+export function CompassScreen() {
   return (
     <AedDatabaseProvider>
       <Suspense fallback={<CompassNotice body="Opening the compass…" />}>
