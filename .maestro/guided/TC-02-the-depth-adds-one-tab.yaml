@@ -19,6 +19,14 @@ tags:
     permissions:
       location: inuse
 
+# Skipped on iOS, where there is no dialog. See TC-01 for why `runFlow/when` rather than an
+# optional tap: the dialog arrives when the map tab mounts, which the navigator does at launch.
+- runFlow:
+    when:
+      visible: 'While using the app'
+    commands:
+      - tapOn: 'While using the app'
+
 # Guided: three tabs, and Field is not among them.
 - assertVisible:
     id: tab-act
