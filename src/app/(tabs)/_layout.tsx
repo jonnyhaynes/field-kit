@@ -3,13 +3,10 @@ import { useEffect, useRef } from 'react';
 
 import { type Depth } from '@/capture/depth';
 import { useDepth } from '@/capture/use-depth';
-import { TabGlyph } from '@/components/tab-glyph';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { TAB_LABELS, TAB_TEST_IDS, isTabVisible } from '@/navigation/tabs';
+import { TabBar } from '@/components/tab-bar';
+import { TAB_LABELS, isTabVisible } from '@/navigation/tabs';
 
 export default function TabsLayout() {
-  const palette = Colors[useColorScheme()];
   const { depth } = useDepth();
   const pathname = usePathname();
 
@@ -31,59 +28,26 @@ export default function TabsLayout() {
   const fieldVisible = isTabVisible(depth, 'field');
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: palette.text,
-        tabBarInactiveTintColor: palette.textSecondary,
-        tabBarStyle: {
-          backgroundColor: palette.backgroundElement,
-          borderTopColor: palette.border,
-        },
-      }}>
-      {/*
-        Order is fixed by these declarations, and every route in this directory renders as a tab
-        whether or not it is declared — which is the trap worth naming. A *conditional*
-        <Tabs.Screen> does not hide Field; it only drops its options, so the tab still appears with
-        a default label and a default icon, appended to the end of the bar. It did exactly that at
-        the guided depth, which is the thing §1 forbids. `href: null` is what removes it, and it
-        leaves the route resolvable so the redirect above still works.
-      */}
-      <Tabs.Screen
-        name="(act)"
-        options={{
-          title: TAB_LABELS.act,
-          tabBarButtonTestID: TAB_TEST_IDS.act,
-          tabBarIcon: ({ color }) => <TabGlyph id="act" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="locate"
-        options={{
-          title: TAB_LABELS.locate,
-          tabBarButtonTestID: TAB_TEST_IDS.locate,
-          tabBarIcon: ({ color }) => <TabGlyph id="locate" color={color} />,
-        }}
-      />
+    /*
+      The native bar is replaced wholesale rather than styled: the register needs a floating pill and
+      a separate rounded container for the emergency action, and no `screenOptions` can express two
+      objects where React Navigation has one.
+
+      Order is fixed by these declarations, and every route in this directory renders as a tab
+      whether or not it is declared — which is the trap worth naming. A *conditional*
+      <Tabs.Screen> does not hide Field; it only drops its options, so the tab still appears with
+      a default label and a default icon, appended to the end of the bar. It did exactly that at
+      the guided depth, which is the thing §1 forbids. `href: null` is what removes it, and the bar
+      checks the same gate again so a custom bar cannot regress it.
+    */
+    <Tabs tabBar={(props) => <TabBar state={props.state} />} screenOptions={{ headerShown: false }}>
+      <Tabs.Screen name="(act)" options={{ title: TAB_LABELS.act }} />
+      <Tabs.Screen name="locate" options={{ title: TAB_LABELS.locate }} />
       <Tabs.Screen
         name="field"
-        options={{
-          title: TAB_LABELS.field,
-          tabBarButtonTestID: TAB_TEST_IDS.field,
-          href: fieldVisible ? undefined : null,
-          // Field is the depth's own tab, so it is marked rather than merely present.
-          tabBarActiveTintColor: palette.accent,
-          tabBarIcon: ({ color }) => <TabGlyph id="field" color={color} />,
-        }}
+        options={{ title: TAB_LABELS.field, href: fieldVisible ? undefined : null }}
       />
-      <Tabs.Screen
-        name="more"
-        options={{
-          title: TAB_LABELS.more,
-          tabBarButtonTestID: TAB_TEST_IDS.more,
-          tabBarIcon: ({ color }) => <TabGlyph id="more" color={color} />,
-        }}
-      />
+      <Tabs.Screen name="more" options={{ title: TAB_LABELS.more }} />
     </Tabs>
   );
 }

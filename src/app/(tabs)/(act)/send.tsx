@@ -3,10 +3,14 @@ import { useState } from 'react';
 import { Linking, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
+import { Card } from '@/components/card';
 import { OfflineNote } from '@/components/offline-note';
 import { Screen } from '@/components/screen';
 import { WriteToTag } from '@/components/tag-controls';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
+import { controlSurface, brandSurface } from '@/constants/surface';
+import { Type } from '@/constants/type';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import { messageChannels } from '@/transfer/channels';
 import { HANDOVER_MAX_BYTES, handoverLines, handoverTitle } from '@/transfer/handover';
@@ -24,6 +28,7 @@ import { useHandover } from '@/transfer/use-handover';
  */
 export default function SendScreen() {
   const theme = useTheme();
+  const scheme = useColorScheme();
   const handover = useHandover();
   const [failure, setFailure] = useState<string | undefined>(undefined);
 
@@ -64,10 +69,10 @@ export default function SendScreen() {
               }}
               style={({ pressed }) => [
                 styles.primary,
-                { backgroundColor: theme.accent },
+                brandSurface(scheme),
                 pressed && styles.pressed,
               ]}>
-              <Text style={[styles.primaryLabel, { color: theme.accentInk }]}>Share</Text>
+              <Text style={[styles.primaryLabel, { color: theme.brandInk }]}>Share</Text>
             </Pressable>
 
             <View style={styles.channels}>
@@ -82,7 +87,7 @@ export default function SendScreen() {
                   }}
                   style={({ pressed }) => [
                     styles.channel,
-                    { borderColor: theme.border },
+                    controlSurface(scheme),
                     pressed && styles.pressed,
                   ]}>
                   <Text style={[styles.channelLabel, { color: theme.text }]}>{channel.label}</Text>
@@ -95,12 +100,7 @@ export default function SendScreen() {
       <Text style={[styles.title, { color: theme.text }]}>Send report</Text>
 
       {handover.status === 'empty' ? (
-        <View
-          testID="send-empty"
-          style={[
-            styles.card,
-            { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-          ]}>
+        <Card testID="send-empty">
           <Text style={[styles.cardTitle, { color: theme.text }]}>No report to send</Text>
           <Text style={[styles.body, { color: theme.textSecondary }]}>
             There is nothing recorded yet. Start a report and fill in what you can — a half-filled
@@ -113,20 +113,16 @@ export default function SendScreen() {
             onPress={() => router.push('/field')}
             style={({ pressed }) => [
               styles.primary,
-              { backgroundColor: theme.accent },
+              brandSurface(scheme),
               pressed && styles.pressed,
             ]}>
-            <Text style={[styles.primaryLabel, { color: theme.accentInk }]}>Start a report</Text>
+            <Text style={[styles.primaryLabel, { color: theme.brandInk }]}>Start a report</Text>
           </Pressable>
-        </View>
+        </Card>
       ) : (
         <>
           {handover.depth === 'guided' ? (
-            <View
-              style={[
-                styles.card,
-                { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-              ]}>
+            <Card>
               <Text style={[styles.cardTitle, { color: theme.text }]}>What has happened</Text>
               <TextInput
                 testID="send-note"
@@ -145,14 +141,10 @@ export default function SendScreen() {
                   },
                 ]}
               />
-            </View>
+            </Card>
           ) : null}
 
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-            ]}>
+          <Card>
             <Text testID="send-title" style={[styles.cardTitle, { color: theme.text }]}>
               {handoverTitle(handover.payload)}
             </Text>
@@ -168,7 +160,7 @@ export default function SendScreen() {
                 </Text>
               ))}
             </View>
-          </View>
+          </Card>
 
           {handover.code ? (
             <View testID="send-code" style={styles.codeCard}>
@@ -190,17 +182,12 @@ export default function SendScreen() {
               </Text>
             </View>
           ) : (
-            <View
-              testID="send-overflow"
-              style={[
-                styles.card,
-                { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-              ]}>
+            <Card testID="send-overflow">
               <Text style={[styles.cardTitle, { color: theme.text }]}>Too long for one code</Text>
               <Text style={[styles.body, { color: theme.textSecondary }]}>
                 {`This report runs past the ${String(HANDOVER_MAX_BYTES)} bytes a code can carry here, and a code shrunk to fit would not read. Use Share instead — the whole report goes as text.`}
               </Text>
-            </View>
+            </Card>
           )}
 
           <OfflineNote>
@@ -232,16 +219,10 @@ export default function SendScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '700', letterSpacing: -0.5 },
-  card: {
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  cardTitle: { fontSize: 16, fontWeight: '600' },
-  body: { fontSize: 15, lineHeight: 22 },
-  line: { fontSize: 15, lineHeight: 22 },
+  title: { ...Type.display },
+  cardTitle: { ...Type.title },
+  body: { ...Type.body },
+  line: { ...Type.body },
   spacer: { fontSize: 6, lineHeight: 8 },
   lines: { gap: Spacing.one },
   input: {
@@ -249,8 +230,7 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: Radius.sm,
     padding: Spacing.two,
-    fontSize: 15,
-    lineHeight: 21,
+    ...Type.body,
     textAlignVertical: 'top',
   },
   codeCard: {
@@ -260,7 +240,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     backgroundColor: '#ffffff',
   },
-  codeCaption: { fontSize: 13, lineHeight: 18, textAlign: 'center' },
+  codeCaption: { ...Type.note, textAlign: 'center' },
   channels: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   channel: {
     flex: 1,
@@ -270,15 +250,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  channelLabel: { fontSize: 15, fontWeight: '600' },
+  channelLabel: { ...Type.title, fontSize: 15 },
   primary: {
     minHeight: MinTarget,
     borderRadius: Radius.md,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  primaryLabel: { fontSize: 17, fontWeight: '600' },
+  primaryLabel: { ...Type.title },
   link: { minHeight: MinTarget, justifyContent: 'center' },
-  linkLabel: { fontSize: 16, fontWeight: '600' },
+  linkLabel: { ...Type.title },
   pressed: { opacity: 0.85 },
 });

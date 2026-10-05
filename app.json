@@ -8,8 +8,7 @@
     "scheme": "fieldkit",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "bundleIdentifier": "com.colouringcode.fieldkit",
-      "icon": "./assets/expo.icon"
+      "bundleIdentifier": "com.colouringcode.fieldkit"
     },
     "android": {
       "package": "com.colouringcode.fieldkit",
@@ -30,7 +29,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#07090C",
+          "backgroundColor": "#0B0A12",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }

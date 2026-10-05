@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 
 import { Colors } from '@/constants/theme';
+import { Type } from '@/constants/type';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 /**
@@ -18,7 +19,7 @@ export default function MoreLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: palette.backgroundElement },
         headerTintColor: palette.text,
-        headerTitleStyle: { fontSize: 17 },
+        headerTitleStyle: { ...Type.title },
         contentStyle: { backgroundColor: palette.background },
       }}>
       <Stack.Screen name="index" options={{ title: 'More' }} />

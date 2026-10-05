@@ -6,6 +6,7 @@ import { ContentSlot } from '@/components/content-slot';
 import { Metronome } from '@/components/metronome';
 import { Screen } from '@/components/screen';
 import { GUIDANCE_IDS, compressionPaceBpm } from '@/content';
+import { Type } from '@/constants/type';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function CprScreen() {
@@ -38,5 +39,5 @@ export default function CprScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '700', letterSpacing: -0.5 },
+  title: { ...Type.display },
 });

@@ -1,6 +1,7 @@
 # Type and surface — implementation plan
 
-**Status: draft — awaiting approval.** No application code has been changed.
+**Status: approved; slices 1–3 built.** Slice 1 (fonts and tokens) landed inert; slices 2
+and 3 were applied together — see §11 for what was built and where it departs from this plan.
 
 **Ticket:** #41. **Design:** `docs/design/type-and-surface.html`, which carries the diagnosis and the
 three typeface specimens set in the real fonts.
@@ -183,3 +184,57 @@ back as a finding.
 
 The PR will be titled `[ai-assisted]`, reference this doc and #41, and end with a
 `Manually reviewed by <name>` line.
+
+---
+
+## 11. As built (slices 2 and 3)
+
+Applied together, because a half-applied surface system reads as a broken app rather than an
+unfinished one — the restyle either reaches every surface or it looks hand-made.
+
+**One `Card`, not twelve copies.** The application work was preceded by a refactor this plan did not
+anticipate. The card idiom was copy-pasted as an identical `styles.card` block across twelve files,
+with eight local wrappers over the top; a raised surface is a four-part stack that must be identical
+everywhere, so `src/components/card.tsx` now carries it with four named tones — `raised`, `tinted`,
+`outline`, `dashed` — and every screen asks for a tone rather than restating the recipe. The
+extraction landed **output-identical first** (same fill, hairline, radius and padding as before), so
+any change on screen would have been a plumbing bug; turning the material on was then a one-file
+change in `surface.ts`.
+
+**`src/constants/surface.ts`** composes the tokens the way `type.ts` composes the faces:
+`raisedSurface`, `controlSurface`, `signalSurface`, `cardFill`, `cardSurface` and `bevelStyle`, all
+pure functions of the scheme and unit-tested without a device. The lit top edge is an
+absolutely-positioned 1px view, not an inset `boxShadow`, so the system's most effective move does
+not rest on a newer API; the drop shadow is the existing `Elevation` token.
+
+Departures from the plan, recorded rather than slipped in:
+
+1. **A sixth type role, `Type.note` (13/18).** The plan named five, but the app has a large class of
+   12–13px captions — citations, attribution, hints, footnotes — that is neither `body` nor `label`.
+2. **`BevelOnColor` (28% white), a new token.** The panel bevel (~7%) reads on a dark panel and
+   vanishes on amber or red, so a filled action button needs its own, stronger edge.
+3. **The graduated fill uses `experimental_backgroundImage`**, with the solid panel colour as the
+   base so an unsupported platform degrades to a flat panel rather than to nothing. No gradient dep.
+4. **The bevel is on the raised surfaces** — card, action button, dock, sub-tabs, metronome — and not
+   on the small inline controls, whose fill and shadow carry the depth. A 1px highlight on a 52px
+   control is marginal, and no single screen mixes the two.
+5. **Two deliberate size overrides.** The sub-tab labels (14) and the three-up message-channel labels
+   (15) keep a control size rather than the 17px title role: three across a 320px screen cannot take
+   the full size. Tab-bar labels take the face, not a size — the bar's redesign is #39.
+6. **The canvas and tab bar keep a solid background.** The board's vignette and gradient tab bar are
+   multiplicative experimental-gradient surface area; the tab bar is #39's to style.
+7. **Contrast (§5) is spot-checked, not scripted.** Text colours are unchanged and text sits on the
+   same hex as before (`panel`/`selected`), so the only new pairing is ink on `control`, which is far
+   above 4.5:1. The regression script remains a follow-up.
+8. **The bundled font map moved to `src/constants/fonts.ts`**, so a test can assert the role names
+   match the registered family keys — a renamed font can no longer fall back to the system face
+   silently. `Fonts` (the template's system stack) now has no consumers; it is left in `theme.ts`.
+9. **`jest.config.js` gained a CSS stub** (`scripts/jest-style-mock.js`): the constants tests reach
+   `theme.ts`'s `@/global.css` import for the first time, and jest has no stylesheet loader.
+
+**Verified:** `npm run typecheck`, `typecheck:scripts`, `lint`, `format:check` and `test` are green
+(36 suites, 542 tests, 10 new), and `npx expo export --platform ios` bundles clean.
+
+**Not verified here, and it is the plan's own bar (§7):** the 320px screenshots on iOS and Android
+and the Maestro run. Overpass is wider than the system face, so the tab labels, button hints and AED
+rows still need a real 320px device — this is the one thing a type-check and a bundle cannot prove.

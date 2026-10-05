@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
-import { Radius, Spacing } from '@/constants/theme';
+import { Card } from '@/components/card';
 import { getGuidance } from '@/content';
+import { Type } from '@/constants/type';
 import { useTheme } from '@/hooks/use-theme';
 
 type Props = {
@@ -23,44 +24,30 @@ export function ContentSlot({ id, label }: Props) {
 
   if (!record) {
     return (
-      <View
-        testID={`content-slot-${id}-empty`}
-        style={[styles.card, styles.empty, { borderColor: theme.border }]}>
+      <Card tone="dashed" testID={`content-slot-${id}-empty`}>
         <Text style={[styles.title, { color: theme.text }]}>{label}</Text>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
           Not in this build. Field Kit reproduces first aid guidance from a licensed source rather
           than writing its own, and that licence isn&apos;t in place yet.
         </Text>
-      </View>
+      </Card>
     );
   }
 
   return (
-    <View
-      testID={`content-slot-${id}`}
-      style={[
-        styles.card,
-        { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-      ]}>
+    <Card tone="raised" testID={`content-slot-${id}`}>
       <Text style={[styles.title, { color: theme.text }]}>{record.title}</Text>
       <Text style={[styles.body, { color: theme.text }]}>{record.body}</Text>
       <Text style={[styles.citation, { color: theme.textSecondary }]}>
         {record.citation.publisher} — {record.citation.edition}. Reviewed{' '}
         {record.citation.reviewedOn}.
       </Text>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  empty: { borderStyle: 'dashed' },
-  title: { fontSize: 16, fontWeight: '600' },
-  body: { fontSize: 15, lineHeight: 22 },
-  citation: { fontSize: 12, lineHeight: 16 },
+  title: { ...Type.title },
+  body: { ...Type.body },
+  citation: { ...Type.note },
 });

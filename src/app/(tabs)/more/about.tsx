@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { AED_ATTRIBUTION, AED_LICENCE_URL } from '@/aed';
+import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
-import { Radius, Spacing } from '@/constants/theme';
+import { Type } from '@/constants/type';
 import { useTheme } from '@/hooks/use-theme';
 import { parseRegionsCatalogue } from '@/maps/regions';
 import catalogueJson from '../../../../assets/maps/regions.json';
@@ -84,11 +85,7 @@ function Section({
   const theme = useTheme();
 
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-      ]}>
+    <Card>
       <Text style={[styles.sectionTitle, { color: theme.text }]}>{title}</Text>
       <Text style={[styles.body, { color: theme.textSecondary }]}>{body}</Text>
       {link ? (
@@ -98,20 +95,14 @@ function Section({
           {link.label}: {link.url}
         </Text>
       ) : null}
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '700', letterSpacing: -0.5 },
-  card: {
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  sectionTitle: { fontSize: 16, fontWeight: '600' },
-  body: { fontSize: 15, lineHeight: 22 },
-  link: { fontSize: 13, lineHeight: 18 },
-  footnote: { fontSize: 12, lineHeight: 17 },
+  title: { ...Type.display },
+  sectionTitle: { ...Type.title },
+  body: { ...Type.body },
+  link: { ...Type.note },
+  footnote: { ...Type.note },
 });

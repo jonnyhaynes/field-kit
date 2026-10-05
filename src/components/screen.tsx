@@ -2,9 +2,9 @@ import { type ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { CallDock } from '@/components/call-dock';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { bevelStyle } from '@/constants/surface';
+import { Bevel, MaxContentWidth, Spacing, Surfaces } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type Props = {
   children: ReactNode;
@@ -12,24 +12,25 @@ type Props = {
   actions?: ReactNode;
   /** Screens with no navigation header need the top inset; screens with one don't. */
   withTopInset?: boolean;
-  /**
-   * The emergency dock, on by default. Only Act turns it off, because its primary button *is* that
-   * action and a second one would put two red things on one screen.
-   */
-  dock?: boolean;
   testID?: string;
 };
 
-export function Screen({ children, actions, withTopInset = false, dock = true, testID }: Props) {
-  const theme = useTheme();
-  const hasFooter = Boolean(actions) || dock;
+/**
+ * The frame every screen sits in.
+ *
+ * It no longer owns the emergency action. That lives in the tab bar now, so it is in the same place
+ * on every screen including Act, rather than appearing and disappearing — the reversal is recorded
+ * in `docs/plans/field-kit-35-beacon-tab-navigation.md` §13.
+ */
+export function Screen({ children, actions, withTopInset = false, testID }: Props) {
+  const scheme = useColorScheme();
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.background }]} testID={testID}>
+    <View style={[styles.root, { backgroundColor: Surfaces[scheme].canvas }]} testID={testID}>
       {/*
-        No `bottom` edge: every screen now sits above the tab bar, and the tab bar owns the bottom
-        inset. Leaving this in would pad for the home indicator twice, which reads as a spacing bug
-        and invites someone to shrink a padding token to "fix" it.
+        No `bottom` edge: every screen sits above the tab bar, and the bar owns the bottom inset.
+        Leaving this in would pad for the home indicator twice, which reads as a spacing bug and
+        invites someone to shrink a padding token to "fix" it.
       */}
       <SafeAreaView
         style={styles.safe}
@@ -41,10 +42,12 @@ export function Screen({ children, actions, withTopInset = false, dock = true, t
           {children}
         </ScrollView>
 
-        {hasFooter ? (
-          <View style={[styles.footer, { borderTopColor: theme.border }]}>
+        {actions ? (
+          // A raised level above the canvas: the footer catches light at its top edge rather than
+          // being separated from the scroll area by a bare rule.
+          <View style={[styles.footer, { backgroundColor: Surfaces[scheme].panel }]}>
+            <View pointerEvents="none" style={bevelStyle(Bevel[scheme], 0)} />
             {actions}
-            {dock ? <CallDock /> : null}
           </View>
         ) : null}
       </SafeAreaView>
@@ -61,6 +64,5 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     paddingTop: Spacing.three,
     gap: Spacing.two,
-    borderTopWidth: StyleSheet.hairlineWidth,
   },
 });

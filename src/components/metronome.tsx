@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Radius, Spacing } from '@/constants/theme';
+import { bevelStyle, hairline, raisedSurface } from '@/constants/surface';
+import { Bevel, Radius, Spacing, Surfaces } from '@/constants/theme';
+import { Type } from '@/constants/type';
 import { beatIntervalMs } from '@/cpr/pace';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 
 type Props = {
@@ -16,6 +19,7 @@ type Props = {
  * pace itself is dormant until the compression-rate record is licensed in.
  */
 export function Metronome({ bpm, testID = 'metronome' }: Props) {
+  const scheme = useColorScheme();
   const theme = useTheme();
   const [beats, setBeats] = useState(0);
   const [lit, setLit] = useState(false);
@@ -36,9 +40,10 @@ export function Metronome({ bpm, testID = 'metronome' }: Props) {
       testID={testID}
       accessible
       accessibilityLabel={`Compression pace, ${bpm} per minute, ${beats} beats so far`}
-      style={[styles.wrap, { borderColor: theme.border }]}>
+      style={[styles.wrap, raisedSurface(scheme)]}>
+      <View pointerEvents="none" style={bevelStyle(Bevel[scheme], Radius.md)} />
       <View
-        style={[styles.dot, { backgroundColor: lit ? theme.accent : theme.backgroundSelected }]}
+        style={[styles.dot, { backgroundColor: lit ? theme.brand : Surfaces[scheme].selected }]}
       />
       <Text style={[styles.rate, { color: theme.text }]}>{bpm}</Text>
       <Text style={[styles.caption, { color: theme.textSecondary }]}>per minute</Text>
@@ -48,13 +53,13 @@ export function Metronome({ bpm, testID = 'metronome' }: Props) {
 
 const styles = StyleSheet.create({
   wrap: {
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: hairline,
     borderRadius: Radius.md,
     paddingVertical: Spacing.five,
     alignItems: 'center',
     gap: Spacing.two,
   },
   dot: { width: 28, height: 28, borderRadius: Radius.pill },
-  rate: { fontSize: 46, fontWeight: '700', fontVariant: ['tabular-nums'] },
-  caption: { fontSize: 13 },
+  rate: { ...Type.machine, fontSize: 46 },
+  caption: { ...Type.note },
 });

@@ -7,11 +7,13 @@ import { ActionButton } from '@/components/action-button';
 import { AedDatabaseProvider, useAedRecords } from '@/aed/database';
 import { describeVerification, formatDistance } from '@/aed/presentation';
 import { useAedFlags } from '@/aed/use-flags';
+import { Card } from '@/components/card';
 import { ContentSlot } from '@/components/content-slot';
 import { OfflineNote } from '@/components/offline-note';
 import { Screen } from '@/components/screen';
-import { MinTarget, Radius, Spacing } from '@/constants/theme';
+import { MinTarget, Spacing } from '@/constants/theme';
 import { GUIDANCE_IDS } from '@/content';
+import { Type } from '@/constants/type';
 import { useTheme } from '@/hooks/use-theme';
 import { useCurrentPosition } from '@/location/current-position';
 import { useNoteQueue } from '@/notes/use-notes';
@@ -149,7 +151,7 @@ function Results({ recordsStatus, hasDataset, position, neighbours, onFlag }: Re
 
   if (!hasDataset) {
     return (
-      <View testID="aed-no-data" style={[styles.card, { borderColor: theme.border }]}>
+      <Card tone="outline" testID="aed-no-data">
         <Text style={[styles.cardTitle, { color: theme.text }]}>
           No defibrillator data in this build
         </Text>
@@ -158,7 +160,7 @@ function Results({ recordsStatus, hasDataset, position, neighbours, onFlag }: Re
           defibrillator can be removed, moved, or locked away, and this app will never imply that
           one is present, reachable or working.
         </Text>
-      </View>
+      </Card>
     );
   }
 
@@ -168,13 +170,13 @@ function Results({ recordsStatus, hasDataset, position, neighbours, onFlag }: Re
 
   if (neighbours.length === 0) {
     return (
-      <View testID="aed-none-nearby" style={[styles.card, { borderColor: theme.border }]}>
+      <Card tone="outline" testID="aed-none-nearby">
         <Text style={[styles.cardTitle, { color: theme.text }]}>None in the dataset</Text>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
           Every defibrillator near you has been flagged on this device, or none is mapped. Call 999
           and ask the operator to direct you.
         </Text>
-      </View>
+      </Card>
     );
   }
 
@@ -196,12 +198,12 @@ function PositionNotice({ position }: { position: ReturnType<typeof useCurrentPo
       : 'No position fix yet. Indoors, or with GPS off, this can take a moment — call 999 and ask the operator to direct you.';
 
   return (
-    <View testID="aed-no-position" style={[styles.card, { borderColor: theme.border }]}>
+    <Card tone="outline" testID="aed-no-position">
       <Text style={[styles.cardTitle, { color: theme.text }]}>
         {position.status === 'loading' ? 'Finding your position…' : 'No position available'}
       </Text>
       <Text style={[styles.body, { color: theme.textSecondary }]}>{message}</Text>
-    </View>
+    </Card>
   );
 }
 
@@ -209,12 +211,7 @@ function Disclaimer() {
   const theme = useTheme();
 
   return (
-    <View
-      testID="aed-disclaimer"
-      style={[
-        styles.card,
-        { backgroundColor: theme.backgroundSelected, borderColor: 'transparent' },
-      ]}>
+    <Card tone="tinted" testID="aed-disclaimer">
       <Text style={[styles.body, { color: theme.text }]}>
         Unverified. This list comes from public mapping, not from the ambulance service. A
         defibrillator may have been moved, removed, or locked away — do not rely on any entry being
@@ -224,7 +221,7 @@ function Disclaimer() {
         If an entry is wrong, flagging hides it here and leaves a report you can send to
         OpenStreetMap yourself, so the map is better for the next person.
       </Text>
-    </View>
+    </Card>
   );
 }
 
@@ -240,12 +237,7 @@ function NeighbourCard({
   const theme = useTheme();
 
   return (
-    <View
-      testID={`aed-result-${index}`}
-      style={[
-        styles.card,
-        { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-      ]}>
+    <Card testID={`aed-result-${index}`}>
       <Text style={[styles.distance, { color: theme.text }]}>
         {formatDistance(neighbour.meters)}
       </Text>
@@ -262,24 +254,18 @@ function NeighbourCard({
         style={({ pressed }) => [styles.flag, pressed && styles.pressed]}>
         <Text style={[styles.flagLabel, { color: theme.rescue }]}>Flag as inaccurate</Text>
       </Pressable>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '700', letterSpacing: -0.5 },
+  title: { ...Type.display },
   list: { gap: Spacing.three },
-  card: {
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  cardTitle: { fontSize: 16, fontWeight: '600' },
-  distance: { fontSize: 30, fontWeight: '700', letterSpacing: -0.5 },
-  body: { fontSize: 15, lineHeight: 22 },
-  attribution: { fontSize: 12, lineHeight: 16 },
+  cardTitle: { ...Type.title },
+  distance: { ...Type.machine, fontSize: 30, letterSpacing: -0.5 },
+  body: { ...Type.body },
+  attribution: { ...Type.note },
   flag: { minHeight: MinTarget, justifyContent: 'center' },
   pressed: { opacity: 0.7 },
-  flagLabel: { fontSize: 15, fontWeight: '600' },
+  flagLabel: { ...Type.title },
 });

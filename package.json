@@ -59,6 +59,8 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "typecheck:scripts": "tsc -p scripts/tsconfig.json --noEmit",
+    "fonts": "bash scripts/build-fonts.sh",
+    "brand": "node scripts/build-brand-assets.mjs",
     "build:aed": "tsx scripts/build-aed-db.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
