@@ -1,7 +1,8 @@
 # The emergency action in the tab bar — implementation plan
 
-**Status: draft — awaiting approval.** No application code has been changed. Per `AGENTS.md`, this
-plan is what gets reviewed, not the first code.
+**Status: approved, with one interaction decision outstanding.** The structure is approved; the open
+question is whether the emergency action responds to a tap or a hold, and §2 sets out the case for
+the tap. No application code has been changed yet.
 
 **Ticket:** #39. **Design:** `docs/design/design-steer.html`, section "The 999 action in the tab bar".
 
@@ -55,6 +56,37 @@ be `accessibilityRole="tab"` with `accessibilityState={{ selected }}`, inside a 
 tab list. **The emergency action must not be** — it does not select anything, it places a call.
 Announcing it as a tab would tell a screen-reader user that tapping it changes screen. It is a
 `button`, and it should say what it does.
+
+### Tap or hold — a proposal from the owner, and my recommendation
+
+**Proposed:** make the emergency action a long press rather than a tap, so that brushing the most-
+tapped strip of the phone cannot trigger it. That is a real concern, and the precedent is real —
+Apple's Emergency SOS and most panic buttons do use a deliberate gesture.
+
+**I would not do it, for three reasons.**
+
+1. **It solves a cost that `tel:` already absorbs.** A mis-tap opens the dialler with 999 ready and
+   places no call. The recoverable cost is a couple of seconds and a moment of confusion. The
+   deliberate gesture is being asked to protect against something already cheap.
+2. **The precedent does not transfer.** Emergency SOS and panic buttons hold because they *summon
+   responders* — a false alarm dispatches somebody. Here nothing is dispatched until the user
+   presses call in the dialler, and **that press is already the deliberate step**. Moving
+   deliberation forward would put it in front of the user twice.
+3. **It makes the action harder under exactly the conditions it exists for.** A hold needs a steady
+   press. Someone shaking, or holding a phone one-handed over a casualty, is the person least able
+   to give one — and nothing on screen would say a hold was needed, so a tap that does nothing reads
+   as a broken button rather than as a gesture to retry.
+
+**What I recommend instead:** keep the tap, and make the target deliberate by *separation* — the
+divider and the filled pill — rather than by gesture. If testing shows real mis-taps, take the
+red-Act-tab fallback in §7 rather than a hold: it removes the mis-tap surface entirely, without
+making the emergency action harder to reach.
+
+**If the hold is still wanted after that,** it must be visible rather than hidden: a filling ring, a
+short hold (about 600 ms), and wording that says so. A hidden hold on an emergency action is the
+worst of both — undiscoverable *and* harder.
+
+**This is the one open decision in this plan.** Everything else is ready to build.
 
 ---
 
