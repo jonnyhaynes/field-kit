@@ -2,8 +2,12 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { useDepth } from '@/capture/use-depth';
+import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
+import { brandSurface } from '@/constants/surface';
+import { FontFamily, Type } from '@/constants/type';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import type { SubmitFailure } from '@/notes/submit';
 import { useNoteQueue, useOsmOptIn, useOsmSubmitter } from '@/notes/use-notes';
@@ -20,6 +24,7 @@ import { useNoteQueue, useOsmOptIn, useOsmSubmitter } from '@/notes/use-notes';
  */
 export default function SettingsScreen() {
   const theme = useTheme();
+  const scheme = useColorScheme();
   const { notes, updateText, remove } = useNoteQueue();
   const { optedIn, setOptedIn } = useOsmOptIn();
   const { send, sending } = useOsmSubmitter();
@@ -48,11 +53,7 @@ export default function SettingsScreen() {
     <Screen testID="settings-screen">
       <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
 
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-        ]}>
+      <Card>
         <Text style={[styles.cardTitle, { color: theme.text }]}>Responder tools</Text>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
           Adds structured capture — SAMPLER, ABCDE, ETHANE and ASHICE — for people trained in them.
@@ -66,16 +67,12 @@ export default function SettingsScreen() {
             accessibilityLabel="Show responder capture"
             value={depth === 'responder'}
             onValueChange={(on) => setDepth(on ? 'responder' : 'guided')}
-            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+            trackColor={{ true: theme.brand, false: theme.backgroundSelected }}
           />
         </View>
-      </View>
+      </Card>
 
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-        ]}>
+      <Card>
         <Text style={[styles.cardTitle, { color: theme.text }]}>Report to OpenStreetMap</Text>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
           Defibrillator data comes from OpenStreetMap, so a wrong entry is best fixed there rather
@@ -95,23 +92,17 @@ export default function SettingsScreen() {
             accessibilityLabel="Show reports waiting to send"
             value={optedIn}
             onValueChange={setOptedIn}
-            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+            trackColor={{ true: theme.brand, false: theme.backgroundSelected }}
           />
         </View>
-      </View>
+      </Card>
 
       {sentNoteIds.map((osmNodeId) => (
-        <View
-          key={`sent-${osmNodeId}`}
-          testID={`settings-sent-${osmNodeId}`}
-          style={[
-            styles.card,
-            { backgroundColor: theme.backgroundSelected, borderColor: 'transparent' },
-          ]}>
+        <Card key={`sent-${osmNodeId}`} testID={`settings-sent-${osmNodeId}`} tone="tinted">
           <Text style={[styles.body, { color: theme.text }]}>
             Report sent. Thank you — it goes to the mappers who keep this data right.
           </Text>
-        </View>
+        </Card>
       ))}
 
       {notes.length === 0 ? (
@@ -119,21 +110,15 @@ export default function SettingsScreen() {
           Nothing waiting. Flag a defibrillator as inaccurate and it will appear here.
         </Text>
       ) : !optedIn ? (
-        <View testID="settings-waiting" style={[styles.card, { borderColor: theme.border }]}>
+        <Card tone="outline" testID="settings-waiting">
           <Text style={[styles.body, { color: theme.textSecondary }]}>
             {notes.length === 1 ? 'One report is' : `${notes.length} reports are`} waiting. Turn the
             switch on to read {notes.length === 1 ? 'it' : 'them'} and decide what to send.
           </Text>
-        </View>
+        </Card>
       ) : (
         notes.map((note, index) => (
-          <View
-            key={note.osmNodeId}
-            testID={`settings-note-${index}`}
-            style={[
-              styles.card,
-              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-            ]}>
+          <Card key={note.osmNodeId} testID={`settings-note-${index}`}>
             <Text style={[styles.label, { color: theme.textSecondary }]}>
               {`${note.latitude.toFixed(5)}, ${note.longitude.toFixed(5)} · node ${note.osmNodeId}`}
             </Text>
@@ -171,11 +156,11 @@ export default function SettingsScreen() {
                 onPress={() => void handleSend(note.osmNodeId)}
                 style={({ pressed }) => [
                   styles.send,
-                  { backgroundColor: theme.accent },
+                  brandSurface(scheme),
                   pressed && styles.pressed,
                   sending === note.osmNodeId && styles.disabled,
                 ]}>
-                <Text style={[styles.sendLabel, { color: theme.accentInk }]}>
+                <Text style={[styles.sendLabel, { color: theme.brandInk }]}>
                   {sending === note.osmNodeId ? 'Sending…' : 'Send'}
                 </Text>
               </Pressable>
@@ -189,7 +174,7 @@ export default function SettingsScreen() {
                 <Text style={[styles.body, { color: theme.textSecondary }]}>Discard</Text>
               </Pressable>
             </View>
-          </View>
+          </Card>
         ))
       )}
     </Screen>
@@ -211,18 +196,12 @@ function failureMessage(reason: SubmitFailure): string {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '700', letterSpacing: -0.5 },
-  card: {
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  cardTitle: { fontSize: 16, fontWeight: '600' },
-  body: { fontSize: 15, lineHeight: 22 },
-  note: { fontSize: 13, lineHeight: 18 },
-  emphasis: { fontWeight: '600' },
-  label: { fontSize: 12 },
+  title: { ...Type.display },
+  cardTitle: { ...Type.title },
+  body: { ...Type.body },
+  note: { ...Type.note },
+  emphasis: { fontFamily: FontFamily.textStrong },
+  label: { ...Type.machine, fontSize: 12 },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -235,8 +214,7 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: Radius.sm,
     padding: Spacing.two,
-    fontSize: 15,
-    lineHeight: 21,
+    ...Type.body,
     textAlignVertical: 'top',
   },
   actions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
@@ -247,7 +225,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  sendLabel: { fontSize: 17, fontWeight: '600' },
+  sendLabel: { ...Type.title },
   disabled: { opacity: 0.6 },
   discard: { minHeight: MinTarget, justifyContent: 'center', paddingHorizontal: Spacing.two },
   pressed: { opacity: 0.85 },

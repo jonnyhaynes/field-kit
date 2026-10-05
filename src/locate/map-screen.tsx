@@ -5,9 +5,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { nearestAeds } from '@/aed';
 import { AedDatabaseProvider, useAedRecords } from '@/aed/database';
 import { useAedFlags } from '@/aed/use-flags';
+import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
-import { MinTarget, Radius, Spacing } from '@/constants/theme';
+import { MinTarget, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Type } from '@/constants/type';
 import { useTheme } from '@/hooks/use-theme';
 import { useCurrentPosition } from '@/location/current-position';
 import { useMapAssets } from '@/maps/assets';
@@ -107,7 +109,7 @@ function MapContent({ onOpenWhere }: { onOpenWhere: () => void }) {
           center={center}
           zoom={zoom}
           neighbours={neighbours}
-          markerColor={theme.accent}
+          markerColor={theme.brand}
           markerRingColor={theme.text}
         />
       </View>
@@ -188,15 +190,15 @@ function MapNotice({ title, body, testID }: { title: string; body: string; testI
   return (
     <Screen testID={testID ?? 'map-screen'}>
       <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
-      <View style={[styles.card, { borderColor: theme.border }]}>
+      <Card tone="outline">
         <Text style={[styles.body, { color: theme.textSecondary }]}>{body}</Text>
-      </View>
+      </Card>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '700', letterSpacing: -0.5 },
+  title: { ...Type.display },
   mapFrame: {
     flex: 1,
     minHeight: 320,
@@ -204,15 +206,9 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },
-  card: {
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  body: { fontSize: 15, lineHeight: 22 },
-  attribution: { fontSize: 12, lineHeight: 16 },
+  body: { ...Type.body },
+  attribution: { ...Type.note },
   link: { minHeight: MinTarget, justifyContent: 'center' },
   pressed: { opacity: 0.7 },
-  linkLabel: { fontSize: 16, fontWeight: '600' },
+  linkLabel: { ...Type.title },
 });

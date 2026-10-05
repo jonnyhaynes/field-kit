@@ -1,6 +1,10 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { Card } from '@/components/card';
+import { controlSurface } from '@/constants/surface';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
+import { Type } from '@/constants/type';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import { TAG_FAILURE_TEXT } from '@/nfc/tag';
 import { useTag } from '@/nfc/use-tag';
@@ -16,18 +20,14 @@ import { handoverLines, handoverTitle, type HandoverPayload } from '@/transfer/h
  */
 
 export function WriteToTag({ payload }: { payload: HandoverPayload }) {
+  const scheme = useColorScheme();
   const theme = useTheme();
   const { available, state, write } = useTag();
 
   if (available !== true) return null;
 
   return (
-    <View
-      testID="write-to-tag"
-      style={[
-        styles.card,
-        { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-      ]}>
+    <Card testID="write-to-tag">
       <Text style={[styles.cardTitle, { color: theme.text }]}>Write to a tag</Text>
       <Text style={[styles.note, { color: theme.textSecondary }]}>
         Hold the phone against a tag until it beeps. This replaces anything already on it, and it
@@ -56,7 +56,7 @@ export function WriteToTag({ payload }: { payload: HandoverPayload }) {
         }}
         style={({ pressed }) => [
           styles.secondary,
-          { borderColor: theme.border },
+          controlSurface(scheme),
           pressed && styles.pressed,
           state.status === 'writing' && styles.disabled,
         ]}>
@@ -64,23 +64,19 @@ export function WriteToTag({ payload }: { payload: HandoverPayload }) {
           {state.status === 'writing' ? 'Waiting for a tag…' : 'Write to a tag'}
         </Text>
       </Pressable>
-    </View>
+    </Card>
   );
 }
 
 export function ReadFromTag() {
+  const scheme = useColorScheme();
   const theme = useTheme();
   const { available, state, read, reset } = useTag();
 
   if (available !== true) return null;
 
   return (
-    <View
-      testID="read-from-tag"
-      style={[
-        styles.card,
-        { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-      ]}>
+    <Card testID="read-from-tag">
       <Text style={[styles.cardTitle, { color: theme.text }]}>Read a tag</Text>
 
       {state.status === 'received' ? (
@@ -122,7 +118,7 @@ export function ReadFromTag() {
         }}
         style={({ pressed }) => [
           styles.secondary,
-          { borderColor: theme.border },
+          controlSurface(scheme),
           pressed && styles.pressed,
           state.status === 'reading' && styles.disabled,
         ]}>
@@ -130,21 +126,15 @@ export function ReadFromTag() {
           {state.status === 'reading' ? 'Waiting for a tag…' : 'Read a tag'}
         </Text>
       </Pressable>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  cardTitle: { fontSize: 16, fontWeight: '600' },
-  body: { fontSize: 15, lineHeight: 22 },
-  note: { fontSize: 13, lineHeight: 18 },
-  line: { fontSize: 15, lineHeight: 22 },
+  cardTitle: { ...Type.title },
+  body: { ...Type.body },
+  note: { ...Type.note },
+  line: { ...Type.body },
   spacer: { fontSize: 6, lineHeight: 8 },
   lines: { gap: Spacing.one },
   secondary: {
@@ -155,7 +145,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.three,
   },
-  secondaryLabel: { fontSize: 16, fontWeight: '600' },
+  secondaryLabel: { ...Type.title },
   disabled: { opacity: 0.5 },
   pressed: { opacity: 0.85 },
 });

@@ -1,8 +1,12 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ActionButton } from '@/components/action-button';
+import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
-import { Fonts, MinTarget, Radius, Spacing } from '@/constants/theme';
+import { MinTarget, Radius } from '@/constants/theme';
+import { brandSurface } from '@/constants/surface';
+import { Type } from '@/constants/type';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import { currentFrom, describeCurrentPosition } from '@/incident/recorded-location';
 import { useCurrentPosition } from '@/location/current-position';
@@ -37,11 +41,11 @@ export function WhereScreen({ onOpenCompass }: { onOpenCompass: () => void }) {
     return (
       <Screen testID="position-screen">
         <Text style={[styles.title, { color: theme.text }]}>Where I am</Text>
-        <View style={[styles.card, { borderColor: theme.border }]}>
+        <Card tone="outline">
           <Text testID="position-no-fix" style={[styles.body, { color: theme.textSecondary }]}>
             {message}
           </Text>
-        </View>
+        </Card>
       </Screen>
     );
   }
@@ -62,9 +66,7 @@ export function WhereScreen({ onOpenCompass }: { onOpenCompass: () => void }) {
       <Text style={[styles.title, { color: theme.text }]}>Where I am</Text>
 
       <Field label="Latitude, longitude">
-        <Text
-          testID="position-latlong"
-          style={[styles.readout, { color: theme.text, fontFamily: Fonts?.mono }]}>
+        <Text testID="position-latlong" style={[styles.readout, { color: theme.text }]}>
           {describeCurrentPosition(currentFrom(position.coordinates)).join('\n')}
         </Text>
       </Field>
@@ -72,9 +74,7 @@ export function WhereScreen({ onOpenCompass }: { onOpenCompass: () => void }) {
       <Field label="OS grid reference">
         {reference ? (
           <>
-            <Text
-              testID="position-grid-ref"
-              style={[styles.readout, { color: theme.text, fontFamily: Fonts?.mono }]}>
+            <Text testID="position-grid-ref" style={[styles.readout, { color: theme.text }]}>
               {reference.formatted}
             </Text>
             <Text style={[styles.note, { color: theme.textSecondary }]}>
@@ -111,6 +111,7 @@ function What3WordsField({
   coordinates: { latitude: number; longitude: number };
 }) {
   const theme = useTheme();
+  const scheme = useColorScheme();
   const { state, resolve } = useAddress(coordinates);
 
   return (
@@ -118,9 +119,7 @@ function What3WordsField({
       <View testID="position-w3w">
         {state.status === 'resolved' ? (
           <>
-            <Text
-              testID="position-w3w-words"
-              style={[styles.readout, { color: theme.text, fontFamily: Fonts?.mono }]}>
+            <Text testID="position-w3w-words" style={[styles.readout, { color: theme.text }]}>
               {state.words}
             </Text>
             <Text style={[styles.note, { color: theme.textSecondary }]}>
@@ -152,10 +151,10 @@ function What3WordsField({
               onPress={resolve}
               style={({ pressed }) => [
                 styles.action,
-                { backgroundColor: theme.accent },
+                brandSurface(scheme),
                 pressed && styles.pressed,
               ]}>
-              <Text style={[styles.actionLabel, { color: theme.accentInk }]}>Resolve</Text>
+              <Text style={[styles.actionLabel, { color: theme.brandInk }]}>Resolve</Text>
             </Pressable>
           </>
         )}
@@ -182,29 +181,19 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   const theme = useTheme();
 
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-      ]}>
+    <Card>
       <Text style={[styles.label, { color: theme.textSecondary }]}>{label}</Text>
       {children}
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '700', letterSpacing: -0.5 },
-  card: {
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  label: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.6 },
-  readout: { fontSize: 26, lineHeight: 34, fontWeight: '600' },
-  body: { fontSize: 15, lineHeight: 22 },
-  note: { fontSize: 13, lineHeight: 18 },
+  title: { ...Type.display },
+  label: { ...Type.label },
+  readout: { ...Type.machine, fontSize: 26, lineHeight: 34 },
+  body: { ...Type.body },
+  note: { ...Type.note },
   action: {
     minHeight: MinTarget,
     borderRadius: Radius.md,
@@ -212,5 +201,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pressed: { opacity: 0.85 },
-  actionLabel: { fontSize: 17, fontWeight: '600' },
+  actionLabel: { ...Type.title },
 });

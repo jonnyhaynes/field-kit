@@ -58,3 +58,7 @@ example
 # catalogue that points at it -- assets/maps/regions.json -- so this is deliberately ignored and
 # the bundled archive deliberately is not.
 /packs/
+
+# The font pipeline's virtualenv (see scripts/build-fonts.sh). Tooling, not source, and a venv in
+# the tree would otherwise be committed wholesale.
+/.venv-fonts/

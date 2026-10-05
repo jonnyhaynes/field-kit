@@ -3,9 +3,13 @@ import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { canQr } from '@/capabilities/can-qr';
+import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { ReadFromTag } from '@/components/tag-controls';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
+import { controlSurface, brandSurface } from '@/constants/surface';
+import { Type } from '@/constants/type';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import {
   handoverLines,
@@ -41,6 +45,7 @@ type Outcome =
 
 export default function ScanScreen() {
   const theme = useTheme();
+  const scheme = useColorScheme();
   const [permission, requestPermission] = useCameraPermissions();
   const [available, setAvailable] = useState<boolean | null>(null);
   const [outcome, setOutcome] = useState<Outcome>({ kind: 'scanning' });
@@ -73,34 +78,19 @@ export default function ScanScreen() {
       <Text style={[styles.title, { color: theme.text }]}>Scan a report</Text>
 
       {available === false ? (
-        <View
-          testID="scan-unavailable"
-          style={[
-            styles.card,
-            { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-          ]}>
+        <Card testID="scan-unavailable">
           <Text style={[styles.cardTitle, { color: theme.text }]}>No camera on this device</Text>
           <Text style={[styles.body, { color: theme.textSecondary }]}>
             A report is read by pointing a camera at it, so this device cannot read one. Everything
             else still works.
           </Text>
-        </View>
+        </Card>
       ) : permission === null || available === null ? (
-        <View
-          testID="scan-checking"
-          style={[
-            styles.card,
-            { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-          ]}>
+        <Card testID="scan-checking">
           <Text style={[styles.body, { color: theme.textSecondary }]}>Checking the camera…</Text>
-        </View>
+        </Card>
       ) : !permission.granted ? (
-        <View
-          testID="scan-permission"
-          style={[
-            styles.card,
-            { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-          ]}>
+        <Card testID="scan-permission">
           <Text style={[styles.cardTitle, { color: theme.text }]}>Camera access</Text>
           <Text style={[styles.body, { color: theme.textSecondary }]}>
             {permission.canAskAgain
@@ -117,23 +107,16 @@ export default function ScanScreen() {
               }}
               style={({ pressed }) => [
                 styles.primary,
-                { backgroundColor: theme.accent },
+                brandSurface(scheme),
                 pressed && styles.pressed,
               ]}>
-              <Text style={[styles.primaryLabel, { color: theme.accentInk }]}>
-                Allow the camera
-              </Text>
+              <Text style={[styles.primaryLabel, { color: theme.brandInk }]}>Allow the camera</Text>
             </Pressable>
           ) : null}
-        </View>
+        </Card>
       ) : outcome.kind === 'received' ? (
         <>
-          <View
-            testID="scan-result"
-            style={[
-              styles.card,
-              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-            ]}>
+          <Card testID="scan-result">
             <Text style={[styles.cardTitle, { color: theme.text }]}>
               {handoverTitle(outcome.payload)}
             </Text>
@@ -149,7 +132,7 @@ export default function ScanScreen() {
                 </Text>
               ))}
             </View>
-          </View>
+          </Card>
 
           {received ? (
             <Text testID="scan-position-warning" style={[styles.body, { color: theme.text }]}>
@@ -169,7 +152,7 @@ export default function ScanScreen() {
             onPress={() => setOutcome({ kind: 'scanning' })}
             style={({ pressed }) => [
               styles.secondary,
-              { borderColor: theme.border },
+              controlSurface(scheme),
               pressed && styles.pressed,
             ]}>
             <Text style={[styles.secondaryLabel, { color: theme.text }]}>Scan another</Text>
@@ -177,17 +160,12 @@ export default function ScanScreen() {
         </>
       ) : outcome.kind === 'refused' ? (
         <>
-          <View
-            testID="scan-refused"
-            style={[
-              styles.card,
-              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-            ]}>
+          <Card testID="scan-refused">
             <Text style={[styles.cardTitle, { color: theme.text }]}>That code was not read</Text>
             <Text style={[styles.body, { color: theme.textSecondary }]}>
               {REFUSAL_TEXT[outcome.reason]}
             </Text>
-          </View>
+          </Card>
 
           <Pressable
             accessibilityRole="button"
@@ -196,7 +174,7 @@ export default function ScanScreen() {
             onPress={() => setOutcome({ kind: 'scanning' })}
             style={({ pressed }) => [
               styles.secondary,
-              { borderColor: theme.border },
+              controlSurface(scheme),
               pressed && styles.pressed,
             ]}>
             <Text style={[styles.secondaryLabel, { color: theme.text }]}>Scan again</Text>
@@ -227,16 +205,10 @@ export default function ScanScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '700', letterSpacing: -0.5 },
-  card: {
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  cardTitle: { fontSize: 16, fontWeight: '600' },
-  body: { fontSize: 15, lineHeight: 22 },
-  line: { fontSize: 15, lineHeight: 22 },
+  title: { ...Type.display },
+  cardTitle: { ...Type.title },
+  body: { ...Type.body },
+  line: { ...Type.body },
   spacer: { fontSize: 6, lineHeight: 8 },
   lines: { gap: Spacing.one },
   previewFrame: {
@@ -252,7 +224,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  primaryLabel: { fontSize: 17, fontWeight: '600' },
+  primaryLabel: { ...Type.title },
   secondary: {
     minHeight: MinTarget,
     borderRadius: Radius.md,
@@ -261,6 +233,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.three,
   },
-  secondaryLabel: { fontSize: 16, fontWeight: '600' },
+  secondaryLabel: { ...Type.title },
   pressed: { opacity: 0.85 },
 });

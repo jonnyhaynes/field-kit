@@ -1,6 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Radius, Spacing } from '@/constants/theme';
+import { Radius, Spacing, Surfaces } from '@/constants/theme';
+import { Type } from '@/constants/type';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 
 /**
@@ -11,12 +13,13 @@ import { useTheme } from '@/hooks/use-theme';
  * dataset yet, and says so itself.
  */
 export function OfflineNote({ children }: { children: string }) {
+  const scheme = useColorScheme();
   const theme = useTheme();
 
   return (
     <View
       testID="offline-note"
-      style={[styles.note, { backgroundColor: theme.backgroundSelected }]}>
+      style={[styles.note, { backgroundColor: Surfaces[scheme].selected }]}>
       <Text style={[styles.text, { color: theme.textSecondary }]}>{children}</Text>
     </View>
   );
@@ -24,5 +27,5 @@ export function OfflineNote({ children }: { children: string }) {
 
 const styles = StyleSheet.create({
   note: { borderRadius: Radius.sm, paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
-  text: { fontSize: 13, lineHeight: 18 },
+  text: { ...Type.note },
 });

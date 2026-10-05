@@ -1,0 +1,61 @@
+# TC-01 — the emergency action is in the bottom bar, on every screen.
+#
+# Why this flow exists: the bottom chrome was resolved the other way. The Call 999 dock used to sit
+# above the tab bar everywhere *except* Act, where the body's primary button was that action — so the
+# emergency action had two different shapes in two different places depending on where you stood.
+#
+# It is now a single round beacon inside the bottom bar, present on every screen including Act. The
+# claim the app makes is therefore stronger and simpler to lose: *the call is always in the same
+# place*. A regression that hides it on one screen, or that reintroduces a second red action on Act,
+# is invisible to a type-check, a lint and a unit test.
+#
+# Selected by testID because the beacon and any future red control would carry similar words.
+#
+# NOTE FOR THE RUNNER: this flow needs a build with the new bar. The old `call-dock` id no longer
+# exists, which is deliberate — see docs/plans/field-kit-35-beacon-tab-navigation.md §13.
+appId: com.colouringcode.fieldkit
+tags:
+  - guided
+  - '35'
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: inuse
+
+# Android still puts its own location dialog on top of the app after that grant — `clearState` takes
+# the grant with it on both platforms, and the tab navigator mounts every tab at launch, so Locate's
+# map asks immediately. `runFlow/when` waits for the dialog rather than racing it, and the whole
+# block is skipped on iOS, where there is no dialog and nothing to dismiss.
+- runFlow:
+    when:
+      visible: 'While using the app'
+    commands:
+      - tapOn: 'While using the app'
+
+# Act: the beacon is here too. This is the half that changed — it used to be absent.
+- assertVisible:
+    id: act-screen
+- assertVisible:
+    id: call-beacon
+
+# Locate: the furthest thing from Act's content, and the call is still one tap away.
+- tapOn:
+    id: tab-locate
+
+# Android asks again when the map becomes the active tab rather than when it mounts, so the dialog
+# has to be cleared here too, or it covers the bar this flow exists to assert. No-op on iOS.
+- runFlow:
+    when:
+      visible: 'While using the app'
+    commands:
+      - tapOn: 'While using the app'
+
+- assertVisible:
+    id: call-beacon
+
+# More: the furthest point from the emergency path, and the one most likely to be forgotten.
+- tapOn:
+    id: tab-more
+- assertVisible:
+    id: call-beacon

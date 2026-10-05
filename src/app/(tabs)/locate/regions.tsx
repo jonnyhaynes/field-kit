@@ -2,8 +2,12 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { regionStorageProblem } from '@/capabilities/can-map-regions';
+import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
+import { controlSurface, brandSurface } from '@/constants/surface';
+import { Type } from '@/constants/type';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import {
   formatBytes,
@@ -22,6 +26,7 @@ import { FAILURE_TEXT, useRegions } from '@/maps/use-regions';
  */
 export default function RegionsScreen() {
   const theme = useTheme();
+  const scheme = useColorScheme();
   const regions = useRegions();
 
   const usedBytes = regions.usable.reduce((total, pack) => total + pack.bytes, 0);
@@ -31,11 +36,7 @@ export default function RegionsScreen() {
     <Screen testID="regions-screen">
       <Text style={[styles.title, { color: theme.text }]}>Region packs</Text>
 
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-        ]}>
+      <Card>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
           The map that comes with Field Kit covers the whole country at a national overview — towns
           and main roads. A region pack adds detail for one area: lanes, footpaths and buildings.
@@ -45,59 +46,41 @@ export default function RegionsScreen() {
           Downloading needs a connection once. If you leave this screen while one is downloading it
           stops, and nothing is kept.
         </Text>
-      </View>
+      </Card>
 
       {regions.capability === 'probing' ? (
-        <View
-          testID="regions-probing"
-          style={[
-            styles.card,
-            { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-          ]}>
+        <Card testID="regions-probing">
           <Text style={[styles.body, { color: theme.textSecondary }]}>
             Checking what this device can store…
           </Text>
-        </View>
+        </Card>
       ) : null}
 
       {regions.capability === 'unsupported' ? (
-        <View
-          testID="regions-unsupported"
-          style={[
-            styles.card,
-            { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-          ]}>
+        <Card testID="regions-unsupported">
           <Text style={[styles.cardTitle, { color: theme.text }]}>Not available here</Text>
           <Text style={[styles.body, { color: theme.textSecondary }]}>
             {problem === 'no-space'
               ? `A pack needs its own size free, plus about ${formatBytes(REGION_PACK_HEADROOM_BYTES)} for the system to keep working. There is not that much space left, so downloading is off.`
               : 'This build has no region packs to offer.'}
           </Text>
-        </View>
+        </Card>
       ) : null}
 
       {regions.packs.map((pack) => (
         <PackCard key={pack.id} pack={pack} regions={regions} />
       ))}
 
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-        ]}>
+      <Card>
         <Text style={[styles.cardTitle, { color: theme.text }]}>Space used</Text>
         <Text testID="regions-total" style={[styles.body, { color: theme.textSecondary }]}>
           {regions.usable.length === 0
             ? `No packs downloaded. ${formatBytes(regions.availableBytes)} free on this device.`
             : `${regions.usable.length} pack${regions.usable.length === 1 ? '' : 's'}, ${formatBytes(usedBytes)}. ${formatBytes(regions.availableBytes)} free on this device.`}
         </Text>
-      </View>
+      </Card>
 
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-        ]}>
+      <Card>
         <Text style={[styles.cardTitle, { color: theme.text }]}>Where this comes from</Text>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
           Every pack is cut from the same Protomaps archive as the bundled map, which is built from
@@ -110,12 +93,12 @@ export default function RegionsScreen() {
           onPress={() => router.push('/more/about')}
           style={({ pressed }) => [
             styles.secondary,
-            { borderColor: theme.border },
+            controlSurface(scheme),
             pressed && styles.pressed,
           ]}>
           <Text style={[styles.secondaryLabel, { color: theme.text }]}>Data and licences</Text>
         </Pressable>
-      </View>
+      </Card>
     </Screen>
   );
 }
@@ -126,6 +109,7 @@ function shortDate(iso: string): string {
 
 function PackCard({ pack, regions }: { pack: RegionPack; regions: ReturnType<typeof useRegions> }) {
   const theme = useTheme();
+  const scheme = useColorScheme();
 
   const progress = regions.progress[pack.id];
   const downloading = progress !== undefined;
@@ -136,12 +120,7 @@ function PackCard({ pack, regions }: { pack: RegionPack; regions: ReturnType<typ
   const canDownload = roomFor && regions.capability === 'ready';
 
   return (
-    <View
-      testID={`regions-pack-${pack.id}`}
-      style={[
-        styles.card,
-        { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-      ]}>
+    <Card testID={`regions-pack-${pack.id}`}>
       <View style={styles.headerRow}>
         <Text style={[styles.cardTitle, { color: theme.text }]}>{pack.name}</Text>
         <Text
@@ -167,7 +146,7 @@ function PackCard({ pack, regions }: { pack: RegionPack; regions: ReturnType<typ
             onPress={() => regions.cancel(pack.id)}
             style={({ pressed }) => [
               styles.secondary,
-              { borderColor: theme.border },
+              controlSurface(scheme),
               pressed && styles.pressed,
             ]}>
             <Text style={[styles.secondaryLabel, { color: theme.text }]}>Stop</Text>
@@ -191,7 +170,7 @@ function PackCard({ pack, regions }: { pack: RegionPack; regions: ReturnType<typ
               style={({ pressed }) => [
                 styles.secondary,
                 styles.grow,
-                { borderColor: theme.border },
+                controlSurface(scheme),
                 pressed && styles.pressed,
               ]}>
               <Text style={[styles.secondaryLabel, { color: theme.text }]}>Check</Text>
@@ -204,7 +183,7 @@ function PackCard({ pack, regions }: { pack: RegionPack; regions: ReturnType<typ
               style={({ pressed }) => [
                 styles.secondary,
                 styles.grow,
-                { borderColor: theme.border },
+                controlSurface(scheme),
                 pressed && styles.pressed,
               ]}>
               <Text style={[styles.secondaryLabel, { color: theme.textSecondary }]}>Delete</Text>
@@ -238,37 +217,31 @@ function PackCard({ pack, regions }: { pack: RegionPack; regions: ReturnType<typ
             onPress={() => void regions.download(pack)}
             style={({ pressed }) => [
               styles.primary,
-              { backgroundColor: theme.accent },
+              brandSurface(scheme),
               pressed && styles.pressed,
               !canDownload && styles.disabled,
             ]}>
-            <Text style={[styles.primaryLabel, { color: theme.accentInk }]}>
+            <Text style={[styles.primaryLabel, { color: theme.brandInk }]}>
               {roomFor ? `Download ${formatBytes(pack.bytes)}` : 'Not enough space'}
             </Text>
           </Pressable>
         </>
       )}
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '700', letterSpacing: -0.5 },
-  card: {
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  cardTitle: { fontSize: 16, fontWeight: '600' },
+  title: { ...Type.display },
+  cardTitle: { ...Type.title },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: Spacing.three,
   },
-  body: { fontSize: 15, lineHeight: 22 },
-  note: { fontSize: 13, lineHeight: 18 },
+  body: { ...Type.body },
+  note: { ...Type.note },
   actions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   grow: { flex: 1 },
   primary: {
@@ -277,7 +250,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  primaryLabel: { fontSize: 17, fontWeight: '600' },
+  primaryLabel: { ...Type.title },
   secondary: {
     minHeight: MinTarget,
     borderRadius: Radius.md,
@@ -286,7 +259,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.three,
   },
-  secondaryLabel: { fontSize: 16, fontWeight: '600' },
+  secondaryLabel: { ...Type.title },
   disabled: { opacity: 0.5 },
   pressed: { opacity: 0.85 },
 });

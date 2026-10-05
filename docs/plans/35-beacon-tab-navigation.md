@@ -338,3 +338,33 @@ Recorded here rather than left in the diff, per the repo's convention.
     with nothing else reordered. The order assertions are the ones that would have caught point 9 —
     a tab count cannot see a bar that gained a tab and quietly moved the rest.
 
+---
+
+## 13. Amendment — the dock moved into the bar (violet register)
+
+**This section reverses §2 and lifts the §9 exclusion.** It is recorded here rather than left to the
+diff, because §2 is the plan's one structural rule and the shipped app no longer follows it.
+
+The violet re-register (`docs/plans/field-kit-violet-register.md`) answered the open question this
+document's design file left hanging — *"How much bottom chrome is too much"* — the other way. The
+design file worried that a red fifth tab would "demote the emergency action to a peer of More", and
+this document's §9 excluded it on that basis. The objection turns out to be to a *flat* tab, not to
+the bar.
+
+**What ships now:**
+
+- The native tab bar is replaced by `src/components/tab-bar.tsx`: a floating pill of nav items, and
+  **Call 999 in its own rounded container beside it, with a gap** — two objects, not five tabs.
+- The dock is gone from `Screen`, so `dock={false}` and the Act opt-out are gone with it. The beacon
+  is present on **every** screen, including Act.
+- **Act loses its full-width red body button.** Otherwise Act would carry two red things. This is the
+  honest cost, and the design file's doubt was fair: on the one screen where it matters most, the
+  emergency action is no longer the largest thing on screen. The counter-argument is that its position
+  is now identical everywhere and never disappears.
+- `TAB_TEST_IDS` still ride on the nav items, because TC-02's order assertions are the only thing that
+  would notice a bar that grew a tab and quietly reordered the rest.
+- `.maestro/guided/TC-01` is rewritten for the beacon; the old `call-dock` id is gone.
+
+**The reach cost is real and is now paid on every screen, not just some:** a full-width 52px red
+button became a 54px circle. `Elevation.attention` — the red glow — is what keeps it loud, and iOS is
+the only platform that draws a coloured shadow.

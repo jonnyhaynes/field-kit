@@ -1,6 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { MinTarget, Radius, Spacing } from '@/constants/theme';
+import { bevelStyle, controlSurface, hairline } from '@/constants/surface';
+import { Bevel, BevelOnColor, Elevation, MinTarget, Radius, Spacing } from '@/constants/theme';
+import { Type } from '@/constants/type';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 
 /**
@@ -27,23 +30,32 @@ export function ActionButton({
   testID,
   accessibilityHint,
 }: Props) {
+  const scheme = useColorScheme();
   const theme = useTheme();
 
-  const fill = {
-    rescue: theme.rescue,
-    signal: theme.accent,
-    default: theme.backgroundElement,
-  }[variant];
+  // The default destination is a control on the panel; the two filled variants keep their colour
+  // and take depth instead. Only `rescue` is allowed to glow (§4.1 rule 6).
+  const surface: ViewStyle =
+    variant === 'default'
+      ? controlSurface(scheme)
+      : {
+          backgroundColor: variant === 'rescue' ? theme.rescue : theme.brand,
+          borderColor: 'transparent',
+          ...(variant === 'rescue' ? Elevation[scheme].attention : Elevation[scheme].control),
+        };
 
   const ink = {
     rescue: theme.rescueInk,
-    signal: theme.accentInk,
+    signal: theme.brandInk,
     default: theme.text,
   }[variant];
 
   // A hint on a filled button has to sit on the fill, so it takes the fill's ink rather than the
   // secondary text colour, which would be unreadable on red or on the signal.
   const hintInk = variant === 'default' ? theme.textSecondary : ink;
+
+  // A coloured fill needs the stronger edge; the panel bevel is tuned for a dark panel.
+  const bevel = variant === 'default' ? Bevel[scheme] : BevelOnColor;
 
   return (
     <Pressable
@@ -52,14 +64,8 @@ export function ActionButton({
       accessibilityHint={accessibilityHint}
       testID={testID}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.base,
-        {
-          backgroundColor: fill,
-          borderColor: variant === 'default' ? theme.border : 'transparent',
-        },
-        pressed && styles.pressed,
-      ]}>
+      style={({ pressed }) => [styles.base, surface, pressed && styles.pressed]}>
+      <View pointerEvents="none" style={bevelStyle(bevel, Radius.md)} />
       <View style={styles.text}>
         <Text style={[styles.label, variant === 'rescue' && styles.labelRescue, { color: ink }]}>
           {label}
@@ -74,14 +80,14 @@ const styles = StyleSheet.create({
   base: {
     minHeight: MinTarget,
     borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: hairline,
     paddingHorizontal: Spacing.three + Spacing.one,
     paddingVertical: Spacing.three,
     justifyContent: 'center',
   },
   pressed: { opacity: 0.85 },
   text: { gap: Spacing.half },
-  label: { fontSize: 17, fontWeight: '600' },
-  labelRescue: { fontSize: 19, fontWeight: '700', textAlign: 'center' },
-  hint: { fontSize: 13 },
+  label: { ...Type.title },
+  labelRescue: { textAlign: 'center' },
+  hint: { ...Type.note },
 });

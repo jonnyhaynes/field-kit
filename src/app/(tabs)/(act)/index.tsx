@@ -5,18 +5,26 @@ import { useDepth } from '@/capture/use-depth';
 import { ActionButton } from '@/components/action-button';
 import { OfflineNote } from '@/components/offline-note';
 import { Screen } from '@/components/screen';
-import { MinTarget, Spacing } from '@/constants/theme';
-import { EMERGENCY_LABEL, callEmergencyServices } from '@/emergency/dial';
+import { bevelStyle, brandSurface } from '@/constants/surface';
+import { BevelOnColor, MinTarget, Radius, Spacing } from '@/constants/theme';
+import { Type } from '@/constants/type';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 
 /**
- * The one screen everyone sees. Call 999 is the single dominant action; the other two
- * are peer destinations reachable in one tap, not steps in a sequence.
+ * The one screen everyone sees.
  *
- * With the Responder depth on, a fourth appears. Depth *adds* tools (§1), so nothing here moves or
- * changes when it is turned on — an untrained user sees exactly the same screen either way.
+ * The emergency action is **not here** any more: it is the red beacon in the bottom bar, which is on
+ * every screen including this one. That keeps it in exactly one place that never moves, and the cost
+ * is that it is no longer the largest thing on this screen — both halves are recorded in
+ * `docs/plans/field-kit-35-beacon-tab-navigation.md` §13.
+ *
+ * What is left is the question, the two answer paths, and nothing competing with them. With the
+ * Responder depth on, a third path appears. Depth *adds* tools (§1), so nothing here moves or changes
+ * when it is turned on — an untrained user sees exactly the same screen either way.
  */
 export default function ActScreen() {
+  const scheme = useColorScheme();
   const theme = useTheme();
   const { depth } = useDepth();
 
@@ -24,18 +32,8 @@ export default function ActScreen() {
     <Screen
       testID="act-screen"
       withTopInset
-      dock={false}
       actions={
         <>
-          <ActionButton
-            variant="rescue"
-            label={EMERGENCY_LABEL}
-            testID="act-call-emergency"
-            accessibilityHint={`Opens the dialler with ${EMERGENCY_LABEL.replace('Call ', '')} ready`}
-            onPress={() => {
-              void callEmergencyServices();
-            }}
-          />
           <ActionButton
             label="They're not breathing"
             hint="Start compressions"
@@ -44,6 +42,7 @@ export default function ActScreen() {
           />
           <ActionButton
             label="Find nearest defibrillator"
+            hint="Sorted by your position, works with no signal"
             testID="act-aed"
             onPress={() => router.push('/aed')}
           />
@@ -57,11 +56,12 @@ export default function ActScreen() {
           ) : null}
         </>
       }>
-      <View style={styles.intro}>
-        <Text style={[styles.title, { color: theme.text }]}>Someone needs help</Text>
-        <Text style={[styles.sub, { color: theme.textSecondary }]}>
-          Are they awake and breathing normally? If you&apos;re not sure, treat it as no.
-        </Text>
+      {/* The brand's own surface, carrying the wordmark and the question it asks. */}
+      <View style={[styles.hero, brandSurface(scheme)]}>
+        <View pointerEvents="none" style={bevelStyle(BevelOnColor, Radius.xl)} />
+        <Text style={styles.wordmark}>Field Kit</Text>
+        <Text style={styles.question}>Are they awake and breathing normally?</Text>
+        <Text style={styles.hint}>If you&apos;re not sure, treat it as no.</Text>
       </View>
 
       <OfflineNote>No signal needed — nothing on this screen uses the network.</OfflineNote>
@@ -85,10 +85,15 @@ export default function ActScreen() {
 }
 
 const styles = StyleSheet.create({
-  intro: { gap: Spacing.two },
-  title: { fontSize: 30, fontWeight: '700', letterSpacing: -0.5 },
-  sub: { fontSize: 16, lineHeight: 23 },
+  hero: {
+    borderRadius: Radius.xl,
+    padding: Spacing.four,
+    gap: Spacing.two,
+  },
+  wordmark: { ...Type.label, color: 'rgba(255, 255, 255, 0.85)' },
+  question: { ...Type.display, color: '#FFFFFF' },
+  hint: { ...Type.body, color: 'rgba(255, 255, 255, 0.82)' },
   link: { minHeight: MinTarget, justifyContent: 'center' },
-  linkLabel: { fontSize: 16, fontWeight: '600' },
+  linkLabel: { ...Type.title },
   pressed: { opacity: 0.7 },
 });

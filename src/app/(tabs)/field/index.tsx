@@ -4,8 +4,12 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { responderForms, type ResponderDepth } from '@/capture/depth';
 import { formForField, type CaptureField, type CaptureForm } from '@/capture/forms';
 import { useDepth } from '@/capture/use-depth';
+import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
+import { controlSurface, brandSurface } from '@/constants/surface';
+import { Type } from '@/constants/type';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import { recordedFrom } from '@/incident/recorded-location';
 import { useCurrentPosition } from '@/location/current-position';
@@ -42,25 +46,21 @@ function RefusedCapture() {
   return (
     <Screen testID="record-screen">
       <Text style={[styles.title, { color: theme.text }]}>Record incident</Text>
-      <View
-        testID="record-refused"
-        style={[
-          styles.card,
-          { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-        ]}>
+      <Card testID="record-refused">
         <Text style={[styles.cardTitle, { color: theme.text }]}>Responder capture is off</Text>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
           These are the Responder tools, which add structured capture on top of the emergency path
           rather than replacing it. They are switched off, so nothing here is open. Turn them on in
           Settings if they are meant to be.
         </Text>
-      </View>
+      </Card>
     </Screen>
   );
 }
 
 function ResponderCapture({ depth }: { depth: ResponderDepth }) {
   const theme = useTheme();
+  const scheme = useColorScheme();
   const { report, begin, record, discard, attachLocation } = useCurrentReport();
   const position = useCurrentPosition();
 
@@ -88,10 +88,10 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
             onPress={() => router.push('/send')}
             style={({ pressed }) => [
               styles.primary,
-              { backgroundColor: theme.accent },
+              brandSurface(scheme),
               pressed && styles.pressed,
             ]}>
-            <Text style={[styles.primaryLabel, { color: theme.accentInk }]}>Send report</Text>
+            <Text style={[styles.primaryLabel, { color: theme.brandInk }]}>Send report</Text>
           </Pressable>
         ) : null
       }>
@@ -99,12 +99,7 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
 
       {report ? (
         <>
-          <View
-            testID="record-location"
-            style={[
-              styles.card,
-              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-            ]}>
+          <Card testID="record-location">
             <Text style={[styles.cardTitle, { color: theme.text }]}>Position</Text>
             {report.location ? (
               <Text style={[styles.body, { color: theme.textSecondary }]}>
@@ -124,7 +119,7 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
               onPress={attach}
               style={({ pressed }) => [
                 styles.secondary,
-                { borderColor: theme.border },
+                controlSurface(scheme),
                 pressed && styles.pressed,
                 !canAttach && styles.disabled,
               ]}>
@@ -132,7 +127,7 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
                 {canAttach ? 'Attach my position' : 'No position fix yet'}
               </Text>
             </Pressable>
-          </View>
+          </Card>
 
           {forms.map((form) => (
             <FormSection key={form.id} form={form} report={report} onRecord={record} />
@@ -145,7 +140,7 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
             onPress={discard}
             style={({ pressed }) => [
               styles.secondary,
-              { borderColor: theme.border },
+              controlSurface(scheme),
               pressed && styles.pressed,
             ]}>
             <Text style={[styles.secondaryLabel, { color: theme.textSecondary }]}>
@@ -154,11 +149,7 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
           </Pressable>
         </>
       ) : (
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-          ]}>
+        <Card>
           <Text style={[styles.cardTitle, { color: theme.text }]}>No report open</Text>
           <Text style={[styles.body, { color: theme.textSecondary }]}>
             A report is somewhere to write down what you observe. It stays on this device — nothing
@@ -177,12 +168,12 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
             }}
             style={({ pressed }) => [
               styles.primary,
-              { backgroundColor: theme.accent },
+              brandSurface(scheme),
               pressed && styles.pressed,
             ]}>
-            <Text style={[styles.primaryLabel, { color: theme.accentInk }]}>Start a report</Text>
+            <Text style={[styles.primaryLabel, { color: theme.brandInk }]}>Start a report</Text>
           </Pressable>
-        </View>
+        </Card>
       )}
     </Screen>
   );
@@ -204,12 +195,7 @@ function FormSection({
   );
 
   return (
-    <View
-      testID={`record-form-${form.id}`}
-      style={[
-        styles.card,
-        { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-      ]}>
+    <Card testID={`record-form-${form.id}`}>
       <View style={styles.header}>
         <Text
           testID={`record-mnemonic-${form.id}`}
@@ -228,7 +214,7 @@ function FormSection({
       {form.fields.map((field) => (
         <FieldControl key={field.id} field={field} report={report} onRecord={onRecord} />
       ))}
-    </View>
+    </Card>
   );
 }
 
@@ -286,7 +272,7 @@ function FieldControl({
                 style={({ pressed }) => [
                   styles.chip,
                   {
-                    borderColor: selected ? theme.accent : theme.border,
+                    borderColor: selected ? theme.brand : theme.border,
                     backgroundColor: selected ? theme.backgroundSelected : 'transparent',
                   },
                   pressed && styles.pressed,
@@ -325,27 +311,21 @@ function FieldControl({
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '700', letterSpacing: -0.5 },
-  card: {
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  cardTitle: { fontSize: 16, fontWeight: '600' },
-  body: { fontSize: 15, lineHeight: 22 },
-  note: { fontSize: 13, lineHeight: 18 },
+  title: { ...Type.display },
+  cardTitle: { ...Type.title },
+  body: { ...Type.body },
+  note: { ...Type.note },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  mnemonic: { fontSize: 20, fontWeight: '700', letterSpacing: 0.5 },
+  mnemonic: { ...Type.title, fontSize: 20, letterSpacing: 0.5 },
   tag: {
-    fontSize: 12,
+    ...Type.note,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: Radius.sm,
     paddingHorizontal: Spacing.two,
     paddingVertical: Spacing.half,
   },
   field: { gap: Spacing.one, marginTop: Spacing.two },
-  fieldLabel: { fontSize: 15, fontWeight: '600' },
+  fieldLabel: { ...Type.title },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   chip: {
     minHeight: MinTarget,
@@ -354,14 +334,14 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: Spacing.three,
   },
-  chipLabel: { fontSize: 15 },
+  chipLabel: { ...Type.body },
   input: {
     minHeight: MinTarget,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: Radius.sm,
     paddingHorizontal: Spacing.two,
     paddingVertical: Spacing.two,
-    fontSize: 15,
+    ...Type.body,
   },
   inputTall: { minHeight: 80, textAlignVertical: 'top' },
   primary: {
@@ -370,7 +350,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  primaryLabel: { fontSize: 17, fontWeight: '600' },
+  primaryLabel: { ...Type.title },
   secondary: {
     minHeight: MinTarget,
     borderRadius: Radius.md,
@@ -379,7 +359,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.three,
   },
-  secondaryLabel: { fontSize: 16, fontWeight: '600' },
+  secondaryLabel: { ...Type.title },
   disabled: { opacity: 0.5 },
   pressed: { opacity: 0.85 },
 });

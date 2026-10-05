@@ -2,20 +2,18 @@
 #
 # Regenerates the fonts in assets/fonts/.
 #
-# The shipped files are subsets, not the foundry originals, because the originals are 6x larger and
-# the app uses a fraction of the glyphs. A binary nobody can trace is worse than a build step, so the
-# pipeline lives here rather than in someone's shell history — the same rule the AED dataset and the
-# map archive follow.
+# The shipped files are subsets, not the foundry originals, because the originals are many times
+# larger and the app uses a fraction of the glyphs. A binary nobody can trace is worse than a build
+# step, so the pipeline lives here rather than in someone's shell history — the same rule the AED
+# dataset and the map archive follow.
 #
-# Static instances rather than the variable font, and that was measured rather than assumed:
+# Static instances rather than the variable font, and that was measured rather than assumed: React
+# Native resolves a static face more reliably than a variable one, and instancing drops the unused
+# axes, so the safe option is also the small one.
 #
-#   Overpass, variable, subset       311 KB -> 93 KB    (one file, every weight)
-#   Overpass, static 400 + 600       --    -> 88 KB    (two files)
-#   IBM Plex Mono Regular, subset    132 KB -> 22 KB
-#
-# The static pair is *smaller* than the variable file, because instancing drops the unused weight
-# axis, and React Native resolves a static face more reliably than a variable one. So the safe option
-# is also the cheap one.
+# Nunito Sans is a FOUR-axis variable font (wght, wdth, opsz, YTLC). Every axis must be pinned or the
+# output is still a partial variable font, which is the failure mode this script exists to avoid; the
+# other three are pinned at their defaults and only wght moves.
 #
 # Requires fonttools. Use a virtualenv rather than a system install:
 #
@@ -37,20 +35,22 @@ RANGE="U+0020-007E,U+00A0-00FF,U+2000-206F"
 BASE="https://raw.githubusercontent.com/google/fonts/main"
 
 echo "Downloading sources…"
-curl -sSfL "$BASE/ofl/overpass/Overpass%5Bwght%5D.ttf"   -o "$WORK/Overpass[wght].ttf"
+curl -sSfL "$BASE/ofl/nunitosans/NunitoSans%5BYTLC%2Copsz%2Cwdth%2Cwght%5D.ttf" -o "$WORK/NunitoSans.ttf"
 curl -sSfL "$BASE/ofl/ibmplexmono/IBMPlexMono-Regular.ttf" -o "$WORK/IBMPlexMono-Regular.ttf"
 
 mkdir -p "$OUT"
+rm -f "$OUT"/*.ttf
 
-echo "Instancing Overpass at 400 and 600…"
+echo "Instancing Nunito Sans at 400 and 600 (all four axes pinned)…"
 for weight in 400 600; do
-  fonttools varLib.instancer "$WORK/Overpass[wght].ttf" "wght=$weight" -o "$WORK/overpass-$weight.ttf"
+  fonttools varLib.instancer "$WORK/NunitoSans.ttf" \
+    "wght=$weight" "opsz=12" "wdth=100" "YTLC=500" -o "$WORK/nunito-$weight.ttf"
 done
 
 echo "Subsetting…"
-pyftsubset "$WORK/overpass-400.ttf" --output-file="$OUT/Overpass-Regular.ttf" \
+pyftsubset "$WORK/nunito-400.ttf" --output-file="$OUT/NunitoSans-Regular.ttf" \
   --unicodes="$RANGE" --layout-features='*' --no-hinting
-pyftsubset "$WORK/overpass-600.ttf" --output-file="$OUT/Overpass-SemiBold.ttf" \
+pyftsubset "$WORK/nunito-600.ttf" --output-file="$OUT/NunitoSans-SemiBold.ttf" \
   --unicodes="$RANGE" --layout-features='*' --no-hinting
 pyftsubset "$WORK/IBMPlexMono-Regular.ttf" --output-file="$OUT/IBMPlexMono-Regular.ttf" \
   --unicodes="$RANGE" --layout-features='*' --no-hinting
