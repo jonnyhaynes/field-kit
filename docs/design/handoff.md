@@ -15,11 +15,14 @@ and `docs/plans/fieldkit-v1.md` first — this is a supplement to those, not a r
   wireframe, and the typeface decision, with the candidates embedded as real font files.
 - **#39, filed, plan written, not built.** `docs/plans/39-emergency-action-in-the-tab-bar.md` —
   remove the dock, put the emergency action in the tab bar as a distinct red item.
-- **The capture form** is specified in `docs/design/responder-capture-options.html` and re-worked in
-  the steer board. It needs a decision and its own plan; it is the largest outstanding piece.
+- **#43, filed, plan written, not built.** `docs/plans/43-responder-capture-form.md` — the index of
+  four, a named A-B-C-D-E stepper inside ABCDE, the equipment disclosure, and a review before send.
 
-**The three things blocking further design work:** which typeface (#38), whether to take the 999
-tab bar (#39), and the form's structure. Everything else is mechanical.
+**No design decisions are outstanding.** The typeface is Overpass, with IBM Plex Mono for machine
+strings only; the emergency action goes in the tab bar and responds to a **tap**; and the capture form
+takes the index-of-four structure. All four plans are merged, so what remains is building them, in
+this order: **the type system (#41), the 999 tab (#39) on top of it, then the form (#43)** — the last
+two want to be styled by the first.
 
 Sections 1 to 8 below were written before #36 was built. They are kept because the reasoning still
 holds, but where they describe the state of the work they are history, not instruction.
