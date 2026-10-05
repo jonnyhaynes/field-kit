@@ -11,7 +11,7 @@ import { Card } from '@/components/card';
 import { ContentSlot } from '@/components/content-slot';
 import { OfflineNote } from '@/components/offline-note';
 import { Screen } from '@/components/screen';
-import { MinTarget, Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { GUIDANCE_IDS } from '@/content';
 import { Type } from '@/constants/type';
 import { useTheme } from '@/hooks/use-theme';
@@ -238,12 +238,22 @@ function NeighbourCard({
 
   return (
     <Card testID={`aed-result-${index}`}>
-      <Text style={[styles.distance, { color: theme.text }]}>
-        {formatDistance(neighbour.meters)}
-      </Text>
-      <Text style={[styles.body, { color: theme.textSecondary }]}>
-        {describeVerification(neighbour.verification)}
-      </Text>
+      {/* A fixed badge anchors the distance, so three results scan down one column instead of
+          re-flowing. The cross is drawn, not imported — the app ships no icon set. */}
+      <View style={styles.row}>
+        <View style={[styles.badge, { backgroundColor: `${theme.pink}29` }]}>
+          <View style={[styles.crossV, { backgroundColor: theme.pink }]} />
+          <View style={[styles.crossH, { backgroundColor: theme.pink }]} />
+        </View>
+        <View style={styles.rowText}>
+          <Text style={[styles.distance, { color: theme.text }]}>
+            {formatDistance(neighbour.meters)}
+          </Text>
+          <Text style={[styles.note, { color: theme.textSecondary }]}>
+            {describeVerification(neighbour.verification)}
+          </Text>
+        </View>
+      </View>
 
       <Pressable
         accessibilityRole="button"
@@ -251,8 +261,13 @@ function NeighbourCard({
         accessibilityHint="Hides it from this device's list, and queues a report you can review"
         testID={`aed-flag-${index}`}
         onPress={() => onFlag(neighbour)}
-        style={({ pressed }) => [styles.flag, pressed && styles.pressed]}>
-        <Text style={[styles.flagLabel, { color: theme.rescue }]}>Flag as inaccurate</Text>
+        style={({ pressed }) => [
+          styles.flagChip,
+          { backgroundColor: `${theme.pink}29` },
+          pressed && styles.pressed,
+        ]}>
+        {/* Pink, not red: with the beacon permanently red, no other control on a screen may be. */}
+        <Text style={[styles.flagLabel, { color: theme.pink }]}>Flag as inaccurate</Text>
       </Pressable>
     </Card>
   );
@@ -265,7 +280,25 @@ const styles = StyleSheet.create({
   distance: { ...Type.machine, fontSize: 30, letterSpacing: -0.5 },
   body: { ...Type.body },
   attribution: { ...Type.note },
-  flag: { minHeight: MinTarget, justifyContent: 'center' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  rowText: { flex: 1, gap: Spacing.half },
+  badge: {
+    width: 44,
+    height: 44,
+    borderRadius: Radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  crossV: { position: 'absolute', width: 4, height: 17, borderRadius: 2 },
+  crossH: { position: 'absolute', width: 17, height: 4, borderRadius: 2 },
+  note: { ...Type.note },
+  flagChip: {
+    alignSelf: 'flex-start',
+    minHeight: 38,
+    paddingHorizontal: Spacing.three,
+    borderRadius: Radius.pill,
+    justifyContent: 'center',
+  },
   pressed: { opacity: 0.7 },
-  flagLabel: { ...Type.title },
+  flagLabel: { ...Type.title, fontSize: 14 },
 });

@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   channel: {
     flex: 1,
     minHeight: MinTarget,
-    borderRadius: Radius.md,
+    borderRadius: Radius.pill,
     borderWidth: StyleSheet.hairlineWidth,
     justifyContent: 'center',
     alignItems: 'center',
