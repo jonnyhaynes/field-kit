@@ -18,22 +18,34 @@ and changes nothing about how it works.
 
 ---
 
-## 2. A correction to the board, first
+## 2. The size — measured, not estimated
 
 The board quotes **96 KB for four latin cuts**. That is the **woff2** size, which is what a web page
-downloads. **React Native needs TTF or OTF**, and static TTFs are substantially larger.
+downloads, and React Native needs TTF or OTF. Measured from the real files rather than assumed:
 
-So the real cost is not yet known, and it gets measured before the font is wired in — because it is
-the kind of number that decides whether a variable font or a subset is needed, and this project has a
-standing rule about measuring rather than estimating. Two things to try in order:
+| Face | As the foundry ships it | Subset to Latin + punctuation |
+| --- | --- | --- |
+| Overpass — **variable**, weights 100–900 | 311 KB | **93 KB** |
+| IBM Plex Mono Regular | 132 KB | **22 KB** |
+| **Total** | 443 KB | **115 KB** |
 
-1. **The variable font.** Overpass ships as a variable TTF, so one file may cover every weight rather
-   than two static cuts.
-2. **Subsetting.** If the whole face is too large, `pyftsubset` to Latin plus the punctuation the app
-   actually uses.
+So the corrected figure is **115 KB for two files**, against the board's 96 KB — about 20% more, not
+the six-fold difference the raw TTFs suggest, because subsetting recovers most of the bloat. The
+board's number was wrong, and the plan should not be read as a 96 KB change; it is also not the
+443 KB the unsubset files would cost.
 
-Record the measured size in this plan once it is known, the way the map `maxzoom` decision was
-recorded.
+Two things fall out of measuring rather than guessing:
+
+- **Overpass is variable**, so one 93 KB file covers every weight. The board assumed two static cuts
+  for 400 and 600; there is no need for a second file.
+- **The mono is the cheap one.** A second mono weight for `machine` readouts would add ~22 KB, taking
+  the total to ~137 KB. Whether that is needed is a design question — the role may well want a single
+  weight with size doing the work, which is the cheaper and probably better answer.
+
+Subset over `U+0020-007E, U+00A0-00FF, U+2000-206F`, which covers Latin, the degree sign and middot
+the readouts use, and the dashes, quotes and ellipsis the copy uses. **The subset command belongs in
+the repo as a script**, so the shipped files can be regenerated rather than being opaque binaries
+nobody can trace — the same rule the AED dataset and the map archive already follow.
 
 ---
 
