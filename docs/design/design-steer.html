@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Kit — references, the 999 tab, and the form</title>
+<style>
+  :root {
+    --base:   oklch(14% 0.008 250);
+    --panel:  oklch(19% 0.010 250);
+    --panel2: oklch(24% 0.012 250);
+    --line:   oklch(30% 0.014 250);
+    --ink:    oklch(97% 0.004 250);
+    --soft:   oklch(74% 0.012 250);
+    --signal: oklch(80% 0.168 72);
+    --signal-ink: oklch(20% 0.047 72);
+    --rescue: oklch(58% 0.237 27);
+    --rescue-ink: oklch(100% 0 0);
+    --good: oklch(80% 0.13 150);
+    --warn: oklch(78% 0.15 60);
+    --r: 15px;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 44px 24px 96px; background: var(--base); color: var(--ink);
+         font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+         -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+  .kicker { font-size: 12px; font-weight: 750; letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--signal); margin: 0 0 12px; }
+  h1 { font-size: 36px; line-height: 1.1; margin: 0 0 14px; letter-spacing: -0.025em; font-weight: 750; }
+  h2 { font-size: 25px; margin: 0 0 6px; letter-spacing: -0.02em; font-weight: 730; }
+  h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--soft);
+       margin: 0 0 14px; font-weight: 730; }
+  section { margin-top: 60px; }
+  .lede { color: var(--soft); max-width: 78ch; margin: 0 0 12px; }
+  .lede b { color: var(--ink); font-weight: 700; }
+  .sub { color: var(--soft); max-width: 78ch; margin: 0 0 14px; font-size: 16px; }
+
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+  @media (max-width: 1000px) { .cards { grid-template-columns: 1fr; } }
+  .c { border: 1px solid var(--line); border-radius: 16px; background: var(--panel); padding: 18px 20px;
+       display: flex; flex-direction: column; gap: 9px; }
+  .c h4 { margin: 0; font-size: 17px; font-weight: 730; }
+  .c .who { font-size: 12px; color: var(--soft); text-transform: uppercase; letter-spacing: 0.07em;
+            font-weight: 700; }
+  .c p { margin: 0; font-size: 14px; color: var(--soft); line-height: 1.55; }
+  .c p b { color: var(--ink); font-weight: 700; }
+  .c .take { font-size: 13.5px; border-left: 3px solid var(--good); padding-left: 11px; }
+  .c .skip { font-size: 13.5px; border-left: 3px solid var(--rescue); padding-left: 11px; }
+
+  .rail { display: flex; gap: 26px; overflow-x: auto; padding: 22px 2px 6px; align-items: flex-start; }
+  .step { flex: 0 0 auto; width: 320px; }
+  .phone { width: 320px; height: 640px; background: oklch(23% 0.010 250); border: 1px solid var(--line);
+           border-radius: 38px; padding: 11px; display: flex; flex-direction: column; color: var(--ink); }
+  .screen { flex: 1; display: flex; flex-direction: column; border-radius: 27px; overflow: hidden; background: var(--base); }
+  .bar { padding: 13px 18px 11px; text-align: center; font-size: 15px; font-weight: 700;
+         border-bottom: 1px solid var(--line); background: var(--panel); }
+  .body { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; }
+  .tabbar { display: flex; border-top: 1px solid var(--line); background: var(--panel); padding: 8px 4px 4px;
+            align-items: stretch; }
+  .tab { flex: 1; text-align: center; font-size: 10px; font-weight: 700; color: var(--soft);
+         display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .tab.on { color: var(--ink); }
+  .tab.depth { color: var(--signal); }
+  .glyph { width: 15px; height: 15px; border-radius: 4px; background: currentColor; opacity: 0.85; }
+  .tab.rescue-tab { color: var(--rescue-ink); }
+  .tab.rescue-tab .pill { background: var(--rescue); border-radius: 999px; padding: 6px 12px;
+                          font-size: 12px; font-weight: 800; color: var(--rescue-ink); letter-spacing: 0.02em; }
+  .sep { width: 1px; background: var(--line); margin: 4px 6px; }
+
+  .foot { border-top: 1px solid var(--line); padding: 10px 14px 8px; display: flex; flex-direction: column; gap: 8px; }
+  .btn { border-radius: var(--r); min-height: 48px; display: flex; align-items: center;
+         justify-content: center; font-size: 16px; font-weight: 700; }
+  .btn.signal { background: var(--signal); color: var(--signal-ink); }
+  .btn.ghost { border: 1px solid var(--line); color: var(--ink); }
+  .cap { font-size: 13px; color: var(--soft); margin-top: 12px; line-height: 1.55; }
+  .cap b { color: var(--ink); font-weight: 700; }
+
+  .h1s { font-size: 22px; font-weight: 750; letter-spacing: -0.02em; }
+  .card { border: 1px solid var(--line); border-radius: var(--r); background: var(--panel);
+          padding: 13px 15px; display: flex; flex-direction: column; gap: 7px; }
+  .card .mn { font-size: 16px; font-weight: 750; }
+  .card .purpose { font-size: 12.5px; color: var(--soft); line-height: 1.45; }
+  .row { display: flex; align-items: center; gap: 11px; border: 1px solid var(--line); border-radius: var(--r);
+         background: var(--panel); padding: 12px 14px; }
+  .row .txt { flex: 1; }
+  .row .go { color: var(--soft); }
+  .prog { font-size: 12px; color: var(--soft); font-variant-numeric: tabular-nums; }
+  .flabel { font-size: 14px; font-weight: 650; }
+  .input { min-height: 42px; border: 1px solid var(--line); border-radius: 10px; background: var(--base);
+           display: flex; align-items: center; padding: 0 10px; font-size: 13px; color: var(--soft); }
+  .chips { display: flex; gap: 7px; flex-wrap: wrap; }
+  .chip { border: 1px solid var(--line); border-radius: 10px; min-height: 38px; display: flex;
+          align-items: center; padding: 0 12px; font-size: 13px; }
+  .stepper { display: flex; gap: 6px; align-items: center; }
+  .stepper .s { flex: 1; text-align: center; font-size: 10.5px; font-weight: 750; color: var(--soft);
+                padding: 7px 0; border-radius: 9px; background: var(--panel2); }
+  .stepper .s.on { background: var(--signal); color: var(--signal-ink); }
+  .stepper .s.done { color: var(--good); }
+  .bar-progress { height: 4px; border-radius: 2px; background: var(--panel2); overflow: hidden; }
+  .bar-progress i { display: block; height: 100%; width: 35%; background: var(--signal); }
+  .disclose { border: 1px dashed var(--line); border-radius: 10px; padding: 10px 12px; font-size: 12.5px;
+              color: var(--soft); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin-top: 10px; }
+  th, td { text-align: left; padding: 11px 16px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--soft); font-weight: 730; }
+  tbody th { font-weight: 700; white-space: nowrap; }
+
+  .findings { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  @media (max-width: 900px) { .findings { grid-template-columns: 1fr; } }
+  .f { border: 1px solid var(--line); border-left: 3px solid var(--warn); border-radius: 14px;
+       padding: 15px 18px; background: var(--panel); }
+  .f .t { font-size: 15px; font-weight: 730; margin-bottom: 5px; }
+  .f .b { font-size: 14px; color: var(--soft); line-height: 1.5; }
+  .f .b b { color: var(--ink); font-weight: 700; }
+  .f .src { font-size: 12px; color: var(--soft); margin-top: 7px; opacity: 0.8; }
+
+  .rec { margin-top: 40px; border: 1px solid var(--line); border-left: 4px solid var(--signal);
+         border-radius: 16px; padding: 22px 24px; background: var(--panel); }
+  .rec h2 { margin-bottom: 12px; }
+  .rec p { max-width: 86ch; margin: 0 0 12px; font-size: 16px; }
+  .rec p:last-child { margin: 0; }
+  ul { margin: 8px 0 0; padding-left: 20px; }
+  li { margin: 6px 0; }
+  .foot-note { margin-top: 44px; font-size: 13.5px; color: var(--soft); max-width: 86ch; line-height: 1.6; }
+  .foot-note b { color: var(--ink); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Field Kit · design steer</p>
+  <h1>References, the 999 tab, and the form</h1>
+  <p class="lede">
+    Three things you asked for: what comparable apps actually do, whether the 999 action belongs in
+    the tab bar, and a second pass at the capture form — this time against how long forms are
+    handled elsewhere rather than against my own instinct.
+  </p>
+  <p class="lede">
+    Every number below is quoted from the source rather than estimated, and the sources are listed at
+    the end. Where I have read an app's <em>description</em> rather than used it, I say so.
+  </p>
+
+  <section>
+    <h2>What comparable apps do</h2>
+    <p class="sub">Four categories, because nothing does quite what Field Kit does — offline, cited,
+      and recording rather than advising.</p>
+    <div class="cards">
+      <div class="c">
+        <div class="who">British Red Cross · general first aid</div>
+        <h4>20+ skills, one per scenario</h4>
+        <p>"Simple step-by-step guides", videos and quizzes, and <b>works without internet</b>. A
+          separate Baby &amp; Child app carries a "toolkit" to record a child's medical needs.</p>
+        <div class="take"><b>Take:</b> a scenario is a <em>destination you pick</em>, not a chapter
+          you scroll to. Offline is stated as a feature, not hidden.</div>
+        <div class="skip"><b>Skip:</b> quizzes and video. They need a library we do not have, and
+          they are learning tools rather than emergency ones.</div>
+      </div>
+      <div class="c">
+        <div class="who">GoodSAM · responder</div>
+        <h4>Dispatch, kits, and precise location</h4>
+        <p>Alerts responders with <b>the five nearest kits</b>, uses <b>what3words</b> so a caller can
+          say where they are, and streams live caller video to the dispatcher.</p>
+        <div class="take"><b>Take:</b> "the nearest five, wherever you are" is exactly our AED job;
+          what3words beside a map is the pattern we already have.</div>
+        <div class="skip"><b>Skip:</b> live video and dispatch — it needs a network and a control
+          room, and this app must work with neither.</div>
+      </div>
+      <div class="c">
+        <div class="who">what3words · the app itself</div>
+        <h4>One thing, done exactly</h4>
+        <p>The whole app is: here is where you are, in three words, and here is how to say them. It
+          works offline by holding the squares locally.</p>
+        <div class="take"><b>Take:</b> a single dominant answer per screen, and readout type sized
+          for saying aloud. Our "Where I am" already follows it.</div>
+        <div class="skip"><b>Skip:</b> the grid. Their map is the product; ours is one field on a
+          screen that also has to do CPR.</div>
+      </div>
+      <div class="c">
+        <div class="who">VP0 · first-aid template</div>
+        <h4>The shape most of them share</h4>
+        <p>An emergency list, then <b>one instruction per screen</b>, a CPR rhythm timer, and a call
+          action "present and obvious on every relevant screen".</p>
+        <div class="take"><b>Take:</b> one instruction per screen is what our CPR screen already
+          does, and their "call on every relevant screen" is the dock rule in someone else's words.</div>
+        <div class="skip"><b>Skip:</b> the teal-and-navy branding those templates all wear.</div>
+      </div>
+      <div class="c">
+        <div class="who">The pattern across all of them</div>
+        <h4>Emergency apps are shallow and wide</h4>
+        <p>None of them asks a user to work through a long structured form under pressure. The
+          deepest flow is a handful of steps, and the default is <b>a list of situations you pick
+          from</b>.</p>
+        <div class="take"><b>Take:</b> this is the strongest evidence yet that the responder capture
+          form is the odd one out in our own app — it is the only screen with 47 fields on it.</div>
+      </div>
+      <div class="c">
+        <div class="who">Where Field Kit differs, deliberately</div>
+        <h4>Cited, offline, and not advising</h4>
+        <p>None of the above reproduces guidance with a named source and review date, none records
+          what an observer saw, and most need a network for their best features.</p>
+        <div class="take"><b>Keep:</b> the citation line, the offline-first promise, and the refusal
+          to interpret. Those are the identity, and no competitor has them.</div>
+      </div>
+    </div>
+    <p class="sub" style="margin-top:16px">
+      <b>What I would not copy:</b> every one of them puts a call action in a large, obvious, full-width
+      element. Ours is the only one considering putting it in a navigation bar, which is the next
+      question.
+    </p>
+  </section>
+
+  <section>
+    <h2>The 999 action in the tab bar</h2>
+    <p class="sub">You asked for it red, in the bar. Here it is, and here is the honest trade.</p>
+    <div class="rail">
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar">Locate</div>
+          <div class="body">
+            <div class="stepper"><span class="s on">Map</span><span class="s">Where I am</span><span class="s">Compass</span></div>
+            <div class="card" style="flex:1; justify-content:center; align-items:center">
+              <div class="purpose">the map, with two more lines of
+                content visible than before</div>
+            </div>
+          </div>
+          <div class="tabbar">
+            <span class="tab on"><span class="glyph"></span>Act</span>
+            <span class="tab"><span class="glyph"></span>Locate</span>
+            <span class="tab depth"><span class="glyph"></span>Field</span>
+            <span class="tab"><span class="glyph"></span>More</span>
+            <span class="sep"></span>
+            <span class="tab rescue-tab"><span class="pill">999</span></span>
+          </div>
+        </div></div>
+        <p class="cap"><b>The 999 tab.</b> One bar instead of two, so every screen gains back the
+          ~60px the dock was costing — measured, not estimated — and the Act/everywhere-else
+          asymmetry disappears.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar">Record incident</div>
+          <div class="body">
+            <div class="card"><div class="mn">What is left of the form</div>
+              <div class="purpose">…with a review step before Send, and no second bar underneath.</div></div>
+          </div>
+          <div class="foot"><div class="btn signal">Send report · 3 answered</div></div>
+          <div class="tabbar">
+            <span class="tab"><span class="glyph"></span>Act</span>
+            <span class="tab"><span class="glyph"></span>Locate</span>
+            <span class="tab on depth"><span class="glyph"></span>Field</span>
+            <span class="tab"><span class="glyph"></span>More</span>
+            <span class="sep"></span>
+            <span class="tab rescue-tab"><span class="pill">999</span></span>
+          </div>
+        </div></div>
+        <p class="cap"><b>What it fixes.</b> The pinned footer is now one contextual action, not two.
+          Send can sit there honestly, and 999 is still one tap from anywhere.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar">More</div>
+          <div class="body" style="justify-content:flex-end">
+            <div class="disclose">The thing to decide: a tab bar is the most-tapped strip on the
+              screen. An item that <b>dials</b> rather than navigates will be hit by accident far more
+              often than the dock was.</div>
+          </div>
+          <div class="tabbar">
+            <span class="tab"><span class="glyph"></span>Act</span>
+            <span class="tab"><span class="glyph"></span>Locate</span>
+            <span class="tab depth"><span class="glyph"></span>Field</span>
+            <span class="tab on"><span class="glyph"></span>More</span>
+            <span class="sep"></span>
+            <span class="tab rescue-tab"><span class="pill">999</span></span>
+          </div>
+        </div></div>
+        <p class="cap"><b>The risk, stated plainly.</b> `tel:` opens the dialler with 999 ready — it
+          places no call, so the worst case is a dialler screen you dismiss. That is what makes this
+          acceptable at all. But it is a <em>worse</em> mis-tap surface than the dock.</p>
+      </div>
+    </div>
+
+    <div class="findings">
+      <div class="f" style="border-left-color:var(--good)">
+        <div class="t">Why I think you are right</div>
+        <div class="b">Two stacked bars was the weakest part of the merged direction — I called the
+          bottom-chrome cost "the call I am least sure of", and this removes it. It also kills the
+          inconsistency where Act has no dock and everywhere else does: now there is <b>one bar, one
+          rule</b>.</div>
+      </div>
+      <div class="f">
+        <div class="t">The one thing to get right</div>
+        <div class="b">Separate it visually from the navigational items — a divider plus a filled red
+          pill, as drawn — so it reads as <b>an action that lives near the navigation</b> rather than
+          a fifth place. If it looks like a tab, people will tap it to navigate and get the dialler.</div>
+      </div>
+      <div class="f">
+        <div class="t">A cheaper alternative worth knowing</div>
+        <div class="b">Keep "Act" as the first tab and make <b>the Act tab itself red</b>. Then the
+          most-tapped item is navigation, the dial still happens on Act behind the OS dialler, and
+          "red means the emergency action" is preserved. It is a smaller change and no new mis-tap
+          surface — but it is two taps to a call instead of one.</div>
+      </div>
+      <div class="f">
+        <div class="t">What it costs either way</div>
+        <div class="b">Five items on a 320px bar, and the guidance's own warning about "too many
+          equal calls to action" at the bottom of the screen. The red pill and the divider are what
+          stop it being five equal things.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The capture form, against how long forms are actually done</h2>
+    <p class="sub">I went looking for what mature products do with long forms. It partly agrees with
+      my last pass and partly corrects it.</p>
+
+    <div class="findings">
+      <div class="f">
+        <div class="t">Split only when it earns it — but split at real seams</div>
+        <div class="b">"Three or four related fields do not need three or four steps… group by
+          <em>meaning</em>, not by arbitrary count: each step should be one coherent idea a person
+          can name." Our four mnemonics <b>are</b> four nameable ideas — SAMPLER, ABCDE, ETHANE,
+          ASHICE — so this supports an index of four rather than a 47-field scroll.</div>
+        <div class="src">SaaSUI, wizard patterns</div>
+      </div>
+      <div class="f">
+        <div class="t">The mobile numbers are quite specific</div>
+        <div class="b">Split past <b>6–8 questions</b>; <b>2–5 fields</b> per step; single column;
+          labels above; <b>44–48px</b> targets — 44×44 measures ~<b>1.6%</b> tap error against
+          <b>5.8%</b> at 24×24; 8–16px between controls; primary action in a sticky footer.</div>
+        <div class="src">Reform, mobile multi-step guide</div>
+      </div>
+      <div class="f">
+        <div class="t">Progress must be honest, and named beats numbered</div>
+        <div class="b">"A 'Step 3 of 4' where step 4 is the longest form in the flow… teaches people
+          [the bar] cannot be trusted." And <b>named steps beat a bare number</b> because they show
+          what is coming. Our "0 of 21 recorded" is honest but easy to miss and easy to lose.</div>
+        <div class="src">SaaSUI</div>
+      </div>
+      <div class="f">
+        <div class="t">Group before you split</div>
+        <div class="b">The one source that argues first for <b>grouping related fields on one screen
+          and progressive disclosure</b>, and only then for steps. Applied here: ABCDE's A-B-C-D-E is
+          already a grouping — it should be the <b>structure of that step</b>, not 21 loose rows.</div>
+        <div class="src">UX Design World, long mobile forms</div>
+      </div>
+      <div class="f">
+        <div class="t">Reveal only what applies</div>
+        <div class="b">"Display only the fields relevant to the user's prior choices." We already
+          mark fields <b>"Needs equipment you may not have."</b> — eighteen of them. Those belong
+          behind a disclosure, not in the scroll for someone without a cuff or a thermometer.</div>
+        <div class="src">UX Design World</div>
+      </div>
+      <div class="f">
+        <div class="t">Back must be lossless, and work must survive interruption</div>
+        <div class="b">Nothing here should be lost by going back — and a flow this long should
+          <b>save and resume</b>. Our report already persists on the device, so we are most of the
+          way there; nothing in the UI says so.</div>
+        <div class="src">SaaSUI; Reform</div>
+      </div>
+    </div>
+
+    <p class="sub" style="margin-top:18px"><b>A review step before sending</b> is the other
+      consistent recommendation — gather the answers, let each be corrected, then send. We already
+      have a send screen; it should be doing this job explicitly.</p>
+  </section>
+
+  <section>
+    <h2>So the form becomes</h2>
+    <div class="rail">
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar">Record incident</div>
+          <div class="body">
+            <div class="h1s">Nothing recorded yet</div>
+            <div class="row"><div class="txt"><div class="mn">SAMPLER</div>
+              <div class="purpose">History from a casualty who can answer</div></div>
+              <span class="prog">0/8</span><span class="go">›</span></div>
+            <div class="row"><div class="txt"><div class="mn">ABCDE</div>
+              <div class="purpose">Primary survey — A, B, C, D, E</div></div>
+              <span class="prog">0/21</span><span class="go">›</span></div>
+            <div class="row"><div class="txt"><div class="mn">ETHANE</div>
+              <div class="purpose">Situation report — the scene</div></div>
+              <span class="prog">0/8</span><span class="go">›</span></div>
+            <div class="row"><div class="txt"><div class="mn">ASHICE</div>
+              <div class="purpose">Handover — the casualty leaving</div></div>
+              <span class="prog">0/10</span><span class="go">›</span></div>
+          </div>
+          <div class="tabbar">
+            <span class="tab"><span class="glyph"></span>Act</span>
+            <span class="tab"><span class="glyph"></span>Locate</span>
+            <span class="tab on depth"><span class="glyph"></span>Field</span>
+            <span class="tab"><span class="glyph"></span>More</span>
+            <span class="sep"></span>
+            <span class="tab rescue-tab"><span class="pill">999</span></span>
+          </div>
+        </div></div>
+        <p class="cap"><b>One.</b> Four nameable ideas, not 47 fields. Each says what it describes and
+          how far along it is — progress visible <em>while deciding</em>.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar">ABCDE</div>
+          <div class="body">
+            <div class="stepper">
+              <span class="s done">A</span><span class="s on">B</span><span class="s">C</span>
+              <span class="s">D</span><span class="s">E</span>
+            </div>
+            <div class="bar-progress"><i></i></div>
+            <div class="prog">3 of 21 recorded in ABCDE</div>
+            <div class="card">
+              <div class="mn">Breathing</div>
+              <div class="flabel">Is the chest rising evenly?</div>
+              <div class="chips"><span class="chip">Yes</span><span class="chip">No</span><span class="chip">Not checked</span></div>
+              <div class="flabel">Breaths per minute</div>
+              <div class="input">16</div>
+            </div>
+            <div class="disclose">+ 4 fields that need equipment you may not have</div>
+          </div>
+          <div class="foot"><div class="btn ghost">Next: C · Circulation</div></div>
+          <div class="tabbar">
+            <span class="tab"><span class="glyph"></span>Act</span>
+            <span class="tab"><span class="glyph"></span>Locate</span>
+            <span class="tab on depth"><span class="glyph"></span>Field</span>
+            <span class="tab"><span class="glyph"></span>More</span>
+            <span class="sep"></span>
+            <span class="tab rescue-tab"><span class="pill">999</span></span>
+          </div>
+        </div></div>
+        <p class="cap"><b>Two.</b> Inside the longest form, A-B-C-D-E is a <em>named stepper</em> —
+          honest progress — with the equipment-dependent fields behind a disclosure rather than in
+          the way.</p>
+      </div>
+
+      <div class="step">
+        <div class="phone"><div class="screen">
+          <div class="bar">Review and send</div>
+          <div class="body">
+            <div class="card"><div class="mn">ABCDE</div>
+              <div class="purpose">3 of 21 recorded · <b>Edit</b></div></div>
+            <div class="card"><div class="mn">ETHANE</div>
+              <div class="purpose">8 of 8 recorded · <b>Edit</b></div></div>
+            <div class="disclose">Position recorded 09:38. what3words resolved and stored with the
+              report.</div>
+          </div>
+          <div class="foot"><div class="btn signal">Send report</div></div>
+          <div class="tabbar">
+            <span class="tab"><span class="glyph"></span>Act</span>
+            <span class="tab"><span class="glyph"></span>Locate</span>
+            <span class="tab on depth"><span class="glyph"></span>Field</span>
+            <span class="tab"><span class="glyph"></span>More</span>
+            <span class="sep"></span>
+            <span class="tab rescue-tab"><span class="pill">999</span></span>
+          </div>
+        </div></div>
+        <p class="cap"><b>Three.</b> Sending gets a review step, because it is the irreversible
+          action and every source says so. Each section links back to edit.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="rec">
+    <h2>What I would do now</h2>
+    <p>
+      <b>Take the 999 tab bar.</b> Your instinct fixes the weakest part of what we shipped, and the
+      only thing to get right is making it read as an action rather than a fifth destination — a
+      divider and a red pill, not another tab. If the mis-tap worry turns out to bite in testing, the
+      fallback is a red <em>Act</em> tab, which is one tap worse but cannot be hit by accident.
+    </p>
+    <p>
+      <b>Then the form, and the research makes the case firmer rather than softer.</b> Four nameable
+      ideas, a named stepper inside the longest, equipment fields behind a disclosure, and a review
+      before send. Even the source that argues against splitting forms says to group by meaning
+      first — and our four mnemonics are the grouping, already.
+    </p>
+    <p>
+      <b>What I would not do yet is redecorate.</b> The references all confirm the visual lane we are
+      in — dark, type-led, one dominant action — and none of them suggests a change that matters more
+      than structure. The type-voice question is the exception, and it still needs answering before
+      more styling.
+    </p>
+  </div>
+
+  <p class="foot-note">
+    <b>Sources.</b> <em>Mobile Multi-Step Forms: Responsive UX Guide</em> (Reform) ·
+    <em>SaaS Multi-Step Form &amp; Wizard UX</em> (SaaSUI, 2026) ·
+    <em>How to Design Long Mobile Forms</em> (UX Design World, Mar 2025) ·
+    <em>Free first aid apps</em> (British Red Cross) ·
+    <em>GoodSAM</em> and the what3words emergency pages ·
+    <em>First Aid Step-by-Step Instruction UI Template</em> (VP0).
+    <b>What I read and what I did not:</b> the app descriptions and feature lists are the vendors'
+    own words; I have not used GoodSAM or the Red Cross apps, so their patterns above are taken from
+    their published descriptions rather than from their screens. The form-guidance numbers are quoted
+    directly from the sources, and the 47-field count and the ~60px dock cost are measured from our
+    own app.
+  </p>
+
+</div>
+</body>
+</html>
