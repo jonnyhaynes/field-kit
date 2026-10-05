@@ -1,11 +1,14 @@
 # Beacon tab navigation — implementation plan
 
-**Status: draft — awaiting approval.** No application code has been changed. Per `AGENTS.md`, this
-plan is what gets reviewed, not the first code, and a human approves it before any of it is built.
+**Status: shipped.** Built and merged as PR [#36](https://github.com/jonnyhaynes/field-kit/pull/36).
+This is the record of an implemented plan rather than a proposal, so read §12 first — it lists where
+the build departed from what is written below, and several of those departures were bugs that only
+running the app found.
 
-**Ticket:** to be filed. The next free number is **#35** (the last merged PR was #34). Rename this
-file to `docs/plans/35-beacon-tab-navigation.md` once the issue exists, and reference the issue in
-the branch name and the PR body.
+**Ticket:** [#35](https://github.com/jonnyhaynes/field-kit/issues/35) — built and merged as PR
+[#36](https://github.com/jonnyhaynes/field-kit/pull/36). This document is now the shipped record;
+§12 lists every place the implementation departed from the plan, and it is worth reading before
+touching the navigation, because several of those departures were bugs found only by running the app.
 
 **Design source:** `docs/design/direction-merged-beacon-tabs.html`. Read that first — it is the
 structural answer and the style pass this plan implements.

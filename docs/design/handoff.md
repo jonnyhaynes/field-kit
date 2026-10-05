@@ -1,8 +1,29 @@
 # Design directions — session handoff
 
-**Status: direction chosen — Beacon + tab navigation. Plan drafted, awaiting approval.** This file
+**Status: the beacon direction is built and merged; the design is the open question.** This file
 exists so a fresh session can pick this up without the conversation. Read `AGENTS.md`, `README.md`
 and `docs/plans/fieldkit-v1.md` first — this is a supplement to those, not a replacement.
+
+**Where this actually is, as of the latest merge:**
+
+- **#35 → PR #36, merged.** Tab navigation, Locate's in-page sub-tabs, the beacon palette and the
+  emergency dock. The plan is `docs/plans/35-beacon-tab-navigation.md`; its §12 is the record of
+  where the build departed from the plan, including three bugs that only running the app found.
+- **#37, merged.** `docs/design/design-steer.html` — reference apps, the 999-in-the-tab-bar
+  proposal, and the capture form re-examined against long-form research.
+- **#38, open and awaiting review.** `docs/design/type-and-surface.html` — why the app reads as a
+  wireframe, and the typeface decision, with the candidates embedded as real font files.
+- **#39, filed, plan written, not built.** `docs/plans/39-emergency-action-in-the-tab-bar.md` —
+  remove the dock, put the emergency action in the tab bar as a distinct red item.
+- **The capture form** is specified in `docs/design/responder-capture-options.html` and re-worked in
+  the steer board. It needs a decision and its own plan; it is the largest outstanding piece.
+
+**The three things blocking further design work:** which typeface (#38), whether to take the 999
+tab bar (#39), and the form's structure. Everything else is mechanical.
+
+Sections 1 to 8 below were written before #36 was built. They are kept because the reasoning still
+holds, but where they describe the state of the work they are history, not instruction.
+
 
 ---
 
