@@ -272,12 +272,14 @@ function FieldControl({
                 style={({ pressed }) => [
                   styles.chip,
                   {
-                    borderColor: selected ? theme.brand : theme.border,
-                    backgroundColor: selected ? theme.backgroundSelected : 'transparent',
+                    borderColor: selected ? 'transparent' : theme.border,
+                    backgroundColor: selected ? theme.brand : 'transparent',
                   },
                   pressed && styles.pressed,
                 ]}>
-                <Text style={[styles.chipLabel, { color: theme.text }]}>{option}</Text>
+                <Text style={[styles.chipLabel, { color: selected ? theme.brandInk : theme.text }]}>
+                  {option}
+                </Text>
               </Pressable>
             );
           })}
@@ -330,7 +332,7 @@ const styles = StyleSheet.create({
   chip: {
     minHeight: MinTarget,
     justifyContent: 'center',
-    borderRadius: Radius.sm,
+    borderRadius: Radius.pill,
     borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: Spacing.three,
   },

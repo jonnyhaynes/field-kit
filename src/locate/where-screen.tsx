@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   note: { ...Type.note },
   action: {
     minHeight: MinTarget,
-    borderRadius: Radius.md,
+    borderRadius: Radius.pill,
     justifyContent: 'center',
     alignItems: 'center',
   },
