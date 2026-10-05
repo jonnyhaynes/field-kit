@@ -54,6 +54,109 @@ export const Colors = {
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
+/**
+ * The surface ramp.
+ *
+ * Four steps ordered by how much light they catch: the canvas everything sits on, a raised panel, a
+ * control on that panel, and the selected state of one. A *ramp* rather than four unrelated colours,
+ * and the step between them is small on purpose — a surface that shouts competes with the emergency
+ * action, which is the only thing on screen allowed to shout.
+ *
+ * These exist because the app used to distinguish two surfaces with a hairline border and nothing
+ * else, which is why it read as a wireframe: a rectangle with an outline is how you draw a box on
+ * paper, not how you draw a thing with thickness.
+ */
+export const Surfaces = {
+  light: {
+    canvas: '#F6F9FB', // oklch(98% 0.004 250)
+    panel: '#FFFFFF', // oklch(100% 0 0)
+    control: '#EFF2F5', // oklch(96% 0.005 250)
+    selected: '#E7ECF0', // oklch(94% 0.008 250)
+  },
+  dark: {
+    canvas: '#07090C', // oklch(14% 0.008 250)
+    panel: '#101418', // oklch(19% 0.010 250)
+    control: '#171B20', // oklch(22% 0.011 250)
+    selected: '#1B2025', // oklch(24% 0.012 250)
+  },
+} as const;
+
+/**
+ * The lit top edge on a raised surface.
+ *
+ * This is the single most effective move in the whole surface system and the cheapest: one bright
+ * hairline along the top of a panel, as though it were catching light from above. It is a bevel, not
+ * a border — a border draws the shape, and this suggests the material.
+ */
+export const Bevel = {
+  light: 'rgba(255, 255, 255, 0.90)',
+  dark: 'rgba(255, 255, 255, 0.07)',
+} as const;
+
+/**
+ * Elevation, as a stack rather than a shadow.
+ *
+ * Every raised surface gets the same four parts: a hairline stroke, the lit top edge above, a filled
+ * body, and a soft drop below. Three levels, and nothing in between — a fourth would be a decision
+ * nobody could make consistently.
+ *
+ * Split by scheme because the opacity has to be: a shadow that reads as depth on a near-black canvas
+ * is a smudge on a white one.
+ *
+ * `attention` carries a *coloured* shadow in the emergency red. That is the beacon — the one element
+ * in the app allowed to look like it is emitting light. **iOS only:** Android's `elevation` always
+ * draws a grey shadow and ignores the colour, so on Android the red action gets depth but no glow.
+ * That asymmetry is acceptable; it is not worth a gradient library to close.
+ */
+export const Elevation = {
+  light: {
+    panel: {
+      shadowColor: '#0A1014',
+      shadowOffset: { width: 0, height: 1 },
+      shadowRadius: 3,
+      shadowOpacity: 0.06,
+      elevation: 1,
+    },
+    control: {
+      shadowColor: '#0A1014',
+      shadowOffset: { width: 0, height: 2 },
+      shadowRadius: 6,
+      shadowOpacity: 0.09,
+      elevation: 3,
+    },
+    attention: {
+      shadowColor: '#C60014',
+      shadowOffset: { width: 0, height: 4 },
+      shadowRadius: 12,
+      shadowOpacity: 0.18,
+      elevation: 6,
+    },
+  },
+  dark: {
+    panel: {
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowRadius: 6,
+      shadowOpacity: 0.3,
+      elevation: 2,
+    },
+    control: {
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowRadius: 10,
+      shadowOpacity: 0.38,
+      elevation: 4,
+    },
+    attention: {
+      shadowColor: '#E50019',
+      shadowOffset: { width: 0, height: 6 },
+      shadowRadius: 18,
+      shadowOpacity: 0.5,
+      elevation: 8,
+    },
+  },
+} as const;
+
 /** The two themes the app ships. Nothing else is a theme. */
 export type Scheme = 'light' | 'dark';
 
