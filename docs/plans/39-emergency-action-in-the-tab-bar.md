@@ -1,8 +1,8 @@
 # The emergency action in the tab bar — implementation plan
 
-**Status: approved, with one interaction decision outstanding.** The structure is approved; the open
-question is whether the emergency action responds to a tap or a hold, and §2 sets out the case for
-the tap. No application code has been changed yet.
+**Status: approved, and the interaction is decided — a tap.** The owner confirmed the tap after the
+proposal in §2, so the emergency action is a single press and the deliberate step stays where it
+already is: the call button in the dialler. No application code has been changed yet.
 
 **Ticket:** #39. **Design:** `docs/design/design-steer.html`, section "The 999 action in the tab bar".
 
@@ -86,7 +86,10 @@ making the emergency action harder to reach.
 short hold (about 600 ms), and wording that says so. A hidden hold on an emergency action is the
 worst of both — undiscoverable *and* harder.
 
-**This is the one open decision in this plan.** Everything else is ready to build.
+**Decided — a tap.** Confirmed by the owner after the proposal above. So the emergency action is a
+single press, and the deliberation stays where it already is: the call button in the dialler. If
+testing shows real mis-taps, §7's red-Act-tab fallback is the answer rather than a hold, because it
+removes the mis-tap surface without making the action harder to reach.
 
 ---
 
