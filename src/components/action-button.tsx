@@ -3,7 +3,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-export type ActionVariant = 'rescue' | 'default';
+/**
+ * `rescue` is the emergency action, and appears once per screen. `signal` is the app's own action
+ * colour, for the thing this screen exists to do. `default` is a destination.
+ */
+export type ActionVariant = 'rescue' | 'signal' | 'default';
 
 type Props = {
   label: string;
@@ -24,7 +28,22 @@ export function ActionButton({
   accessibilityHint,
 }: Props) {
   const theme = useTheme();
-  const isRescue = variant === 'rescue';
+
+  const fill = {
+    rescue: theme.rescue,
+    signal: theme.accent,
+    default: theme.backgroundElement,
+  }[variant];
+
+  const ink = {
+    rescue: theme.rescueInk,
+    signal: theme.accentInk,
+    default: theme.text,
+  }[variant];
+
+  // A hint on a filled button has to sit on the fill, so it takes the fill's ink rather than the
+  // secondary text colour, which would be unreadable on red or on the signal.
+  const hintInk = variant === 'default' ? theme.textSecondary : ink;
 
   return (
     <Pressable
@@ -36,25 +55,16 @@ export function ActionButton({
       style={({ pressed }) => [
         styles.base,
         {
-          backgroundColor: isRescue ? theme.rescue : theme.backgroundElement,
-          borderColor: isRescue ? 'transparent' : theme.border,
+          backgroundColor: fill,
+          borderColor: variant === 'default' ? theme.border : 'transparent',
         },
         pressed && styles.pressed,
       ]}>
       <View style={styles.text}>
-        <Text
-          style={[
-            styles.label,
-            isRescue && styles.labelRescue,
-            { color: isRescue ? theme.rescueInk : theme.text },
-          ]}>
+        <Text style={[styles.label, variant === 'rescue' && styles.labelRescue, { color: ink }]}>
           {label}
         </Text>
-        {hint ? (
-          <Text style={[styles.hint, { color: isRescue ? theme.rescueInk : theme.textSecondary }]}>
-            {hint}
-          </Text>
-        ) : null}
+        {hint ? <Text style={[styles.hint, { color: hintInk }]}>{hint}</Text> : null}
       </View>
     </Pressable>
   );

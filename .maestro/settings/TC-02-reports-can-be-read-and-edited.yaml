@@ -29,10 +29,14 @@ tags:
     id: act-aed
 
 # Flag an entry, so there is something waiting to read.
-- extendedWaitUntil:
-    visible:
-      id: aed-flag-0
-    timeout: 60000
+#
+# Swiped rather than scrolled to, for the reason in TC-01: the element reports as fully visible while
+# actually sitting under the taller pinned footer. A small, slow swipe — a full-page one overshoots
+# and puts the flag under the navigation header, where the tap does nothing.
+- swipe:
+    start: '50%, 58%'
+    end: '50%, 44%'
+    duration: 800
 - tapOn:
     id: aed-flag-0
 
@@ -42,6 +46,15 @@ tags:
     visible:
       id: settings-screen
     timeout: 30000
+
+# Swipe *before* tapping, not after. The dock made the pinned footer taller, and the opt-in switch now
+# sits just under it: a tap on its reported centre lands on the footer, the switch never turns on, and
+# the screen says "one report is waiting" — which reads as a broken feature rather than a test that
+# tapped the wrong thing. The swipe below is also what brings the report itself into view.
+- swipe:
+    start: '50%, 70%'
+    end: '50%, 26%'
+    duration: 800
 
 # Opt in. This shows the reports; it sends nothing.
 - tapOn:

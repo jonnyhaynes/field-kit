@@ -85,7 +85,7 @@ function AedResults() {
             label="Show on a map"
             hint="Offline map — works with no signal"
             testID="aed-map"
-            onPress={() => router.push('/map')}
+            onPress={() => router.push('/locate')}
           />
           <ActionButton
             label="Reports and settings"
@@ -95,7 +95,7 @@ function AedResults() {
                 : 'Review what to send to OpenStreetMap'
             }
             testID="aed-settings"
-            onPress={() => router.push('/settings')}
+            onPress={() => router.push('/more')}
           />
         </>
       }>

@@ -49,6 +49,12 @@ tags:
 - assertNotVisible:
     id: map-pack-active
 
+# Started below the map on purpose: a swipe that begins over the MapLibre view pans the map instead
+# of scrolling the page, which is what the first attempt did.
+- swipe:
+    start: '50%, 76%'
+    end: '50%, 28%'
+    duration: 500
 - tapOn:
     id: map-regions-link
 - extendedWaitUntil:

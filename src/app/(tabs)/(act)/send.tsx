@@ -110,7 +110,7 @@ export default function SendScreen() {
             accessibilityRole="button"
             accessibilityLabel="Start a report"
             testID="send-start-record"
-            onPress={() => router.push('/record')}
+            onPress={() => router.push('/field')}
             style={({ pressed }) => [
               styles.primary,
               { backgroundColor: theme.accent },
@@ -221,7 +221,7 @@ export default function SendScreen() {
             accessibilityLabel="Scan a report"
             accessibilityHint="Point the camera at another phone's code"
             testID="send-scan-link"
-            onPress={() => router.push('/scan')}
+            onPress={() => router.push('/field/scan')}
             style={({ pressed }) => [styles.link, pressed && styles.pressed]}>
             <Text style={[styles.linkLabel, { color: theme.text }]}>Scan a report</Text>
           </Pressable>

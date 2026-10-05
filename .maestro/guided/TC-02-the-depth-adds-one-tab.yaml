@@ -1,0 +1,72 @@
+# TC-02 — the depth adds a tab, and moves nothing.
+#
+# Why this flow exists: §1 says depth is not a mode and the Responder depth *adds*. On the tab bar
+# that is a claim about two things at once — how many tabs there are, and where they sit — and the
+# first version of this screen got both wrong. Field appeared at the guided depth, with a default
+# label and a default icon, appended to the end of the bar: it rendered, it looked plausible, and it
+# put a capture surface in front of an untrained user. The four checks were all green.
+#
+# The order assertions are the half a tab count cannot see. "Adds, never moves" is a claim about
+# position, so this asserts where Field landed relative to its neighbours rather than only that it
+# arrived.
+appId: com.colouringcode.fieldkit
+tags:
+  - guided
+  - '35'
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: inuse
+
+# Skipped on iOS, where there is no dialog. See TC-01 for why `runFlow/when` rather than an
+# optional tap: the dialog arrives when the map tab mounts, which the navigator does at launch.
+- runFlow:
+    when:
+      visible: 'While using the app'
+    commands:
+      - tapOn: 'While using the app'
+
+# Guided: three tabs, and Field is not among them.
+- assertVisible:
+    id: tab-act
+- assertVisible:
+    id: tab-locate
+- assertNotVisible:
+    id: tab-field
+- assertVisible:
+    id: tab-more
+
+# Turn the Responder depth on, from the tab that holds the switch.
+- tapOn:
+    id: tab-more
+- tapOn:
+    id: settings-depth-switch
+
+# Field has arrived...
+- assertVisible:
+    id: tab-field
+
+# ...and nothing has moved around it. Locate is still to its left, More still to its right, and Act
+# still ahead of Locate — so the bar grew by one without reordering.
+- assertVisible:
+    id: tab-field
+    rightOf:
+      id: tab-locate
+- assertVisible:
+    id: tab-field
+    leftOf:
+      id: tab-more
+- assertVisible:
+    id: tab-locate
+    rightOf:
+      id: tab-act
+
+# Put it back, so this flow leaves no trace for whatever runs next: Maestro does not order flows, so
+# a flow that changes a setting is a flow that breaks another one at random.
+- tapOn:
+    id: tab-more
+- tapOn:
+    id: settings-depth-switch
+- assertNotVisible:
+    id: tab-field

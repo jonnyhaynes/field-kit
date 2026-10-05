@@ -34,10 +34,19 @@ tags:
 
 # Flag an entry. This must work regardless of any reporting setting: the entry hides locally, and a
 # report joins the queue.
-- extendedWaitUntil:
-    visible:
-      id: aed-flag-0
-    timeout: 60000
+#
+# A swipe, not `scrollUntilVisible`. The dock above the tab bar made the pinned footer taller, so the
+# first result's flag now sits just below the fold — but its frame still lands on the *screen*, so
+# Maestro reports "visibility percentage 1.0", scrolls zero times, and then taps coordinates that are
+# underneath the footer, hitting "Show on a map" instead. See the README's sixth lesson.
+#
+# The distance is deliberately small and the duration long. Its job is only to lift the flag clear of
+# the footer: a full-page swipe carries it under the navigation header instead, where the tap lands
+# on nothing and the flag is never applied — which looks like a reporting bug and is not one.
+- swipe:
+    start: '50%, 58%'
+    end: '50%, 44%'
+    duration: 800
 - tapOn:
     id: aed-flag-0
 
@@ -51,6 +60,13 @@ tags:
 # The opt-in exists, and is off in a fresh install.
 - assertVisible:
     id: settings-osm-opt-in
+
+# Scroll before asserting: the dock made the pinned footer taller, so the waiting report now sits
+# below the fold, and `assertVisible` only counts what is on screen. See the README's sixth lesson.
+- swipe:
+    start: '50%, 70%'
+    end: '50%, 26%'
+    duration: 500
 
 # The report is waiting — and there is no way to send it.
 - assertVisible:

@@ -26,19 +26,19 @@ const USER_ZOOM = 10;
 /** More than the list shows: on a map, context is the point. */
 const RESULT_LIMIT = 10;
 
-export default function MapScreen() {
+export function MapScreen({ onOpenWhere }: { onOpenWhere: () => void }) {
   return (
     <AedDatabaseProvider>
       <Suspense fallback={<MapNotice title="Offline map" body="Opening the map data…" />}>
-        <MapContent />
+        <MapContent onOpenWhere={onOpenWhere} />
       </Suspense>
     </AedDatabaseProvider>
   );
 }
 
-function MapContent() {
+function MapContent({ onOpenWhere }: { onOpenWhere: () => void }) {
   const theme = useTheme();
-  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+  const scheme = useColorScheme();
 
   const assets = useMapAssets(scheme);
   const position = useCurrentPosition();
@@ -155,7 +155,7 @@ function MapContent() {
         accessibilityLabel="Region packs"
         accessibilityHint="Download street detail for one area"
         testID="map-regions-link"
-        onPress={() => router.push('/regions')}
+        onPress={() => router.push('/locate/regions')}
         style={({ pressed }) => [styles.link, pressed && styles.pressed]}>
         <Text style={[styles.linkLabel, { color: theme.text }]}>Region packs</Text>
       </Pressable>
@@ -165,7 +165,7 @@ function MapContent() {
         accessibilityLabel="Where I am"
         accessibilityHint="Latitude, longitude and an OS grid reference"
         testID="map-position-link"
-        onPress={() => router.push('/position')}
+        onPress={onOpenWhere}
         style={({ pressed }) => [styles.link, pressed && styles.pressed]}>
         <Text style={[styles.linkLabel, { color: theme.text }]}>Where I am — grid reference</Text>
       </Pressable>
@@ -174,7 +174,7 @@ function MapContent() {
         accessibilityRole="link"
         accessibilityLabel="Data and licences"
         testID="map-about-link"
-        onPress={() => router.push('/about')}
+        onPress={() => router.push('/more/about')}
         style={({ pressed }) => [styles.link, pressed && styles.pressed]}>
         <Text style={[styles.linkLabel, { color: theme.text }]}>Data and licences</Text>
       </Pressable>

@@ -24,6 +24,7 @@ export default function ActScreen() {
     <Screen
       testID="act-screen"
       withTopInset
+      dock={false}
       actions={
         <>
           <ActionButton
@@ -51,7 +52,7 @@ export default function ActScreen() {
               label="Record incident"
               hint="Structured capture — SAMPLER, ABCDE, ETHANE, ASHICE"
               testID="act-record"
-              onPress={() => router.push('/record')}
+              onPress={() => router.push('/field')}
             />
           ) : null}
         </>

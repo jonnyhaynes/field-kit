@@ -1,14 +1,24 @@
 /**
  * Field Kit design tokens.
  *
- * The palette is warm graphite and hi-vis amber, with rescue red reserved for one
- * thing only: the emergency action. It deliberately avoids the clinical blue/teal
- * that a first aid app is expected to wear, and it works in daylight and in the dark,
- * because that is where this app gets used.
+ * The register is field equipment rather than a health product: a cool near-black base, one
+ * fluorescent signal for action, and rescue red doing exactly one job. It deliberately avoids the
+ * clinical blue/teal a first aid app is expected to wear, and it is dark-first, because the moment
+ * this app is needed may well be in the dark.
  *
- * Values are the sRGB equivalents of the design's OKLCH tokens (React Native's colour
- * parser does not understand `oklch()`). The OKLCH figure is kept in a comment so the
- * two stay traceable to each other.
+ * Values are the sRGB equivalents of the design's OKLCH tokens (React Native's colour parser does
+ * not understand `oklch()`). The OKLCH figure is kept in a comment so the two stay traceable.
+ *
+ * Two things were measured rather than eyeballed, and both are worth keeping true if this palette is
+ * edited:
+ *
+ *  1. Every value is IN sRGB GAMUT. The design's signal wanted chroma 0.19 at L 80 / hue 72, which
+ *     sRGB cannot show and a converter silently clamps — so the hex would no longer be the OKLCH in
+ *     the comment. The chroma below is the most sRGB can hold at that lightness and hue, which keeps
+ *     the intent ("as fluorescent as the display allows") and the comment honest.
+ *  2. `rescue` is at L 58 rather than the design's 63, because at 63 white-on-red measured 3.93 and
+ *     this is the one label that must never be hard to read. At 58 it is 4.83, and still 4.13 against
+ *     the near-black background. Do not lighten it back without re-measuring.
  */
 
 import '@/global.css';
@@ -17,32 +27,53 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    text: '#2A2724', // oklch(23% 0.012 85)
-    textSecondary: '#6B6560', // oklch(46% 0.012 85)
-    background: '#F7F5F0', // oklch(97.2% 0.006 85)
-    backgroundElement: '#FDFCFA', // oklch(99% 0.003 85)
-    backgroundSelected: '#EDE9E2',
-    border: '#E3DFD8', // oklch(89% 0.008 85)
-    accent: '#EFB01F', // oklch(80% 0.155 78) - hi-vis amber
-    accentInk: '#3D2E10', // oklch(28% 0.06 78)
-    rescue: '#B3261E', // oklch(48% 0.185 25)
+    text: '#090E12', // oklch(16% 0.012 250)
+    textSecondary: '#50565D', // oklch(45% 0.014 250)
+    background: '#F6F9FB', // oklch(98% 0.004 250)
+    backgroundElement: '#FFFFFF', // oklch(100% 0 0)
+    backgroundSelected: '#E7ECF0', // oklch(94% 0.008 250)
+    border: '#CFD5DB', // oklch(87% 0.010 250)
+    accent: '#DF9200', // oklch(72% 0.154 72) - the signal, as saturated as sRGB allows
+    accentInk: '#231200', // oklch(20% 0.047 72)
+    rescue: '#C60014', // oklch(52% 0.213 27)
     rescueInk: '#FFFFFF',
   },
   dark: {
-    text: '#F0EDE8', // oklch(94% 0.006 85)
-    textSecondary: '#A8A29A', // oklch(70% 0.010 85)
-    background: '#1C1917', // oklch(19% 0.008 85)
-    backgroundElement: '#262220', // oklch(24% 0.009 85)
-    backgroundSelected: '#332E2A',
-    border: '#3B3632', // oklch(33% 0.010 85)
-    accent: '#F2B837', // oklch(82% 0.150 78)
-    accentInk: '#2A1F0A',
-    rescue: '#CE3B2E', // oklch(58% 0.180 25)
+    text: '#F3F5F8', // oklch(97% 0.004 250)
+    textSecondary: '#A5ACB2', // oklch(74% 0.012 250)
+    background: '#07090C', // oklch(14% 0.008 250)
+    backgroundElement: '#101418', // oklch(19% 0.010 250)
+    backgroundSelected: '#1B2025', // oklch(24% 0.012 250)
+    border: '#292E35', // oklch(30% 0.014 250)
+    accent: '#FFA913', // oklch(80% 0.168 72) - the signal, as saturated as sRGB allows
+    accentInk: '#231200', // oklch(20% 0.047 72)
+    rescue: '#E50019', // oklch(58% 0.237 27) - L58 not 63, for a legible label. See the header.
     rescueInk: '#FFFFFF',
   },
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+
+/** The two themes the app ships. Nothing else is a theme. */
+export type Scheme = 'light' | 'dark';
+
+/**
+ * The theme this app opens in when the device expresses no preference.
+ *
+ * Dark, because the app is built for the dark. See `@/hooks/use-color-scheme` — that hook is the
+ * single place this decision is made.
+ */
+export const DefaultScheme: Scheme = 'dark';
+
+/**
+ * The single rule for turning a raw platform colour scheme into one of our two themes.
+ *
+ * Both the native and the web scheme hooks call this, so the dark-first decision lives in one place
+ * rather than being restated per platform — which is how the two drift apart.
+ */
+export function resolveScheme(device: string | null | undefined): Scheme {
+  return device === 'light' || device === 'dark' ? device : DefaultScheme;
+}
 
 export const Fonts = Platform.select({
   ios: {
