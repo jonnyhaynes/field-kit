@@ -34,13 +34,24 @@ the six-fold difference the raw TTFs suggest, because subsetting recovers most o
 board's number was wrong, and the plan should not be read as a 96 KB change; it is also not the
 443 KB the unsubset files would cost.
 
-Two things fall out of measuring rather than guessing:
+Then the build measured the next question down, and the answer **changed the approach**. React Native
+resolves a static face more reliably than a variable one, so the static route was built too rather
+than assumed unnecessary:
 
-- **Overpass is variable**, so one 93 KB file covers every weight. The board assumed two static cuts
-  for 400 and 600; there is no need for a second file.
-- **The mono is the cheap one.** A second mono weight for `machine` readouts would add ~22 KB, taking
-  the total to ~137 KB. Whether that is needed is a design question — the role may well want a single
-  weight with size doing the work, which is the cheaper and probably better answer.
+| Overpass | Size |
+| --- | --- |
+| variable, subset — one file, every weight | 93 KB |
+| **static 400 + 600, subset — two files** | **88 KB** |
+
+**Static instances win, and it is not close.** Instancing drops the unused weight axis, so the pair is
+*smaller* than the variable file — which means the option that is guaranteed to work is also the cheap
+one. So the paragraph above is superseded: there is no variable font in the bundle.
+
+**The shipped set is 110 KB for three files**: Overpass Regular (44 KB), Overpass SemiBold (44 KB) and
+IBM Plex Mono Regular (22 KB).
+
+The mono stays at a single weight for now. A second would add ~22 KB, and the `machine` role can
+almost certainly let size do that work instead.
 
 Subset over `U+0020-007E, U+00A0-00FF, U+2000-206F`, which covers Latin, the degree sign and middot
 the readouts use, and the dashes, quotes and ellipsis the copy uses. **The subset command belongs in
