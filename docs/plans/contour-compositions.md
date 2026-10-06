@@ -238,9 +238,9 @@ The PR(s) will be titled `[ai-assisted]`, reference this doc, `docs/design/field
 
 ## 11. As built
 
-**Landed: slices 1, 2 (partly) and 4 (partly).** Each is a commit on the branch. The mechanical
-checks are green throughout: `typecheck`, `typecheck:scripts`, `lint`, `format:check`, `test` (37
-suites, 558 tests) and `npx expo export --platform ios`.
+**Landed: slices 1, 2 (partly), 4 and 5.** Each is a commit on the branch. The mechanical checks are
+green throughout: `typecheck`, `typecheck:scripts`, `lint`, `format:check`, `test` (37 suites, 558
+tests) and `npx expo export --platform ios`.
 
 **Slice 1 — Act and CPR. Done.** Act's question moved into a panel with the hill field in its corner;
 the breathing action is the hi-vis `signal` variant; two link tiles lead to Where I am and the offline
@@ -275,14 +275,17 @@ Deferred from the board, and why:
 **Slice 3 — Field and capture. Deferred to #43**, per §2: composing the capture form before #43
 restructures it would be composed twice.
 
-**Slice 4 — Send, More, Regions. Send and More done; Regions deferred.** Send's QR plate takes the
-board's caption, the caption on the white plate is now fixed ink (the old theme colour was unreadable
-on white in dark mode), and the on-device privacy note is in. More gains an "On this phone" card, a
-glacier count badge on the report queue, and a version footer. Regions' download hero is a visual
-refinement of a screen that already carries progress and the space-used readout, so it is left.
+**Slice 4 — Send, More, Regions. Done.** Send's QR plate takes the board's caption, the caption on
+the white plate is now fixed ink (the old theme colour was unreadable on white in dark mode), and the
+on-device privacy note is in. More gains an "On this phone" card, a glacier count badge on the report
+queue, and a version footer. Regions' downloading pack becomes the board's hero: a contour corner, a
+hi-vis progress bar, and `x / y MB · %` rather than a bare percentage.
 
-**Slice 5 — the inheritance pass (Where I am, Compass, Scan, About). Not started.** These inherit
-slices 1 and 3 already; the pass is the board's `machine` readouts and surface polish.
+**Slice 5 — the inheritance pass. Done, and smaller than planned.** Only **Where I am** needed work:
+its OS grid reference moves onto the board's ink card, with the coordinates as a light row beneath it.
+**Compass, Scan and About already read correctly** — they were built on the slice-3 type roles and
+surfaces, so their `machine` readouts and cards needed no change. Recorded rather than pretending
+otherwise.
 
 **Slice 6 — verification. Mechanical only.** The four checks and the bundle are green. **Not run, and
 it needs hardware:** every Maestro flow (no device or simulator here, and no network to fetch one).

@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { regionStorageProblem } from '@/capabilities/can-map-regions';
 import { Card } from '@/components/card';
+import { Contour } from '@/components/contour';
 import { Screen } from '@/components/screen';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
 import { controlSurface, brandSurface } from '@/constants/surface';
@@ -120,7 +121,16 @@ function PackCard({ pack, regions }: { pack: RegionPack; regions: ReturnType<typ
   const canDownload = roomFor && regions.capability === 'ready';
 
   return (
-    <Card testID={`regions-pack-${pack.id}`}>
+    <Card testID={`regions-pack-${pack.id}`} style={downloading ? styles.downloadHero : undefined}>
+      {downloading ? (
+        <Contour
+          variant="hill"
+          corner="top-right"
+          tone={scheme === 'dark' ? 'brand' : 'ink'}
+          size={150}
+        />
+      ) : null}
+
       <View style={styles.headerRow}>
         <Text style={[styles.cardTitle, { color: theme.text }]}>{pack.name}</Text>
         <Text
@@ -134,10 +144,20 @@ function PackCard({ pack, regions }: { pack: RegionPack; regions: ReturnType<typ
 
       {downloading ? (
         <>
+          <View style={[styles.track, { backgroundColor: theme.backgroundSelected }]}>
+            <View
+              style={[
+                styles.fill,
+                { backgroundColor: theme.brand, width: `${Math.round((progress ?? 0) * 100)}%` },
+              ]}
+            />
+          </View>
           <Text
             testID={`regions-pack-${pack.id}-progress`}
             style={[styles.body, { color: theme.text }]}>
-            {progress === null ? 'Downloading…' : `Downloading ${Math.round(progress * 100)}%`}
+            {progress === null
+              ? 'Downloading…'
+              : `${formatBytes(pack.bytes * progress)} / ${formatBytes(pack.bytes)} · ${Math.round(progress * 100)}%`}
           </Text>
           <Pressable
             accessibilityRole="button"
@@ -234,6 +254,9 @@ function PackCard({ pack, regions }: { pack: RegionPack; regions: ReturnType<typ
 const styles = StyleSheet.create({
   title: { ...Type.display },
   cardTitle: { ...Type.title },
+  downloadHero: { overflow: 'hidden' },
+  track: { height: 10, borderRadius: Radius.pill, overflow: 'hidden' },
+  fill: { height: '100%', borderRadius: Radius.pill },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
