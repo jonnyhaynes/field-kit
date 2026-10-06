@@ -8,10 +8,11 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
  * The contour field — the identity's decorative line language, borrowed from the OS map.
  *
  * One irregular closed path drawn as a nest of rings at stepped scales and opacities, anchored in a
- * corner and bleeding off it. The geometry is the approved board's: the same blob in every field,
- * only the scale ramp, the opacity ramp and the rotation change, so `hill` and `summit` are two
- * readings of one shape rather than two shapes. The stroke is `non-scaling`, so the line stays 1.3pt
- * however far the ring is scaled.
+ * corner and bleeding off it — or centred, for CPR's summit field, which is the one place the board
+ * puts the field around the thing rather than behind a corner. The geometry is the approved board's:
+ * the same blob in every field, only the scale ramp, the opacity ramp and the rotation change, so
+ * `hill` and `summit` are two readings of one shape rather than two shapes. The stroke is
+ * `non-scaling`, so the line stays 1.3pt however far the ring is scaled.
  *
  * **Decoration on an emergency app.** It is `pointerEvents="none"` and hidden from the accessibility
  * tree, so it can never intercept a tap or be read out; keep it in corners, never under body text.
@@ -25,7 +26,7 @@ const BLOB_RADIUS = 110;
 const STROKE = 1.3;
 
 type Variant = 'hill' | 'summit';
-type Corner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+type Corner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
 type Tone = 'brand' | 'glacier' | 'ink';
 
 type Props = {
@@ -66,14 +67,16 @@ const CORNER_STYLE: Record<Corner, ViewStyle> = {
   'top-right': { top: 0, right: 0 },
   'bottom-left': { bottom: 0, left: 0 },
   'bottom-right': { bottom: 0, right: 0 },
+  center: { top: '50%', left: '50%' },
 };
 
-/** Where the rings' centre sits in the box: the panel-facing corner. */
+/** Where the rings' centre sits in the box: the panel-facing corner, or the box's centre. */
 const ANCHOR: Record<Corner, { x: number; y: number }> = {
   'top-left': { x: 0, y: 0 },
   'top-right': { x: 1, y: 0 },
   'bottom-left': { x: 0, y: 1 },
   'bottom-right': { x: 1, y: 1 },
+  center: { x: 0.5, y: 0.5 },
 };
 
 const toneColour: Record<Tone, (scheme: Scheme) => string> = {
@@ -104,7 +107,14 @@ export function Contour({
       pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={[styles.box, CORNER_STYLE[corner], { width: size, height: size }]}>
+      style={[
+        styles.box,
+        CORNER_STYLE[corner],
+        // `top: 50%` puts the box's corner at the centre; pull it back by half so the rings, which
+        // sit at the box's centre, land on the parent's centre.
+        corner === 'center' ? { marginLeft: -size / 2, marginTop: -size / 2 } : null,
+        { width: size, height: size },
+      ]}>
       <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <G fill="none" stroke={stroke} strokeWidth={STROKE}>
           {preset.rings.map((ring) => (
