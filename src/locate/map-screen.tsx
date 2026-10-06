@@ -6,6 +6,7 @@ import { nearestAeds } from '@/aed';
 import { AedDatabaseProvider, useAedRecords } from '@/aed/database';
 import { useAedFlags } from '@/aed/use-flags';
 import { Card } from '@/components/card';
+import { Contour } from '@/components/contour';
 import { Screen } from '@/components/screen';
 import { MinTarget, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -28,17 +29,29 @@ const USER_ZOOM = 10;
 /** More than the list shows: on a map, context is the point. */
 const RESULT_LIMIT = 10;
 
-export function MapScreen({ onOpenWhere }: { onOpenWhere: () => void }) {
+export function MapScreen({
+  onOpenWhere,
+  onOpenCompass,
+}: {
+  onOpenWhere: () => void;
+  onOpenCompass: () => void;
+}) {
   return (
     <AedDatabaseProvider>
       <Suspense fallback={<MapNotice title="Offline map" body="Opening the map data…" />}>
-        <MapContent onOpenWhere={onOpenWhere} />
+        <MapContent onOpenWhere={onOpenWhere} onOpenCompass={onOpenCompass} />
       </Suspense>
     </AedDatabaseProvider>
   );
 }
 
-function MapContent({ onOpenWhere }: { onOpenWhere: () => void }) {
+function MapContent({
+  onOpenWhere,
+  onOpenCompass,
+}: {
+  onOpenWhere: () => void;
+  onOpenCompass: () => void;
+}) {
   const theme = useTheme();
   const scheme = useColorScheme();
 
@@ -109,8 +122,22 @@ function MapContent({ onOpenWhere }: { onOpenWhere: () => void }) {
           center={center}
           zoom={zoom}
           neighbours={neighbours}
-          markerColor={theme.brand}
+          markerColor={theme.glacier}
           markerRingColor={theme.text}
+        />
+        {/* The identity's contour language over the real map, in two corners. Decoration: it is
+            hidden from the accessibility tree and clipped by the frame. */}
+        <Contour
+          variant="hill"
+          corner="top-right"
+          tone={scheme === 'dark' ? 'brand' : 'ink'}
+          size={220}
+        />
+        <Contour
+          variant="summit"
+          corner="bottom-left"
+          tone={scheme === 'dark' ? 'brand' : 'ink'}
+          size={150}
         />
       </View>
 
@@ -170,6 +197,16 @@ function MapContent({ onOpenWhere }: { onOpenWhere: () => void }) {
         onPress={onOpenWhere}
         style={({ pressed }) => [styles.link, pressed && styles.pressed]}>
         <Text style={[styles.linkLabel, { color: theme.text }]}>Where I am — grid reference</Text>
+      </Pressable>
+
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel="Walk on a bearing"
+        accessibilityHint="Opens the compass, which points at the nearest defibrillators"
+        testID="map-bearing-link"
+        onPress={onOpenCompass}
+        style={({ pressed }) => [styles.link, pressed && styles.pressed]}>
+        <Text style={[styles.linkLabel, { color: theme.text }]}>Walk on a bearing</Text>
       </Pressable>
 
       <Pressable

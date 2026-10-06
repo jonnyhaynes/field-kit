@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { SubTabs } from '@/components/sub-tabs';
@@ -15,6 +16,9 @@ const TABS = [
 
 type LocateTab = (typeof TABS)[number]['id'];
 
+const isLocateTab = (value: unknown): value is LocateTab =>
+  typeof value === 'string' && TABS.some((tab) => tab.id === value);
+
 /**
  * Locate — the map, where I am, and the compass are **in-page tabs**, not destinations.
  *
@@ -26,9 +30,22 @@ type LocateTab = (typeof TABS)[number]['id'];
  * The panes keep their own `Screen`, which is why the tab row sits *above* one rather than inside
  * it: there is still exactly one scroll view and one dock on screen, and the tab row does not
  * scroll away with the content.
+ *
+ * A caller may name the pane it wants with a `tab` param — Act's "Where I am" tile, and the AED's
+ * "Walk on a bearing". It initialises the pane and is re-read if it changes, so arriving from
+ * elsewhere lands on the right view without turning the panes back into routes.
  */
 export default function LocateScreen() {
-  const [tab, setTab] = useState<LocateTab>('map');
+  const params = useLocalSearchParams<{ tab?: string }>();
+  const [tab, setTab] = useState<LocateTab>(() => (isLocateTab(params.tab) ? params.tab : 'map'));
+
+  // Read the request on focus rather than in an effect: it is an arrival, not a piece of state to
+  // mirror, so re-tapping the same tile after switching panes still lands on it.
+  useFocusEffect(
+    useCallback(() => {
+      if (isLocateTab(params.tab)) setTab(params.tab);
+    }, [params.tab]),
+  );
 
   return (
     <View style={styles.root}>
@@ -39,7 +56,7 @@ export default function LocateScreen() {
       </View>
 
       {tab === 'map' ? (
-        <MapScreen onOpenWhere={() => setTab('where')} />
+        <MapScreen onOpenWhere={() => setTab('where')} onOpenCompass={() => setTab('compass')} />
       ) : tab === 'where' ? (
         <WhereScreen onOpenCompass={() => setTab('compass')} />
       ) : (

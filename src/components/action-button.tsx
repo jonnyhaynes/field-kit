@@ -8,9 +8,10 @@ import { useTheme } from '@/hooks/use-theme';
 
 /**
  * `rescue` is the emergency action, and appears once per screen. `signal` is the app's own action
- * colour, for the thing this screen exists to do. `default` is a destination.
+ * colour, for the thing this screen exists to do. `glacier` is the data accent, for the
+ * defibrillator path. `default` is a destination.
  */
-export type ActionVariant = 'rescue' | 'signal' | 'default';
+export type ActionVariant = 'rescue' | 'signal' | 'glacier' | 'default';
 
 type Props = {
   label: string;
@@ -33,13 +34,18 @@ export function ActionButton({
   const scheme = useColorScheme();
   const theme = useTheme();
 
-  // The default destination is a control on the panel; the two filled variants keep their colour
-  // and take depth instead. Only `rescue` is allowed to glow (§4.1 rule 6).
+  // The default destination is a control on the panel; the filled variants keep their colour and
+  // take depth instead. Only `rescue` is allowed to glow (§4.1 rule 6).
   const surface: ViewStyle =
     variant === 'default'
       ? controlSurface(scheme)
       : {
-          backgroundColor: variant === 'rescue' ? theme.rescue : theme.brand,
+          backgroundColor:
+            variant === 'rescue'
+              ? theme.rescue
+              : variant === 'glacier'
+                ? theme.glacier
+                : theme.brand,
           borderColor: 'transparent',
           ...(variant === 'rescue' ? Elevation[scheme].attention : Elevation[scheme].control),
         };
@@ -47,6 +53,7 @@ export function ActionButton({
   const ink = {
     rescue: theme.rescueInk,
     signal: theme.brandInk,
+    glacier: theme.brandInk,
     default: theme.text,
   }[variant];
 
