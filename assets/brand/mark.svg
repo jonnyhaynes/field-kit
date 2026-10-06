@@ -1,24 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="Field Kit">
   <!--
-    The Field Kit mark: a first-aid cross broken into four modular tiles around a single point.
-    The modules are the kit, the point is the location, and the red dot is the one red in the
-    identity — the emergency at the centre of everything, mirroring the rule in the app.
+    The Contour mark: the first-aid cross drawn as three nested contour rings around a single red
+    point — the OS map's own line language, and the app's subject, rather than an imported
+    illustration. The red point is the one red in the identity, mirroring the rule in the app.
+
+    Each ring is a plus outline with half-arm-length `a` and half-arm-width `b`, centred at (48,48):
+      (a,b) = (46,18) at 45% · (33,11) at 75% · (20,4) at 100%, stroke 3.5, red point r 5.5.
 
     This file is the single source for the mark. scripts/build-brand-assets.mjs rasterises the same
-    geometry (MODULES and DOT) to the app icons, and assets/expo.icon uses this SVG as its layer.
-    If the geometry changes, change it in both — the numbers are small and deliberate.
+    geometry (PLUS_RINGS and DOT) to the app icons. If the geometry changes, change it in both —
+    the numbers are small and deliberate.
   -->
-  <defs>
-    <linearGradient id="fieldkit-module" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#9A6BFF"/>
-      <stop offset="1" stop-color="#6D4BFF"/>
-    </linearGradient>
-  </defs>
-  <g fill="url(#fieldkit-module)">
-    <rect x="31" y="1" width="34" height="34" rx="12"/>
-    <rect x="1" y="31" width="34" height="34" rx="12"/>
-    <rect x="61" y="31" width="34" height="34" rx="12"/>
-    <rect x="31" y="61" width="34" height="34" rx="12"/>
+  <g fill="none" stroke="#D7F94A" stroke-width="3.5" stroke-linejoin="round">
+    <path d="M30 2 H66 V30 H94 V66 H66 V94 H30 V66 H2 V30 H30 Z" stroke-opacity="0.45"/>
+    <path d="M37 15 H59 V37 H81 V59 H59 V81 H37 V59 H15 V37 H37 Z" stroke-opacity="0.75"/>
+    <path d="M44 28 H52 V44 H68 V52 H52 V68 H44 V52 H28 V44 H44 Z"/>
   </g>
-  <circle cx="48" cy="48" r="9" fill="#E51D38"/>
+  <circle cx="48" cy="48" r="5.5" fill="#E5192B"/>
 </svg>
