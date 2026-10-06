@@ -2,7 +2,6 @@ import { describe, expect, it } from '@jest/globals';
 
 import {
   bevelStyle,
-  brandFill,
   brandSurface,
   cardFill,
   cardSurface,
@@ -11,9 +10,6 @@ import {
   type CardTone,
 } from '../surface';
 import { Bevel, Colors, Elevation, Radius, Surfaces } from '../theme';
-
-/** The brand-tinted hairline a raised surface carries instead of the neutral border. */
-const VIOLET_STROKE = /^rgba\(154, 107, 255/;
 
 describe('cardFill', () => {
   it('draws a top-to-bottom gradient from the ramp, lighter at the top', () => {
@@ -42,10 +38,9 @@ describe('raisedSurface', () => {
     expect(raisedSurface('dark').experimental_backgroundImage).toBe(cardFill('dark'));
   });
 
-  it('strokes the edge in the brand hue rather than a neutral border', () => {
+  it('strokes the edge on the line token, and takes the near-black panel shadow', () => {
     const surface = raisedSurface('dark');
-    expect(String(surface.borderColor)).toMatch(VIOLET_STROKE);
-    expect(surface.borderColor).not.toBe(Colors.dark.border);
+    expect(surface.borderColor).toBe(Colors.dark.border);
     expect(surface.shadowOpacity).toBe(Elevation.dark.panel.shadowOpacity);
     expect(surface.elevation).toBe(Elevation.dark.panel.elevation);
   });
@@ -55,7 +50,7 @@ describe('controlSurface', () => {
   it('is one step up the ramp, with the control shadow', () => {
     const surface = controlSurface('dark');
     expect(surface.backgroundColor).toBe(Surfaces.dark.control);
-    expect(String(surface.borderColor)).toMatch(VIOLET_STROKE);
+    expect(surface.borderColor).toBe(Colors.dark.border);
     expect(surface.elevation).toBe(Elevation.dark.control.elevation);
   });
 });
@@ -68,11 +63,9 @@ describe('brandSurface', () => {
     expect(surface.elevation).toBe(Elevation.light.control.elevation);
   });
 
-  it('lays the violet field over the flat brand, so it degrades to a solid fill', () => {
-    expect(brandSurface('dark').experimental_backgroundImage).toBe(brandFill('dark'));
-    expect(brandFill('dark')).toBe(
-      `linear-gradient(150deg, ${Colors.dark.brand2}, ${Colors.dark.brandDeep})`,
-    );
+  it('is a flat hi-vis fill, not a gradient', () => {
+    expect(brandSurface('dark')).not.toHaveProperty('experimental_backgroundImage');
+    expect(brandSurface('light')).not.toHaveProperty('experimental_backgroundImage');
   });
 });
 

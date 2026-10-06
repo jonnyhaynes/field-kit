@@ -17,17 +17,20 @@ describe('type roles', () => {
     }
   });
 
-  it('sets prose in the text face and headings in the strong face', () => {
+  it('sets prose in the text face, labels in the strong text face, and headings in Bricolage', () => {
     expect(Type.body.fontFamily).toBe(FontFamily.text);
     expect(Type.note.fontFamily).toBe(FontFamily.text);
-    expect(Type.title.fontFamily).toBe(FontFamily.textStrong);
-    expect(Type.display.fontFamily).toBe(FontFamily.textStrong);
     expect(Type.label.fontFamily).toBe(FontFamily.textStrong);
+    expect(Type.title.fontFamily).toBe(FontFamily.display);
+    expect(Type.display.fontFamily).toBe(FontFamily.displayStrong);
   });
 
-  it('gives the machine role tabular figures and no size of its own', () => {
+  it('gives the machine roles tabular figures and no size of their own', () => {
     expect(Type.machine.fontFamily).toBe(FontFamily.machine);
     expect(Type.machine.fontVariant).toContain('tabular-nums');
     expect(Type.machine).not.toHaveProperty('fontSize');
+    expect(Type.machineStrong.fontFamily).toBe(FontFamily.machineStrong);
+    expect(Type.machineStrong.fontVariant).toContain('tabular-nums');
+    expect(Type.machineStrong).not.toHaveProperty('fontSize');
   });
 });
