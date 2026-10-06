@@ -1,37 +1,31 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
 import { useDepth } from '@/capture/use-depth';
 import { TabGlyph } from '@/components/tab-glyph';
-import { bevelStyle, hairline } from '@/constants/surface';
-import {
-  Bevel,
-  BevelOnColor,
-  Elevation,
-  MinTarget,
-  Radius,
-  Spacing,
-  Surfaces,
-} from '@/constants/theme';
+import { hairline } from '@/constants/surface';
+import { Colors, Elevation, MinTarget, Radius, Spacing } from '@/constants/theme';
 import { Type } from '@/constants/type';
 import { EMERGENCY_LABEL, callEmergencyServices } from '@/emergency/dial';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useTheme } from '@/hooks/use-theme';
 import { TAB_LABELS, TAB_TEST_IDS, isTabVisible, type TabId } from '@/navigation/tabs';
 
 /**
- * The bottom bar, and the emergency action inside it.
+ * The bottom bar: one pill, and the emergency action at the thumb end of it.
  *
- * Two objects rather than one: the navigator is a floating pill, and Call 999 is its own rounded
- * container beside it with a gap. That separation is the point — the reference this register comes
- * from does exactly that, and it is what stops the emergency action reading as a fifth tab, a peer of
- * "More". It is joined by nothing and it is identical on every screen, so its position is learned
- * once and never has to be found again.
+ * The violet register drew two objects — a nav pill and a separate round red button beside it. That
+ * separation read as "call" being a peer of "More", which is the one thing it must not be; Contour
+ * puts 999 *inside* the pill as a red capsule, last, where the thumb already rests, and it is still
+ * the only red on the screen.
  *
- * The bar is a normal (not overlaid) tab bar with a transparent strip, so the canvas shows around the
- * pill and no screen has to reserve space for an overlay. React Navigation measures it and the screen
- * ends above it.
+ * The pill is **ink in both schemes**, so it is the one surface that does not follow the theme, and
+ * its glyphs take the dark scheme's light inks even under light. The tabs are **icon-only** (the
+ * board's design) — their names survive as accessibility labels — which is why the pill fits at 74pt.
+ *
+ * The bar is a normal (not overlaid) tab bar with a transparent strip, so React Navigation measures
+ * it and no screen has to reserve space for an overlay.
  */
 
 /** Route names to the tab ids the app reasons in. */
@@ -61,50 +55,49 @@ type TabBarProps = {
 
 export function TabBar({ state }: TabBarProps) {
   const scheme = useColorScheme();
-  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { depth } = useDepth();
 
+  // The pill is ink in both schemes; a couple of things must therefore borrow the dark ink, not the
+  // live scheme's text colours, or they vanish into the pill under light.
+  const dark = Colors.dark;
+
   return (
     <View style={[styles.strip, { paddingBottom: Math.max(insets.bottom, Spacing.two) }]}>
-      <View style={styles.row}>
-        <View
-          style={[
-            styles.pill,
-            { backgroundColor: Surfaces[scheme].panel },
-            Elevation[scheme].control,
-          ]}>
-          <View pointerEvents="none" style={bevelStyle(Bevel[scheme], Radius.xl)} />
-          {state.routes.map((route, index) => {
-            const id = ROUTE_TO_TAB[route.name];
-            // §1 enforced here as well as by `href: null`: depth *adds* a tab, and a bar that
-            // rendered a route the depth hides would put capture in front of an untrained user.
-            if (!id || !isTabVisible(depth, id)) return null;
+      <View
+        style={[
+          styles.pill,
+          { backgroundColor: Colors[scheme].bar, borderColor: Colors[scheme].border },
+          Elevation[scheme].control,
+        ]}>
+        {state.routes.map((route, index) => {
+          const id = ROUTE_TO_TAB[route.name];
+          // §1 enforced here as well as by `href: null`: depth *adds* a tab, and a bar that rendered
+          // a route the depth hides would put capture in front of an untrained user.
+          if (!id || !isTabVisible(depth, id)) return null;
 
-            const focused = state.index === index;
-            const colour = focused ? theme.text : theme.textSecondary;
+          const focused = state.index === index;
 
-            return (
-              <Pressable
-                key={route.key}
-                accessibilityRole="button"
-                accessibilityState={{ selected: focused }}
-                accessibilityLabel={TAB_LABELS[id]}
-                testID={TAB_TEST_IDS[id]}
-                onPress={() => {
-                  if (!focused) router.navigate(TAB_PATH[id]);
-                }}
-                style={[styles.item, focused && { backgroundColor: Surfaces[scheme].selected }]}>
-                <TabGlyph id={id} color={colour} />
-                <Text style={[styles.itemLabel, { color: colour }]}>{TAB_LABELS[id]}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+          return (
+            <Pressable
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={{ selected: focused }}
+              accessibilityLabel={TAB_LABELS[id]}
+              testID={TAB_TEST_IDS[id]}
+              onPress={() => {
+                if (!focused) router.navigate(TAB_PATH[id]);
+              }}
+              style={[styles.item, focused && { backgroundColor: Colors[scheme].brand }]}>
+              <TabGlyph id={id} color={focused ? dark.brandInk : dark.textSecondary} />
+            </Pressable>
+          );
+        })}
 
         {/*
-          The emergency action. Its own container, its own gap, and the only red on the screen — the
-          one thing in the app allowed to look like it is emitting light (Elevation.attention).
+          The emergency action, inside the pill and last. It is the one thing in the app allowed to
+          look like it is emitting light (Elevation.attention), and the one control that carries a
+          word rather than a glyph — a word beats an icon under stress.
         */}
         <Pressable
           accessibilityRole="button"
@@ -115,63 +108,63 @@ export function TabBar({ state }: TabBarProps) {
             void callEmergencyServices();
           }}
           style={({ pressed }) => [
-            styles.callWrap,
-            { backgroundColor: Surfaces[scheme].panel },
-            Elevation[scheme].control,
+            styles.call,
+            { backgroundColor: Colors[scheme].rescue, ...Elevation[scheme].attention },
             pressed && styles.pressed,
           ]}>
-          <View
-            style={[
-              styles.call,
-              { backgroundColor: theme.rescue, ...Elevation[scheme].attention },
-            ]}>
-            <View pointerEvents="none" style={bevelStyle(BevelOnColor, Radius.pill)} />
-            <Text style={[styles.callLabel, { color: theme.rescueInk }]}>999</Text>
-          </View>
+          <PhoneGlyph color={Colors[scheme].rescueInk} />
+          <Text style={[styles.callLabel, { color: Colors[scheme].rescueInk }]}>999</Text>
         </Pressable>
       </View>
     </View>
   );
 }
 
+/** The handset, drawn rather than imported — the app ships no icon set. */
+function PhoneGlyph({ color }: { color: string }) {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24">
+      <Path
+        d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"
+        fill="none"
+        stroke={color}
+        strokeWidth={2.2}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
 const styles = StyleSheet.create({
   strip: { paddingHorizontal: Spacing.three, paddingTop: Spacing.two },
-  row: { flexDirection: 'row', alignItems: 'stretch', gap: Spacing.two },
   pill: {
-    flex: 1,
+    height: 74,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.half,
-    borderRadius: Radius.xl,
+    gap: Spacing.one,
+    borderRadius: 37,
     borderWidth: hairline,
-    borderColor: 'transparent',
-    padding: Spacing.one,
+    paddingLeft: Spacing.three,
+    paddingRight: Spacing.two + Spacing.half,
   },
   item: {
-    flex: 1,
-    minHeight: MinTarget,
-    borderRadius: Radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.half,
-  },
-  itemLabel: { ...Type.note, fontSize: 10 },
-  callWrap: {
-    width: MinTarget + Spacing.three,
-    borderRadius: Radius.xl,
-    borderWidth: hairline,
-    borderColor: 'transparent',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.one,
-  },
-  call: {
     width: MinTarget,
     height: MinTarget,
     borderRadius: Radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  callLabel: { ...Type.note, fontWeight: undefined, fontSize: 15 },
+  call: {
+    marginLeft: 'auto',
+    height: 56,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    borderRadius: Radius.pill,
+  },
+  callLabel: { ...Type.machineStrong, fontSize: 21 },
   pressed: { opacity: 0.85 },
 });
