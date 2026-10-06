@@ -104,7 +104,9 @@ change**, so a regression is unambiguous.
 
 ### Slice 0 — the boards into the repo
 
-Export the Contour canvas to `docs/design/field-kit-contour.html`. Mark
+**Done:** `docs/design/field-kit-contour.html` (system, emergency path, field and settings),
+`docs/design/field-kit-identity-directions.html` (the three directions, as the record of the choice)
+and `docs/design/contour-mark.svg` (the proposed mark; `assets/brand/mark.svg` changes in slice 2). Mark
 `field-kit-redesign.html` and `field-kit-brandkit.html` as superseded in their headers (don't delete
 them — they're the record of the reversal).
 
