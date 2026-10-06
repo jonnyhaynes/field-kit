@@ -1,6 +1,7 @@
 # The responder capture form — implementation plan
 
-**Status: draft — awaiting approval.** No application code has been changed.
+**Status: approved, and built.** Slices 1–4 are implemented and slice 5's flows are updated; §11
+records what was built, where the diff departs, and what is not verified (there is no device here).
 
 **Ticket:** #43. **Design:** `docs/design/responder-capture-options.html` (the options) and
 `docs/design/design-steer.html` §"The capture form" (the research that revised them).
@@ -164,3 +165,50 @@ asks, which stays exactly as it is.
 
 The PR will be titled `[ai-assisted]`, reference this doc and #43, and end with a
 `Manually reviewed by <name>` line.
+
+---
+
+## 11. As built
+
+**Slices 1–4 built; slice 5's flows updated but not run.** The mechanical checks are green:
+`typecheck`, `typecheck:scripts`, `lint`, `format:check`, `test` (37 suites, **561** tests — three new
+ones for the steps) and `npx expo export --platform ios`.
+
+**Steps are data, not a grouping in the renderer.** Each form gained a `steps` array — `letter`,
+`label`, `fieldIds` — so a field moving between stages is a reviewable diff. A new test asserts every
+field appears in exactly one step and that no step invents a field, which is the invariant that keeps
+`fields` and `steps` from drifting. `stepFields(form, step)` resolves a step, dropping unknown ids so
+a typo shows as a missing field the test catches rather than a render-time throw.
+
+**The index replaces the one long scroll.** `src/app/(tabs)/field/index.tsx` is the report hero (ink
+card: started time and the recorded position) plus four rows, each with its mnemonic, purpose, a
+hi-vis progress bar and an honest count. `src/app/(tabs)/field/[form].tsx` is one form with the
+named stepper, previous/next, and the equipment disclosure. `scan.tsx` is unchanged.
+
+**The equipment disclosure** is closed by default and shows the fields of the current step that carry
+`needsEquipment`. An **answered** equipment field stays visible when the disclosure is closed — the
+rule the plan says matters most, applied literally.
+
+**Four departures, recorded rather than slipped in:**
+
+1. **The review lives on the existing send screen, not a new `field/review.tsx`.** §4 says the
+   existing send screen "already carries the payload and the QR"; it now carries a `Forms` card — one
+   row per form with anything in it, with progress and an **Edit** link back to that form. A separate
+   route would have duplicated the QR, channels and tag code for no gain.
+2. **The tab bar is not hidden while a form is open.** The board (Contour §5.4) replaces the tabs
+   with Previous/Next on a capture form; here Previous/Next are the form's pinned footer and the tab
+   bar stays, because hiding a global bar per-route is a Contour refinement the compositions plan
+   left open. The 999 beacon therefore stays present throughout, which is what §5.4 wanted to keep.
+3. **The field counts differ slightly from §1's table.** ABCDE has 20 fields, not 21, and ETHANE 7,
+   not 8; the table was approximate and the data was not changed.
+4. **The Contour skin is folded in** rather than deferred: the report hero, the progress rows and the
+   step bar are built in the Contour register, which is the compositions plan's slice 3.
+
+**Verification, and the honest gap.** The four checks and the bundle are green, and the depth-gate
+type test is unchanged. **Not run:** the Maestro flows. `.maestro/capture/TC-03` is rewritten for the
+new path (open ABCDE from the index, switch steps by the step bar), `TC-02`'s trailing comment is
+corrected for the index, and `TC-01` is unchanged and still holds — but none of them has been
+executed, because there is no device or simulator here. The device checks §7 asks for (an answer
+surviving navigation, an answered equipment field visible with the disclosure closed, report-across-
+restart, and progress that does not lag) are exactly what those flows cover, and exactly what remains
+unproven.
