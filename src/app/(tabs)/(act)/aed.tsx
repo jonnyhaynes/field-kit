@@ -2,18 +2,20 @@ import { router } from 'expo-router';
 import { Suspense, useCallback, useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AED_ATTRIBUTION, nearestAeds, type AedNeighbour } from '@/aed';
-import { ActionButton } from '@/components/action-button';
+import { AED_ATTRIBUTION, nearestAeds, type AedNeighbour, type Coordinates } from '@/aed';
 import { AedDatabaseProvider, useAedRecords } from '@/aed/database';
 import { describeVerification, formatDistance } from '@/aed/presentation';
 import { useAedFlags } from '@/aed/use-flags';
+import { ActionButton } from '@/components/action-button';
 import { Card } from '@/components/card';
 import { ContentSlot } from '@/components/content-slot';
+import { Contour } from '@/components/contour';
 import { OfflineNote } from '@/components/offline-note';
 import { Screen } from '@/components/screen';
+import { cardinal, initialBearing } from '@/compass/heading';
 import { Radius, Spacing } from '@/constants/theme';
-import { GUIDANCE_IDS } from '@/content';
 import { Type } from '@/constants/type';
+import { GUIDANCE_IDS } from '@/content';
 import { useTheme } from '@/hooks/use-theme';
 import { useCurrentPosition } from '@/location/current-position';
 import { useNoteQueue } from '@/notes/use-notes';
@@ -180,10 +182,19 @@ function Results({ recordsStatus, hasDataset, position, neighbours, onFlag }: Re
     );
   }
 
+  const from = position.coordinates;
+
   return (
     <View style={styles.list}>
       {neighbours.map((neighbour, index) => (
-        <NeighbourCard key={neighbour.id} neighbour={neighbour} index={index} onFlag={onFlag} />
+        <AedRow
+          key={neighbour.id}
+          neighbour={neighbour}
+          index={index}
+          from={from}
+          onFlag={onFlag}
+          hero={index === 0}
+        />
       ))}
     </View>
   );
@@ -211,7 +222,10 @@ function Disclaimer() {
   const theme = useTheme();
 
   return (
-    <Card tone="tinted" testID="aed-disclaimer">
+    <Card tone="outline" testID="aed-disclaimer" style={styles.provenance}>
+      <View style={[styles.unverifiedChip, { backgroundColor: theme.glacier }]}>
+        <Text style={[styles.unverifiedLabel, { color: theme.brandInk }]}>Unverified</Text>
+      </View>
       <Text style={[styles.body, { color: theme.text }]}>
         Unverified. This list comes from public mapping, not from the ambulance service. A
         defibrillator may have been moved, removed, or locked away — do not rely on any entry being
@@ -225,35 +239,60 @@ function Disclaimer() {
   );
 }
 
-function NeighbourCard({
+/** The bearing to walk on, as a compass reads it: `042° NE`. */
+function bearingText(from: Coordinates, to: Coordinates): string {
+  const degrees = initialBearing(from, to);
+  return `${String(Math.round(degrees)).padStart(3, '0')}° ${cardinal(degrees)}`;
+}
+
+function AedRow({
   neighbour,
   index,
+  from,
   onFlag,
+  hero,
 }: {
   neighbour: AedNeighbour;
   index: number;
+  from: Coordinates;
   onFlag: (neighbour: AedNeighbour) => void;
+  hero: boolean;
 }) {
   const theme = useTheme();
+  const number = index + 1;
 
   return (
-    <Card testID={`aed-result-${index}`}>
-      {/* A fixed badge anchors the distance, so three results scan down one column instead of
-          re-flowing. The cross is drawn, not imported — the app ships no icon set. */}
+    <Card testID={`aed-result-${index}`} style={hero ? styles.heroCard : undefined}>
+      {/* The nearest one is the hero: a glacier field in its corner, its rank on a numbered badge,
+          and the walking bearing beside the distance. The rest are quiet rows in the same column. */}
+      {hero ? <Contour variant="hill" corner="top-right" tone="glacier" size={180} /> : null}
+
       <View style={styles.row}>
-        <View style={[styles.badge, { backgroundColor: `${theme.glacier}29` }]}>
-          <View style={[styles.crossV, { backgroundColor: theme.glacier }]} />
-          <View style={[styles.crossH, { backgroundColor: theme.glacier }]} />
+        <View style={[styles.badge, { backgroundColor: theme.glacier }]}>
+          <Text style={[styles.badgeNumber, { color: theme.brandInk }]}>{number}</Text>
         </View>
-        <View style={styles.rowText}>
-          <Text style={[styles.distance, { color: theme.text }]}>
-            {formatDistance(neighbour.meters)}
-          </Text>
-          <Text style={[styles.note, { color: theme.textSecondary }]}>
-            {describeVerification(neighbour.verification)}
-          </Text>
-        </View>
+        <Text style={[styles.distance, { color: theme.text }]}>
+          {formatDistance(neighbour.meters)}
+        </Text>
+        <Text style={[styles.bearing, { color: theme.textSecondary }]}>
+          {bearingText(from, neighbour.coordinates)}
+        </Text>
       </View>
+
+      <Text style={[styles.note, { color: theme.textSecondary }]}>
+        {describeVerification(neighbour.verification)}
+      </Text>
+
+      {hero ? (
+        <View style={styles.heroAction}>
+          <ActionButton
+            label="Walk on a bearing"
+            hint="Opens the compass pointed at this one"
+            testID="aed-bearing"
+            onPress={() => router.push({ pathname: '/locate', params: { tab: 'compass' } })}
+          />
+        </View>
+      ) : null}
 
       <Pressable
         accessibilityRole="button"
@@ -261,12 +300,9 @@ function NeighbourCard({
         accessibilityHint="Hides it from this device's list, and queues a report you can review"
         testID={`aed-flag-${index}`}
         onPress={() => onFlag(neighbour)}
-        style={({ pressed }) => [
-          styles.flagChip,
-          { backgroundColor: `${theme.glacier}29` },
-          pressed && styles.pressed,
-        ]}>
-        {/* Glacier, not red: with the beacon permanently red, no other control on a screen may be. */}
+        style={({ pressed }) => [styles.flag, pressed && styles.pressed]}>
+        {/* Quiet and underlined, not a filled chip: flagging is a correction, not an action.
+            Glacier, not red — with the beacon permanently red, no other control may be. */}
         <Text style={[styles.flagLabel, { color: theme.glacierText }]}>Flag as inaccurate</Text>
       </Pressable>
     </Card>
@@ -277,28 +313,31 @@ const styles = StyleSheet.create({
   title: { ...Type.display },
   list: { gap: Spacing.three },
   cardTitle: { ...Type.title },
-  distance: { ...Type.machine, fontSize: 30, letterSpacing: -0.5 },
   body: { ...Type.body },
   attribution: { ...Type.note },
+  provenance: { backgroundColor: 'rgba(142, 216, 248, 0.12)', borderColor: 'transparent' },
+  unverifiedChip: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.half,
+    borderRadius: Radius.sm,
+  },
+  unverifiedLabel: { ...Type.label, letterSpacing: 0.8 },
+  heroCard: { overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
-  rowText: { flex: 1, gap: Spacing.half },
   badge: {
-    width: 44,
-    height: 44,
+    width: 36,
+    height: 36,
     borderRadius: Radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  crossV: { position: 'absolute', width: 4, height: 17, borderRadius: 2 },
-  crossH: { position: 'absolute', width: 17, height: 4, borderRadius: 2 },
+  badgeNumber: { ...Type.machineStrong, fontSize: 18 },
+  distance: { ...Type.machine, fontSize: 30, letterSpacing: -0.5 },
+  bearing: { ...Type.machine, fontSize: 15, marginLeft: 'auto' },
   note: { ...Type.note },
-  flagChip: {
-    alignSelf: 'flex-start',
-    minHeight: 38,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Radius.pill,
-    justifyContent: 'center',
-  },
+  heroAction: { marginTop: Spacing.one },
+  flag: { alignSelf: 'flex-start', minHeight: 38, justifyContent: 'center' },
   pressed: { opacity: 0.7 },
-  flagLabel: { ...Type.title, fontSize: 14 },
+  flagLabel: { ...Type.title, fontSize: 14, textDecorationLine: 'underline' },
 });

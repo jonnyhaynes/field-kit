@@ -56,7 +56,7 @@ export default function LocateScreen() {
       </View>
 
       {tab === 'map' ? (
-        <MapScreen onOpenWhere={() => setTab('where')} />
+        <MapScreen onOpenWhere={() => setTab('where')} onOpenCompass={() => setTab('compass')} />
       ) : tab === 'where' ? (
         <WhereScreen onOpenCompass={() => setTab('compass')} />
       ) : (
