@@ -233,3 +233,65 @@ plan), any data-model change, or any change to clinical content.
 
 The PR(s) will be titled `[ai-assisted]`, reference this doc, `docs/design/field-kit-contour.html` and
 `#43`, and end with a `Manually reviewed by <name>` line. A human merges once CI is green.
+
+---
+
+## 11. As built
+
+**Landed: slices 1, 2 (partly) and 4 (partly).** Each is a commit on the branch. The mechanical
+checks are green throughout: `typecheck`, `typecheck:scripts`, `lint`, `format:check`, `test` (37
+suites, 558 tests) and `npx expo export --platform ios`.
+
+**Slice 1 — Act and CPR. Done.** Act's question moved into a panel with the hill field in its corner;
+the breathing action is the hi-vis `signal` variant; two link tiles lead to Where I am and the offline
+map. CPR gained the summit field behind a hi-vis rate disc, the beat row, the elapsed readout, a
+Stop/Start run state, and the defibrillator promoted above Stop. New: a `glacier` `ActionButton`
+variant and a centred `Contour` corner. Locate reads a `tab` param on focus.
+
+Two departures, both recorded rather than slipped in:
+
+1. **CPR's defibrillator button carries a static hint**, not the board's live "nearest 340 m ·
+   unverified". Mounting the AED dataset on the emergency path is §8 risk 2, and it is unmeasured
+   here (no device), so the distance is left for a follow-up rather than added blind.
+2. **Act's two tiles are "Where I am" and "Offline map"**, not "Where I am" and "Nearest
+   defibrillator" as §3 tentatively said. The defibrillator already has its own footer action, and a
+   second entry to the same place is noise.
+
+**Slice 2 — AED and Map. Done, with the map's sheet deferred.** The AED list ranks its results: the
+nearest is a hero card with a glacier field, a numbered glacier badge, the walking bearing beside the
+distance, and a "Walk on a bearing" link; the others are quiet rows. The flag is a quiet underlined
+text button. The map gains the contour fields in two corners, glacier markers, and a "Walk on a
+bearing" link. Locate's `tab` param carries both to the Compass pane.
+
+Deferred from the board, and why:
+
+3. **The board's "[Site name]" and access rows are not built.** `AedRecord` carries no name or
+   access, and the data model is out of scope (§9); the board says its own names are placeholders.
+4. **The map's bottom sheet and numbered markers are not built.** Markers stay unnumbered glacier
+   circles on the existing `MapView`; the numbers live on the list and hero. Tap-select and the
+   overlaid sheet are the genuinely new interaction §3.7 flagged, and they need a device to verify.
+   The walk-on-a-bearing entry is a link, not a sheet.
+
+**Slice 3 — Field and capture. Deferred to #43**, per §2: composing the capture form before #43
+restructures it would be composed twice.
+
+**Slice 4 — Send, More, Regions. Send and More done; Regions deferred.** Send's QR plate takes the
+board's caption, the caption on the white plate is now fixed ink (the old theme colour was unreadable
+on white in dark mode), and the on-device privacy note is in. More gains an "On this phone" card, a
+glacier count badge on the report queue, and a version footer. Regions' download hero is a visual
+refinement of a screen that already carries progress and the space-used readout, so it is left.
+
+**Slice 5 — the inheritance pass (Where I am, Compass, Scan, About). Not started.** These inherit
+slices 1 and 3 already; the pass is the board's `machine` readouts and surface polish.
+
+**Slice 6 — verification. Mechanical only.** The four checks and the bundle are green. **Not run, and
+it needs hardware:** every Maestro flow (no device or simulator here, and no network to fetch one).
+The selectors the flows consume are preserved — `aed-screen`, `aed-map`, `aed-settings`, `aed-flag-0`,
+`act-send`, `call-beacon`, `tab-*`; new selectors are additive (`aed-bearing`, `map-bearing-link`,
+`settings-regions`, `settings-scan`, `settings-about`, `settings-version`, `cpr-elapsed`, `cpr-stop`,
+`act-where`, `act-map`). Also not done: 320px screenshots, both themes, the icon at 40px, and CPR with
+Reduce Motion — all of which §7 requires and none of which a type-check or a bundle can stand in for.
+
+**Also worth doing before this is done:** the umbrella plan still reads "draft — awaiting approval"
+although slices 0–3 shipped against it (§1), and issues #39 and #41 look landed but are still open.
+
