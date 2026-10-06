@@ -241,9 +241,9 @@ function NeighbourCard({
       {/* A fixed badge anchors the distance, so three results scan down one column instead of
           re-flowing. The cross is drawn, not imported — the app ships no icon set. */}
       <View style={styles.row}>
-        <View style={[styles.badge, { backgroundColor: `${theme.pink}29` }]}>
-          <View style={[styles.crossV, { backgroundColor: theme.pink }]} />
-          <View style={[styles.crossH, { backgroundColor: theme.pink }]} />
+        <View style={[styles.badge, { backgroundColor: `${theme.glacier}29` }]}>
+          <View style={[styles.crossV, { backgroundColor: theme.glacier }]} />
+          <View style={[styles.crossH, { backgroundColor: theme.glacier }]} />
         </View>
         <View style={styles.rowText}>
           <Text style={[styles.distance, { color: theme.text }]}>
@@ -263,11 +263,11 @@ function NeighbourCard({
         onPress={() => onFlag(neighbour)}
         style={({ pressed }) => [
           styles.flagChip,
-          { backgroundColor: `${theme.pink}29` },
+          { backgroundColor: `${theme.glacier}29` },
           pressed && styles.pressed,
         ]}>
-        {/* Pink, not red: with the beacon permanently red, no other control on a screen may be. */}
-        <Text style={[styles.flagLabel, { color: theme.pink }]}>Flag as inaccurate</Text>
+        {/* Glacier, not red: with the beacon permanently red, no other control on a screen may be. */}
+        <Text style={[styles.flagLabel, { color: theme.glacierText }]}>Flag as inaccurate</Text>
       </Pressable>
     </Card>
   );

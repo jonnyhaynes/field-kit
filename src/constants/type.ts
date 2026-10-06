@@ -4,11 +4,11 @@
  * Named by the job they do rather than by their size, so a screen asks for `label` instead of
  * restating a size and a weight that will then drift from every other screen's copy of it.
  *
- * The split that matters is `machine`: **words in Nunito Sans, measured values in IBM Plex Mono.**
- * Grid references, coordinates, distances, bearings, the metronome rate and a what3words location go
+ * The split that matters is `machine`: **words in Figtree, measured values in IBM Plex Mono.** Grid
+ * references, coordinates, distances, bearings, the metronome rate and a what3words location go
  * through it and nothing else does — that distinction is the reason there are two families at all,
- * and applying it inconsistently would lose the point of the choice. The warm face is what makes the
- * app feel human; the mono is what keeps it reading as an instrument rather than a brochure.
+ * and applying it inconsistently would lose the point of the choice. Bricolage Grotesque carries the
+ * display and title lines only, where its character reads; the plain Figtree does the reading.
  *
  * Both faces are bundled subsets rather than foundry originals; `scripts/build-fonts.sh` is the
  * pipeline, and the names below must match the keys registered in `src/constants/fonts.ts` — the test
@@ -18,10 +18,14 @@
 import type { TextStyle } from 'react-native';
 
 export const FontFamily = {
-  /** Nunito Sans Regular — everything a person reads. */
-  text: 'NunitoSans-Regular',
-  /** Nunito Sans SemiBold — headings, buttons, labels. */
-  textStrong: 'NunitoSans-SemiBold',
+  /** Bricolage Grotesque 700 — titles and the display line at one scale below. */
+  display: 'BricolageGrotesque-700',
+  /** Bricolage Grotesque 800 — the display face proper. A second instance, so a second key. */
+  displayStrong: 'BricolageGrotesque-800',
+  /** Figtree Regular — everything a person reads. */
+  text: 'Figtree-Regular',
+  /** Figtree SemiBold — labels and the strong end of running text. */
+  textStrong: 'Figtree-SemiBold',
   /**
    * IBM Plex Mono — measured values only.
    *
@@ -29,20 +33,23 @@ export const FontFamily = {
    * a readout looks like an instrument rather than like a sentence.
    */
   machine: 'IBMPlexMono-Regular',
+  /** IBM Plex Mono Medium — a readout that is the subject of its panel rather than a small value. */
+  machineStrong: 'IBMPlexMono-Medium',
 } as const;
 
 export const Type = {
   /** A screen's own heading, and the hero line on Act. */
   display: {
-    fontFamily: FontFamily.textStrong,
-    fontSize: 27,
+    fontFamily: FontFamily.displayStrong,
+    fontSize: 32,
+    lineHeight: 33,
     letterSpacing: -0.9,
   } as TextStyle,
 
   /** A card or row heading. */
   title: {
-    fontFamily: FontFamily.textStrong,
-    fontSize: 17,
+    fontFamily: FontFamily.display,
+    fontSize: 20,
   } as TextStyle,
 
   /** Prose. The measure is held by the layout, not here. */
@@ -69,7 +76,7 @@ export const Type = {
   label: {
     fontFamily: FontFamily.textStrong,
     fontSize: 10.5,
-    letterSpacing: 1.9,
+    letterSpacing: 1.68,
     textTransform: 'uppercase',
   } as TextStyle,
 
@@ -82,6 +89,12 @@ export const Type = {
    */
   machine: {
     fontFamily: FontFamily.machine,
+    fontVariant: ['tabular-nums'],
+  } as TextStyle,
+
+  /** A measured value that leads its panel — the medium weight, without the size. */
+  machineStrong: {
+    fontFamily: FontFamily.machineStrong,
     fontVariant: ['tabular-nums'],
   } as TextStyle,
 } as const;

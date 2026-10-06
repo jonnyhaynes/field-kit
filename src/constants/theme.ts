@@ -1,28 +1,28 @@
 /**
  * Field Kit design tokens.
  *
- * **The register.** A violet-register emergency tool: a violet brand on violet-tinted neutrals, large
- * radii, and light emitted from gradients rather than paper-like flat fills. Still dark-first, because
- * the moment this app is needed may well be in the dark, and light is designed alongside it rather
- * than treated as the variant nobody looked at.
+ * **The register.** Contour: a hi-vis signal (`#D7F94A`) on pine (`#0F1A16`), with green-tinted
+ * neutrals rather than grey. The name and the mark come from the OS map — contour rings on a pine
+ * field — so the identity is the app's own subject rather than a borrowed look. Dark-first, with a
+ * warm stone light theme designed alongside it rather than treated as the variant nobody looked at.
  *
- * This *replaces* the earlier register — deliberately cool near-black, one fluorescent amber signal.
- * That decision was reversed by the owner against a reference they liked; the record of what changed
- * and why is `docs/plans/field-kit-violet-register.md`.
+ * This *replaces* the violet register (violet brand, magenta gradients, round Nunito Sans) shipped in
+ * #49 and #50. That reversal is recorded in `docs/plans/field-kit-contour.md`, which also points back
+ * at the register it replaced: `docs/plans/field-kit-violet-register.md`.
  *
  * **What did not change, because it is safety rather than style:** red is the emergency action and
  * nothing else, records stay on the device, offline is the default path, and the app still never
- * diagnoses. Every other red in the old palette has gone.
+ * diagnoses. Guidance is reproduced, never authored.
  *
  * Values are the sRGB equivalents of the OKLCH tokens authored in
- * `docs/design/field-kit-redesign.html` and `docs/design/field-kit-brandkit.html`. React Native's
- * colour parser does not understand `oklch()`, so the hex is the shipped value and the OKLCH is kept
- * beside it for traceability. The neutrals carry a real violet tint (hue ~290) rather than being grey
- * — that tint is what makes the surfaces read as one family with the brand.
+ * `docs/design/field-kit-contour.html`. React Native's colour parser does not understand `oklch()`,
+ * so the hex is the shipped value. The neutrals carry a real green tint (hue ~155) rather than being
+ * grey — that tint is what makes the surfaces read as one family with the pine canvas.
  *
  * One thing is measured rather than eyeballed, and must stay true if this palette is edited: every
- * text-on-surface pair is checked by `scripts/contrast.ts` in both schemes, and the suite fails below
- * 4.5:1 (3:1 for large text). Changing a value here means re-running it.
+ * text-on-surface pair the app actually renders is checked by
+ * `src/constants/__tests__/contrast.test.ts` in both schemes, and the suite fails below 4.5:1 (3:1
+ * for large text). Changing a value here means re-running it.
  */
 
 import '@/global.css';
@@ -30,62 +30,67 @@ import '@/global.css';
 /**
  * The surface ramp, ordered by how much light each step catches.
  *
- * The three background keys on `Colors` below are derived from this, so there is one source for the
- * ramp rather than two that can drift apart.
+ * Three fills, not four: the plan names one *raised* step for chips, inputs and selected states, so
+ * `control` and `selected` share it. The only place the two were visually distinct was the active tab
+ * background, and that is a hi-vis disc from slice 3 on — keeping a fourth step nobody asked for
+ * would be a token that exists only to be wrong. The three background keys on `Colors` below are
+ * derived from this, so there is one source for the ramp rather than two that can drift.
  */
 export const Surfaces = {
   light: {
-    canvas: '#F3F4F9', // oklch(97% 0.007 277)
-    panel: '#FFFFFF', // oklch(100% 0.000 90)
-    control: '#F1F2F8', // oklch(96% 0.008 279)
-    selected: '#E9E7F6', // oklch(93% 0.020 292)
+    canvas: '#F1EFE8',
+    panel: '#FFFFFF',
+    control: '#E2DED2',
+    selected: '#E2DED2',
   },
   dark: {
-    canvas: '#0B0A12', // oklch(15% 0.017 290)
-    panel: '#16141F', // oklch(20% 0.022 293)
-    control: '#1E1B2A', // oklch(23% 0.029 293)
-    selected: '#272238', // oklch(27% 0.041 294)
+    canvas: '#0F1A16',
+    panel: '#17261F',
+    control: '#1E3229',
+    selected: '#1E3229',
   },
 } as const;
 
 export const Colors = {
   light: {
-    text: '#14121C', // oklch(19% 0.020 294)
-    textSecondary: '#655F7A', // oklch(50% 0.043 295) - on `selected` this measured 4.40 at L53
+    text: '#10201A',
+    textSecondary: '#4A5A52',
+    /** Quieter than `textSecondary`, for the small-caps label marker. */
+    muted: '#5F6D65',
     background: Surfaces.light.canvas,
     backgroundElement: Surfaces.light.panel,
     backgroundSelected: Surfaces.light.selected,
-    border: '#E3E2EE', // oklch(92% 0.016 290)
-    /** The brand violet, and the app's action colour: every primary action is filled with this. */
-    brand: '#4B21F0', // oklch(48% 0.273 278)
-    /** The two ends of a violet field, for a gradient surface. */
-    brand2: '#7C4DFF', // oklch(58% 0.247 288)
-    brandDeep: '#3A14D6', // oklch(43% 0.256 275)
-    brandInk: '#FFFFFF',
-    /** Accents. Decorative and categorical — they carry state, never the emergency. */
-    pink: '#DE2468', // oklch(59% 0.219 7)
-    teal: '#0A7A5C', // oklch(52% 0.102 168) - as a *label* it measured 2.84 at L67
-    amber: '#B97F00', // oklch(64% 0.134 77)
+    border: '#DDD8CB',
+    /** The hi-vis brand, and the app's action colour: every primary action is filled with this. */
+    brand: '#D7F94A',
+    brandInk: '#0F1A16',
+    /** The hi-vis as a *text* colour on the light canvas — the fill itself fails there. */
+    brandText: '#4B6B0E',
+    /** The AED / data accent, and the numbered badges. Never the emergency. */
+    glacier: '#8ED8F8',
+    glacierText: '#0B6E99',
     /** The emergency action, and nothing else. */
-    rescue: '#E11D38', // oklch(58% 0.223 22)
+    rescue: '#E5192B',
     rescueInk: '#FFFFFF',
+    /** The bottom pill, drawn as ink in both schemes. */
+    bar: '#10201A',
   },
   dark: {
-    text: '#F4F2FA', // oklch(96% 0.011 298)
-    textSecondary: '#A8A2BE', // oklch(73% 0.041 295)
+    text: '#F1EFE8',
+    textSecondary: '#A9BDB3',
+    muted: '#8FA69A',
     background: Surfaces.dark.canvas,
     backgroundElement: Surfaces.dark.panel,
     backgroundSelected: Surfaces.dark.selected,
-    border: '#312B45', // oklch(31% 0.047 294)
-    brand: '#6D4BFF', // oklch(56% 0.250 284)
-    brand2: '#9A6BFF', // oklch(65% 0.211 294)
-    brandDeep: '#3A14D6', // oklch(43% 0.256 275)
-    brandInk: '#FFFFFF',
-    pink: '#FF3E7F', // oklch(67% 0.229 6)
-    teal: '#2FD9A8', // oklch(79% 0.151 168)
-    amber: '#FFC24B', // oklch(85% 0.148 81)
-    rescue: '#E51D38', // oklch(59% 0.226 23) - white on it measured 3.67 at L65
+    border: '#24382F',
+    brand: '#D7F94A',
+    brandInk: '#0F1A16',
+    brandText: '#D7F94A',
+    glacier: '#8ED8F8',
+    glacierText: '#8ED8F8',
+    rescue: '#E5192B',
     rescueInk: '#FFFFFF',
+    bar: '#070D0B',
   },
 } as const;
 
@@ -103,7 +108,7 @@ export const Bevel = {
 /**
  * The lit top edge on a *coloured* surface — a filled brand or rescue button.
  *
- * The panel bevel above is about 10% white, which reads on a dark panel and disappears on violet or
+ * The panel bevel above is about 10% white, which reads on a dark panel and disappears on hi-vis or
  * red, so a filled control needs its own, stronger edge. One value for both schemes, because it sits
  * on the button's own colour rather than on the canvas.
  */
@@ -115,10 +120,9 @@ export const BevelOnColor = 'rgba(255, 255, 255, 0.32)';
  * Every raised surface gets the same four parts: a hairline stroke, the lit top edge above, a filled
  * body, and a soft drop below. Three levels, and nothing in between.
  *
- * **The shadow colour is the brand hue, never black.** A neutral shadow on a tinted surface reads as
- * dirt; a violet shadow reads as light. That is most of the difference between a component kit and a
- * designed app. Split by scheme because the opacity has to be: a shadow that reads as depth on a
- * violet near-black is a bruise on a white canvas.
+ * **The shadow is near-black, not brand-hued.** The violet register tinted its shadows because a
+ * violet shadow on a violet surface read as light; on pine the depth comes from the surface ramp, and
+ * a tinted shadow would read as glow. Pure black keeps the surfaces grounded.
  *
  * `attention` carries a coloured shadow in the emergency red — the one element allowed to look like it
  * is emitting light. **iOS only:** Android's `elevation` always draws a grey shadow and ignores the
@@ -127,21 +131,21 @@ export const BevelOnColor = 'rgba(255, 255, 255, 0.32)';
 export const Elevation = {
   light: {
     panel: {
-      shadowColor: '#3C1EA0',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 10 },
       shadowRadius: 24,
-      shadowOpacity: 0.16,
+      shadowOpacity: 0.12,
       elevation: 2,
     },
     control: {
-      shadowColor: '#3C1EA0',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 12 },
       shadowRadius: 28,
-      shadowOpacity: 0.2,
+      shadowOpacity: 0.16,
       elevation: 4,
     },
     attention: {
-      shadowColor: '#E11D38',
+      shadowColor: '#E5192B',
       shadowOffset: { width: 0, height: 10 },
       shadowRadius: 26,
       shadowOpacity: 0.35,
@@ -150,21 +154,21 @@ export const Elevation = {
   },
   dark: {
     panel: {
-      shadowColor: '#160A45',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 10 },
       shadowRadius: 26,
-      shadowOpacity: 0.55,
+      shadowOpacity: 0.5,
       elevation: 3,
     },
     control: {
-      shadowColor: '#160A45',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 12 },
       shadowRadius: 30,
-      shadowOpacity: 0.6,
+      shadowOpacity: 0.55,
       elevation: 5,
     },
     attention: {
-      shadowColor: '#E00E2C',
+      shadowColor: '#E5192B',
       shadowOffset: { width: 0, height: 10 },
       shadowRadius: 26,
       shadowOpacity: 0.55,

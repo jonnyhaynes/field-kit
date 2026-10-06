@@ -10,10 +10,12 @@
  *
  *   lit top edge      a 1px line, ~10% white — the single most effective move
  *   graduated fill    panel colour, a shade lighter at the top
- *   hairline stroke   present, but no longer the shape, and tinted toward the brand
- *   soft drop shadow  depth, not decoration, in the brand hue rather than black
+ *   hairline stroke   present, but no longer the shape
+ *   soft drop shadow  depth, not decoration
  *
- * Pure functions of the scheme, so they are unit-testable without a device.
+ * In the Contour register the fill is the whole of the brand's expression: the brand action is a flat
+ * hi-vis fill rather than a gradient, and depth comes from the surface ramp and a near-black shadow
+ * rather than a glow. Pure functions of the scheme, so they are unit-testable without a device.
  */
 
 import { StyleSheet, type ViewStyle } from 'react-native';
@@ -21,14 +23,14 @@ import { StyleSheet, type ViewStyle } from 'react-native';
 import { Colors, Elevation, Radius, Surfaces, type Scheme } from '@/constants/theme';
 
 /**
- * The hairline stroke, tinted toward the brand.
+ * The hairline stroke.
  *
- * The design calls for a gradient hairline along a panel's edge. React Native has no `border-image`,
- * so this is the closest honest thing: a translucent violet that belongs to the surface rather than a
- * neutral grey line drawn around it.
+ * The design calls for a stroke along a panel's edge, thinner and quieter than the fill. It is the
+ * `line` token rather than a brand tint: on pine and hi-vis a tinted edge whispers, and the register
+ * keeps the brand for the action, not for every border.
  */
 function stroke(scheme: Scheme): string {
-  return scheme === 'dark' ? 'rgba(154, 107, 255, 0.22)' : 'rgba(75, 33, 240, 0.14)';
+  return Colors[scheme].border;
 }
 
 /**
@@ -45,8 +47,8 @@ export function cardFill(scheme: Scheme): string {
 }
 
 /**
- * A raised panel: the graduated fill over the solid panel colour, a brand-tinted hairline stroke and
- * the panel shadow.
+ * A raised panel: the graduated fill over the solid panel colour, a hairline stroke and the panel
+ * shadow.
  *
  * `backgroundColor` is the solid panel *and* the gradient's base, so a platform that cannot draw the
  * gradient — the API is still experimental — shows a plain panel rather than nothing, which is the
@@ -74,22 +76,14 @@ export function controlSurface(scheme: Scheme): ViewStyle {
 }
 
 /**
- * The violet field, as a gradient string — the two ends of the brand.
- */
-export function brandFill(scheme: Scheme): string {
-  return `linear-gradient(150deg, ${Colors[scheme].brand2}, ${Colors[scheme].brandDeep})`;
-}
-
-/**
  * A filled brand action — the thing a screen exists to do, and the app's whole action vocabulary.
  *
- * The violet gradient is what distinguishes it, so a primary action reads as the same object wherever
- * it appears. `backgroundColor` stays the flat brand as the gradient's fallback.
+ * A flat hi-vis fill, not a gradient: the colour *is* the identity, and printing it once reads
+ * harder than washing it across a surface. `borderColor` is transparent so the fill is the shape.
  */
 export function brandSurface(scheme: Scheme): ViewStyle {
   return {
     backgroundColor: Colors[scheme].brand,
-    experimental_backgroundImage: brandFill(scheme),
     borderColor: 'transparent',
     ...Elevation[scheme].control,
   };
