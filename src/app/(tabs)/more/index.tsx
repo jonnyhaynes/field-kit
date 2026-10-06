@@ -1,3 +1,5 @@
+import Constants from 'expo-constants';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
@@ -86,7 +88,14 @@ export default function SettingsScreen() {
         </Text>
 
         <View style={styles.toggleRow}>
-          <Text style={[styles.body, { color: theme.text }]}>Show reports waiting to send</Text>
+          <View style={styles.toggleLabel}>
+            <Text style={[styles.body, { color: theme.text }]}>Show reports waiting to send</Text>
+            {notes.length > 0 ? (
+              <View style={[styles.countBadge, { backgroundColor: theme.glacier }]}>
+                <Text style={[styles.countLabel, { color: theme.brandInk }]}>{notes.length}</Text>
+              </View>
+            ) : null}
+          </View>
           <Switch
             testID="settings-osm-opt-in"
             accessibilityLabel="Show reports waiting to send"
@@ -177,7 +186,64 @@ export default function SettingsScreen() {
           </Card>
         ))
       )}
+
+      <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>On this phone</Text>
+      <Card>
+        <PhoneRow
+          label="Region packs"
+          value="Street detail for one area, offline for good"
+          testID="settings-regions"
+          onPress={() => router.push('/locate/regions')}
+        />
+        <PhoneRow
+          label="Scan a report"
+          value="Point the camera at another phone's code"
+          testID="settings-scan"
+          onPress={() => router.push('/field/scan')}
+        />
+        <PhoneRow
+          label="Data and licences"
+          value="Where the map and the defibrillator data come from"
+          testID="settings-about"
+          onPress={() => router.push('/more/about')}
+        />
+      </Card>
+
+      <Text testID="settings-version" style={[styles.footer, { color: theme.textSecondary }]}>
+        {`Field Kit ${Constants.expoConfig?.version ?? ''}`.trim()}
+      </Text>
     </Screen>
+  );
+}
+
+/** A quiet destination row: what it is, what it does, and a chevron. */
+function PhoneRow({
+  label,
+  value,
+  testID,
+  onPress,
+}: {
+  label: string;
+  value: string;
+  testID: string;
+  onPress: () => void;
+}) {
+  const theme = useTheme();
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint={value}
+      testID={testID}
+      onPress={onPress}
+      style={({ pressed }) => [styles.phoneRow, pressed && styles.pressed]}>
+      <View style={styles.phoneRowText}>
+        <Text style={[styles.body, { color: theme.text }]}>{label}</Text>
+        <Text style={[styles.note, { color: theme.textSecondary }]}>{value}</Text>
+      </View>
+      <Text style={[styles.chevron, { color: theme.textSecondary }]}>›</Text>
+    </Pressable>
   );
 }
 
@@ -202,6 +268,26 @@ const styles = StyleSheet.create({
   note: { ...Type.note },
   emphasis: { fontFamily: FontFamily.textStrong },
   label: { ...Type.machine, fontSize: 12 },
+  sectionLabel: { ...Type.label },
+  footer: { ...Type.machine, fontSize: 12, textAlign: 'center' },
+  toggleLabel: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  countBadge: {
+    minWidth: 24,
+    height: 24,
+    borderRadius: Radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.one,
+  },
+  countLabel: { ...Type.machineStrong, fontSize: 13 },
+  phoneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    minHeight: MinTarget,
+  },
+  phoneRowText: { flex: 1, gap: Spacing.half },
+  chevron: { ...Type.title },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',

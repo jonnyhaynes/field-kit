@@ -176,9 +176,11 @@ export default function SendScreen() {
                 backgroundColor="#ffffff"
                 ecl="M"
               />
-              <Text style={[styles.codeCaption, { color: theme.textSecondary }]}>
-                Drawn on this phone. No network, no server — the other phone just points its camera
-                at it.
+              {/* Fixed ink, not the theme: this plate is white in both schemes, so a theme colour
+                  would be unreadable here in dark mode — the same reason the code is fixed. */}
+              <Text style={styles.codeCaption}>Hold it up — another phone scans this</Text>
+              <Text style={styles.codeCaptionSmall}>
+                Drawn on this phone. No network, no server.
               </Text>
             </View>
           ) : (
@@ -193,6 +195,10 @@ export default function SendScreen() {
           <OfflineNote>
             The code is made here — nothing on this screen uses the network.
           </OfflineNote>
+
+          <Text testID="send-privacy" style={[styles.privacy, { color: theme.textSecondary }]}>
+            Kept on this phone. It only leaves when you send it.
+          </Text>
 
           {/* Renders nothing where the device cannot use tags — every iOS build today (§2.5). */}
           <WriteToTag payload={handover.payload} />
@@ -240,7 +246,9 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     backgroundColor: '#ffffff',
   },
-  codeCaption: { ...Type.note, textAlign: 'center' },
+  codeCaption: { ...Type.note, color: '#10201A', textAlign: 'center' },
+  codeCaptionSmall: { ...Type.note, fontSize: 12, color: '#4A5A52', textAlign: 'center' },
+  privacy: { ...Type.note },
   channels: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   channel: {
     flex: 1,
