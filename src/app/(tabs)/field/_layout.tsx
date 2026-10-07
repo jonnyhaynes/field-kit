@@ -23,6 +23,8 @@ export default function FieldLayout() {
         contentStyle: { backgroundColor: palette.background },
       }}>
       <Stack.Screen name="index" options={{ title: 'Record incident' }} />
+      {/* The title is the mnemonic; the screen sets it, since one file serves all four forms. */}
+      <Stack.Screen name="[form]" options={{ title: 'Record' }} />
       <Stack.Screen name="scan" options={{ title: 'Open a report' }} />
     </Stack>
   );

@@ -238,9 +238,9 @@ The PR(s) will be titled `[ai-assisted]`, reference this doc, `docs/design/field
 
 ## 11. As built
 
-**Landed: slices 1, 2 (partly), 4 and 5.** Each is a commit on the branch. The mechanical checks are
-green throughout: `typecheck`, `typecheck:scripts`, `lint`, `format:check`, `test` (37 suites, 558
-tests) and `npx expo export --platform ios`.
+**Landed: all five slices (2 partly).** The mechanical checks are green throughout: `typecheck`,
+`typecheck:scripts`, `lint`, `format:check`, `test` (37 suites, 561 tests) and
+`npx expo export --platform ios`.
 
 **Slice 1 — Act and CPR. Done.** Act's question moved into a panel with the hill field in its corner;
 the breathing action is the hi-vis `signal` variant; two link tiles lead to Where I am and the offline
@@ -272,8 +272,11 @@ Deferred from the board, and why:
    overlaid sheet are the genuinely new interaction §3.7 flagged, and they need a device to verify.
    The walk-on-a-bearing entry is a link, not a sheet.
 
-**Slice 3 — Field and capture. Deferred to #43**, per §2: composing the capture form before #43
-restructures it would be composed twice.
+**Slice 3 — Field and capture. Built with #43.** #43 landed the index, the focused form and the named
+stepper; this slice's board skin came with it — the ink report hero, the progress rows and the step
+bar. What is *not* built is §5.4's "the tabs are hidden while a form is open": the form's Previous/Next
+is its pinned footer and the global tab bar stays. Recorded in `docs/plans/43-responder-capture-form.md`
+§11, which is now the record for these screens.
 
 **Slice 4 — Send, More, Regions. Done.** Send's QR plate takes the board's caption, the caption on
 the white plate is now fixed ink (the old theme colour was unreadable on white in dark mode), and the

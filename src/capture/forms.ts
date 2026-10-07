@@ -37,6 +37,22 @@ export type CaptureField = {
   needsEquipment?: boolean;
 };
 
+/**
+ * One named stage of a form — the mnemonic's own letter.
+ *
+ * A form is one idea; a step is a part of it (`A` is Airway). The steps are data rather than a
+ * grouping invented in the renderer, so a field moving between stages is a reviewable diff, and a
+ * test asserts every field belongs to exactly one step.
+ */
+export type CaptureStep = {
+  /** The letter this step is named for. Not unique on its own — ETHANE has two `E`s. */
+  letter: string;
+  /** What the stage is, e.g. `Airway`. */
+  label: string;
+  /** The fields asked in this stage, in order. */
+  fieldIds: readonly string[];
+};
+
 export type CaptureForm = {
   id: string;
   mnemonic: string;
@@ -45,6 +61,8 @@ export type CaptureForm = {
   /** Whether this records the scene or the casualty. They are not interchangeable. */
   whatItDescribes: 'patient' | 'scene';
   fields: readonly CaptureField[];
+  /** The mnemonic's own named stages, so the form is worked through in the order it is taught. */
+  steps: readonly CaptureStep[];
 };
 
 const LEVEL_OF_CONSCIOUSNESS = [
@@ -86,6 +104,15 @@ const SAMPLER: CaptureForm = {
     { id: 'sampler.lastIntake', label: 'Last food or drink, and when', kind: 'text' },
     { id: 'sampler.events', label: 'What happened leading up to this', kind: 'text' },
     { id: 'sampler.riskFactors', label: 'Risk factors', kind: 'text' },
+  ],
+  steps: [
+    { letter: 'S', label: 'Signs and symptoms', fieldIds: ['sampler.signsAndSymptoms'] },
+    { letter: 'A', label: 'Allergies', fieldIds: ['sampler.allergies'] },
+    { letter: 'M', label: 'Medications', fieldIds: ['sampler.medications'] },
+    { letter: 'P', label: 'Past history', fieldIds: ['sampler.pastHistory'] },
+    { letter: 'L', label: 'Last intake', fieldIds: ['sampler.lastIntake'] },
+    { letter: 'E', label: 'Events', fieldIds: ['sampler.events'] },
+    { letter: 'R', label: 'Risk factors', fieldIds: ['sampler.riskFactors'] },
   ],
 };
 
@@ -199,6 +226,47 @@ const ABCDE: CaptureForm = {
       needsEquipment: true,
     },
   ],
+  steps: [
+    {
+      letter: 'A',
+      label: 'Airway',
+      fieldIds: ['abcde.airwaySound', 'abcde.airwayObstruction', 'abcde.speaking'],
+    },
+    {
+      letter: 'B',
+      label: 'Breathing',
+      fieldIds: [
+        'abcde.breathingRate',
+        'abcde.breathingEffort',
+        'abcde.chestMovement',
+        'abcde.breathSounds',
+        'abcde.oxygenSaturation',
+      ],
+    },
+    {
+      letter: 'C',
+      label: 'Circulation',
+      fieldIds: [
+        'abcde.pulseRate',
+        'abcde.pulseCharacter',
+        'abcde.skinColour',
+        'abcde.skinTemperature',
+        'abcde.capillaryRefill',
+        'abcde.bleeding',
+        'abcde.bleedingWhere',
+      ],
+    },
+    {
+      letter: 'D',
+      label: 'Disability',
+      fieldIds: ['abcde.consciousness', 'abcde.pupils', 'abcde.bloodGlucose'],
+    },
+    {
+      letter: 'E',
+      label: 'Exposure',
+      fieldIds: ['abcde.injuries', 'abcde.temperature'],
+    },
+  ],
 };
 
 /**
@@ -224,6 +292,18 @@ const ETHANE: CaptureForm = {
     { id: 'ethane.casualties', label: 'Number of casualties', kind: 'number', unit: 'casualties' },
     { id: 'ethane.worstInjury', label: 'Most serious injury seen', kind: 'text' },
     { id: 'ethane.servicesNeeded', label: 'Which emergency services are needed', kind: 'text' },
+  ],
+  steps: [
+    { letter: 'E', label: 'Exact location', fieldIds: ['ethane.exactLocation'] },
+    { letter: 'T', label: 'Type of incident', fieldIds: ['ethane.incidentType'] },
+    { letter: 'H', label: 'Hazards', fieldIds: ['ethane.hazards'] },
+    { letter: 'A', label: 'Access', fieldIds: ['ethane.access'] },
+    {
+      letter: 'N',
+      label: 'Number of casualties',
+      fieldIds: ['ethane.casualties', 'ethane.worstInjury'],
+    },
+    { letter: 'E', label: 'Emergency services', fieldIds: ['ethane.servicesNeeded'] },
   ],
 };
 
@@ -263,6 +343,18 @@ const ASHICE: CaptureForm = {
     { id: 'ashice.pulseRate', label: 'Pulse rate', kind: 'number', unit: 'beats per minute' },
     { id: 'ashice.eta', label: 'Estimated time of arrival, if known', kind: 'time' },
   ],
+  steps: [
+    { letter: 'A', label: 'Age', fieldIds: ['ashice.age'] },
+    { letter: 'S', label: 'Sex', fieldIds: ['ashice.sex'] },
+    { letter: 'H', label: 'History', fieldIds: ['ashice.history', 'ashice.injuries'] },
+    { letter: 'I', label: 'Illness or injury', fieldIds: ['ashice.causeForConcern'] },
+    {
+      letter: 'C',
+      label: 'Condition',
+      fieldIds: ['ashice.consciousness', 'ashice.breathingRate', 'ashice.pulseRate'],
+    },
+    { letter: 'E', label: 'ETA', fieldIds: ['ashice.eta'] },
+  ],
 };
 
 export const CAPTURE_FORMS: readonly CaptureForm[] = [SAMPLER, ABCDE, ETHANE, ASHICE];
@@ -278,4 +370,16 @@ export function findCaptureField(fieldId: string): CaptureField | undefined {
 /** Which form a field belongs to, so a stored observation can name both. */
 export function formForField(fieldId: string): CaptureForm | undefined {
   return CAPTURE_FORMS.find((form) => form.fields.some((field) => field.id === fieldId));
+}
+
+/**
+ * A step's fields, resolved against its form.
+ *
+ * Unknown ids are dropped rather than throwing, so a typo shows as a missing field — which the
+ * step-coverage test catches — instead of taking the form down at render time.
+ */
+export function stepFields(form: CaptureForm, step: CaptureStep): CaptureField[] {
+  return step.fieldIds
+    .map((fieldId) => form.fields.find((field) => field.id === fieldId))
+    .filter((field): field is CaptureField => field !== undefined);
 }

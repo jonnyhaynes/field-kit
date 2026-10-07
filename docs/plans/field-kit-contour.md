@@ -4,7 +4,10 @@
 page: *System*, *Emergency path*, *Field and settings*), to be exported into `docs/design/` as part of
 slice 0 so the boards live in the repo beside the earlier ones.
 
-**Status: draft — awaiting approval.** No code until a human approves this plan.
+**Status: approved, and all five slices built.** Slice 4's Field and capture screens were built with
+[`43-responder-capture-form.md`](./43-responder-capture-form.md); the as-built record for the rest is
+[`contour-compositions.md`](./contour-compositions.md) §11. The "draft — awaiting approval" this line
+used to carry was stale: the plan was approved, and slices 0–3 shipped against it.
 
 ---
 

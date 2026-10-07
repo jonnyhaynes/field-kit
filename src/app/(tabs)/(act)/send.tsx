@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Linking, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
+import { CAPTURE_FORMS } from '@/capture/forms';
 import { Card } from '@/components/card';
 import { OfflineNote } from '@/components/offline-note';
 import { Screen } from '@/components/screen';
@@ -12,6 +13,8 @@ import { controlSurface, brandSurface } from '@/constants/surface';
 import { Type } from '@/constants/type';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
+import { answeredCount, isAnswered, type Report } from '@/report/report';
+import { useCurrentReport } from '@/report/use-report';
 import { messageChannels } from '@/transfer/channels';
 import { HANDOVER_MAX_BYTES, handoverLines, handoverTitle } from '@/transfer/handover';
 import { useHandover } from '@/transfer/use-handover';
@@ -30,6 +33,7 @@ export default function SendScreen() {
   const theme = useTheme();
   const scheme = useColorScheme();
   const handover = useHandover();
+  const report = useCurrentReport().report;
   const [failure, setFailure] = useState<string | undefined>(undefined);
 
   async function open(url: string): Promise<void> {
@@ -162,6 +166,8 @@ export default function SendScreen() {
             </View>
           </Card>
 
+          {report ? <FormsReview report={report} /> : null}
+
           {handover.code ? (
             <View testID="send-code" style={styles.codeCard}>
               {/*
@@ -224,6 +230,50 @@ export default function SendScreen() {
   );
 }
 
+/**
+ * The forms that have anything in them, with their progress and a way back in.
+ *
+ * A review is a summary and a set of links, never a second form: it shows what has been recorded and
+ * where to change it, and it never asks for anything itself.
+ */
+function FormsReview({ report }: { report: Report }) {
+  const theme = useTheme();
+
+  const started = CAPTURE_FORMS.filter((form) =>
+    form.fields.some((field) => isAnswered(report, field.id)),
+  );
+  if (started.length === 0) return null;
+
+  return (
+    <Card testID="send-forms">
+      <Text style={[styles.cardTitle, { color: theme.text }]}>Forms</Text>
+      {started.map((form) => {
+        const answered = answeredCount(
+          report,
+          form.fields.map((field) => field.id),
+        );
+
+        return (
+          <View key={form.id} testID={`send-form-${form.id}`} style={styles.formRow}>
+            <Text style={[styles.body, { color: theme.text }]}>{form.mnemonic}</Text>
+            <Text style={[styles.note, { color: theme.textSecondary }]}>
+              {`${String(answered)}/${String(form.fields.length)}`}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Edit ${form.mnemonic}`}
+              testID={`send-form-${form.id}-edit`}
+              onPress={() => router.push({ pathname: '/field/[form]', params: { form: form.id } })}
+              style={({ pressed }) => [styles.edit, pressed && styles.pressed]}>
+              <Text style={[styles.editLabel, { color: theme.brandText }]}>Edit</Text>
+            </Pressable>
+          </View>
+        );
+      })}
+    </Card>
+  );
+}
+
 const styles = StyleSheet.create({
   title: { ...Type.display },
   cardTitle: { ...Type.title },
@@ -249,6 +299,15 @@ const styles = StyleSheet.create({
   codeCaption: { ...Type.note, color: '#10201A', textAlign: 'center' },
   codeCaptionSmall: { ...Type.note, fontSize: 12, color: '#4A5A52', textAlign: 'center' },
   privacy: { ...Type.note },
+  note: { ...Type.note },
+  formRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    minHeight: MinTarget,
+  },
+  edit: { minHeight: MinTarget, justifyContent: 'center', paddingHorizontal: Spacing.two },
+  editLabel: { ...Type.title },
   channels: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   channel: {
     flex: 1,

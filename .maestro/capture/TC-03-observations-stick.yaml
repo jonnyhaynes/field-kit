@@ -10,6 +10,9 @@
 #
 # The flow grants its own location permission and sets its own position, because clearState resets the
 # grants and the capture screen asks for a position once a report is open.
+#
+# The capture form is a **focused route** now, not four forms in one scroll: the index opens ABCDE,
+# and the form is worked through its named steps, which the step bar switches between.
 appId: com.colouringcode.fieldkit
 tags:
   - capture
@@ -52,21 +55,28 @@ tags:
 - tapOn:
     id: record-start
 
-# A choice and a number. ACVPU rather than GCS, because a first aider has no training for the latter.
-- scrollUntilVisible:
-    element:
-      id: record-choice-abcde.consciousness-0
-    direction: DOWN
+# Open ABCDE from the index. The form gets the screen, and its steps are the mnemonic's own letters.
+- extendedWaitUntil:
+    visible:
+      id: record-form-abcde
     timeout: 30000
+- tapOn:
+    id: record-form-abcde
+- extendedWaitUntil:
+    visible:
+      id: capture-stepbar
+    timeout: 30000
+
+# Step D is Disability (index 3). A choice: ACVPU rather than GCS, because a first aider has no
+# training for the latter.
+- tapOn:
+    id: capture-step-3
 - tapOn:
     id: record-choice-abcde.consciousness-0
 
-# Breathing rate sits above consciousness in ABCDE, so this scrolls back up.
-- scrollUntilVisible:
-    element:
-      id: record-input-abcde.breathingRate
-    direction: UP
-    timeout: 30000
+# Step B is Breathing (index 1), and holds the breathing rate.
+- tapOn:
+    id: capture-step-1
 - tapOn:
     id: record-input-abcde.breathingRate
 - inputText: '16'
@@ -83,25 +93,27 @@ tags:
     id: act-record
 - extendedWaitUntil:
     visible:
-      id: record-mnemonic-sampler
+      id: record-form-abcde
+    timeout: 30000
+- tapOn:
+    id: record-form-abcde
+- extendedWaitUntil:
+    visible:
+      id: capture-stepbar
     timeout: 30000
 
 # The number came back.
-- scrollUntilVisible:
-    element:
-      id: record-input-abcde.breathingRate
-    direction: DOWN
-    timeout: 30000
+- tapOn:
+    id: capture-step-1
 - assertVisible:
     text: '16'
 
 # And the chip came back selected: the answer was written, not held in memory.
-- scrollUntilVisible:
-    element:
-      id: record-choice-abcde.consciousness-0
-      selected: true
-    direction: DOWN
-    timeout: 30000
+- tapOn:
+    id: capture-step-3
+- assertVisible:
+    id: record-choice-abcde.consciousness-0
+    selected: true
 
 # Turning the depth off closes the gate, so this is not a one-way door.
 #

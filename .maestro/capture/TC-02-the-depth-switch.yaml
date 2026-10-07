@@ -61,12 +61,12 @@ tags:
 - tapOn:
     id: record-start
 
-# All four mnemonics, each saying whether it describes the scene or a casualty. ETHANE and ASHICE are
-# different tools, so a form that lost that label would be a clinical error, not a cosmetic one.
+# All four mnemonics appear in the index, each with what it is for. ETHANE and ASHICE describe
+# different things — a scene and a casualty — so a form that lost that distinction would be a clinical
+# error, not a cosmetic one.
 #
-# Scroll to each form's *heading*, not its container: `scrollUntilVisible` wants the element fully on
-# screen, and a form with twenty fields is taller than any phone, so its container can never satisfy
-# that and the search would run until it gave up. The heading is small enough to arrive completely.
+# The index is four rows, which can still run past the fold on a small screen, so the search scrolls
+# to each mnemonic rather than assuming it is on screen.
 - extendedWaitUntil:
     visible:
       id: record-mnemonic-sampler

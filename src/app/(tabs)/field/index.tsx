@@ -1,36 +1,32 @@
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { responderForms, type ResponderDepth } from '@/capture/depth';
-import { formForField, type CaptureField, type CaptureForm } from '@/capture/forms';
+import type { CaptureForm } from '@/capture/forms';
 import { useDepth } from '@/capture/use-depth';
 import { Card } from '@/components/card';
+import { Contour } from '@/components/contour';
 import { Screen } from '@/components/screen';
-import { MinTarget, Radius, Spacing } from '@/constants/theme';
-import { controlSurface, brandSurface } from '@/constants/surface';
+import { brandSurface, controlSurface } from '@/constants/surface';
+import { Colors, MinTarget, Radius, Spacing } from '@/constants/theme';
 import { Type } from '@/constants/type';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import { recordedFrom } from '@/incident/recorded-location';
 import { useCurrentPosition } from '@/location/current-position';
-import {
-  answeredCount,
-  observationFor,
-  type Observation,
-  type ObservationValue,
-  type Report,
-} from '@/report/report';
+import { answeredCount, type Report } from '@/report/report';
 import { useCurrentReport } from '@/report/use-report';
 
 /**
- * "Record incident" — where the Responder depth actually captures something.
+ * "Record incident" — the index of the four capture forms.
  *
- * The gate is the component boundary: only a narrowed responder depth reaches `ResponderCapture`, and
- * the forms come from `responderForms`, which does not accept anything else. There is no path to a
- * field that skips it, and no conditional anybody can delete.
+ * The forms are worked through one at a time rather than stacked in one scroll: ABCDE alone is
+ * taller than two screens, so a responder who wants ASHICE would scroll past all of it, and one
+ * inside ABCDE could not see how much is left. The index shows what each form is for and how far
+ * along it is, and a form gets the screen when it is opened.
  *
- * Nothing on this screen interprets anything. A field records what the user observed; there is no
- * score, no normal range and no conclusion anywhere on it, and §2.1 is why that is not an accident.
+ * The gate is still the component boundary: only a narrowed responder depth reaches
+ * `ResponderCapture`, and the forms come from `responderForms`, which accepts nothing else.
  */
 export default function RecordScreen() {
   const { depth } = useDepth();
@@ -61,7 +57,7 @@ function RefusedCapture() {
 function ResponderCapture({ depth }: { depth: ResponderDepth }) {
   const theme = useTheme();
   const scheme = useColorScheme();
-  const { report, begin, record, discard, attachLocation } = useCurrentReport();
+  const { report, begin, discard, attachLocation } = useCurrentReport();
   const position = useCurrentPosition();
 
   const forms = responderForms(depth);
@@ -83,7 +79,7 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
         report ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Send this report"
+            accessibilityLabel="Review and send this report"
             testID="record-send"
             onPress={() => router.push('/send')}
             style={({ pressed }) => [
@@ -99,51 +95,42 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
 
       {report ? (
         <>
-          <Card testID="record-location">
-            <Text style={[styles.cardTitle, { color: theme.text }]}>Position</Text>
-            {report.location ? (
-              <Text style={[styles.body, { color: theme.textSecondary }]}>
-                {`${report.location.coordinates.latitude.toFixed(5)}, ${report.location.coordinates.longitude.toFixed(5)}`}
-                {`\nRecorded ${report.location.sampledAt}. This is where the incident was, not where you are now.`}
-              </Text>
-            ) : (
-              <Text style={[styles.body, { color: theme.textSecondary }]}>
-                No position attached to this report yet.
-              </Text>
-            )}
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Attach my position to this report"
-              testID="record-attach-position"
-              disabled={!canAttach}
-              onPress={attach}
-              style={({ pressed }) => [
-                styles.secondary,
-                controlSurface(scheme),
-                pressed && styles.pressed,
-                !canAttach && styles.disabled,
-              ]}>
-              <Text style={[styles.secondaryLabel, { color: theme.text }]}>
-                {canAttach ? 'Attach my position' : 'No position fix yet'}
-              </Text>
-            </Pressable>
-          </Card>
+          <ReportHero report={report} />
 
-          {forms.map((form) => (
-            <FormSection key={form.id} form={form} report={report} onRecord={record} />
-          ))}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Attach my position to this report"
+            testID="record-attach-position"
+            disabled={!canAttach}
+            onPress={attach}
+            style={({ pressed }) => [
+              styles.secondary,
+              controlSurface(scheme),
+              pressed && styles.pressed,
+              !canAttach && styles.disabled,
+            ]}>
+            <Text style={[styles.secondaryLabel, { color: theme.text }]}>
+              {canAttach ? 'Attach my position' : 'No position fix yet'}
+            </Text>
+          </Pressable>
+
+          <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+            Responder capture
+          </Text>
+
+          <View style={styles.list}>
+            {forms.map((form) => (
+              <FormRow key={form.id} form={form} report={report} />
+            ))}
+          </View>
 
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Discard this report"
             testID="record-discard"
             onPress={discard}
-            style={({ pressed }) => [
-              styles.secondary,
-              controlSurface(scheme),
-              pressed && styles.pressed,
-            ]}>
-            <Text style={[styles.secondaryLabel, { color: theme.textSecondary }]}>
+            style={({ pressed }) => [styles.discard, pressed && styles.pressed]}>
+            <Text style={[styles.discardLabel, { color: theme.textSecondary }]}>
               Discard this report
             </Text>
           </Pressable>
@@ -179,136 +166,78 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
   );
 }
 
-function FormSection({
-  form,
-  report,
-  onRecord,
-}: {
-  form: CaptureForm;
-  report: Report;
-  onRecord: (observation: Observation) => void;
-}) {
+/** `HH:MM`, local, because a report is read back in the room it was written in. */
+function clock(iso: string): string {
+  const at = new Date(iso);
+  return `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`;
+}
+
+/** The report itself, on the board's ink card: when it started, and where it is pinned to. */
+function ReportHero({ report }: { report: Report }) {
+  return (
+    <View testID="record-location" style={styles.hero}>
+      <Contour variant="hill" corner="top-right" tone="brand" size={180} />
+      <View style={styles.heroHead}>
+        <Text style={styles.heroLabel}>This report</Text>
+        <Text style={styles.heroMeta}>{`started ${clock(report.openedAt)}`}</Text>
+      </View>
+      {report.location ? (
+        <>
+          <Text style={styles.heroValue}>
+            {`${report.location.coordinates.latitude.toFixed(5)}, ${report.location.coordinates.longitude.toFixed(5)}`}
+          </Text>
+          <Text style={styles.heroMeta}>
+            {`Recorded ${clock(report.location.sampledAt)} — where the incident was, not where you are now.`}
+          </Text>
+        </>
+      ) : (
+        <Text style={styles.heroMeta}>No position attached to this report yet.</Text>
+      )}
+    </View>
+  );
+}
+
+/** One form in the index: what it is, and an honest progress bar with its count. */
+function FormRow({ form, report }: { form: CaptureForm; report: Report }) {
   const theme = useTheme();
   const answered = answeredCount(
     report,
     form.fields.map((field) => field.id),
   );
+  const fraction = form.fields.length === 0 ? 0 : answered / form.fields.length;
 
   return (
-    <Card testID={`record-form-${form.id}`}>
-      <View style={styles.header}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${form.mnemonic} — ${form.purpose}`}
+      accessibilityHint={`${String(answered)} of ${String(form.fields.length)} recorded`}
+      testID={`record-form-${form.id}`}
+      onPress={() => router.push({ pathname: '/field/[form]', params: { form: form.id } })}
+      style={({ pressed }) => [
+        styles.formRow,
+        { borderColor: theme.border },
+        pressed && styles.pressed,
+      ]}>
+      <View style={styles.formRowHead}>
         <Text
           testID={`record-mnemonic-${form.id}`}
           style={[styles.mnemonic, { color: theme.text }]}>
           {form.mnemonic}
         </Text>
-        <Text style={[styles.tag, { color: theme.textSecondary, borderColor: theme.border }]}>
-          {form.whatItDescribes === 'scene' ? 'the scene' : 'the casualty'}
+        <Text style={[styles.count, { color: theme.textSecondary }]}>
+          {`${String(answered)}/${String(form.fields.length)}`}
         </Text>
       </View>
-      <Text style={[styles.body, { color: theme.textSecondary }]}>{form.purpose}</Text>
-      <Text style={[styles.note, { color: theme.textSecondary }]}>
-        {`${answered} of ${form.fields.length} recorded`}
-      </Text>
-
-      {form.fields.map((field) => (
-        <FieldControl key={field.id} field={field} report={report} onRecord={onRecord} />
-      ))}
-    </Card>
-  );
-}
-
-function FieldControl({
-  field,
-  report,
-  onRecord,
-}: {
-  field: CaptureField;
-  report: Report;
-  onRecord: (observation: Observation) => void;
-}) {
-  const theme = useTheme();
-  const value = observationFor(report, field.id)?.value;
-
-  function set(next: ObservationValue) {
-    onRecord({
-      formId: formForField(field.id)?.id ?? '',
-      fieldId: field.id,
-      value: next,
-      recordedAt: new Date().toISOString(),
-    });
-  }
-
-  const isChoice = field.kind === 'choice' || field.kind === 'boolean';
-  const options = field.kind === 'boolean' ? ['Yes', 'No'] : (field.options ?? []);
-
-  return (
-    <View testID={`record-field-${field.id}`} style={styles.field}>
-      <Text style={[styles.fieldLabel, { color: theme.text }]}>
-        {field.label}
-        {field.unit ? ` (${field.unit})` : ''}
-      </Text>
-      {field.needsEquipment ? (
-        <Text style={[styles.note, { color: theme.textSecondary }]}>
-          Needs equipment you may not have.
-        </Text>
-      ) : null}
-
-      {isChoice ? (
-        <View style={styles.chips}>
-          {options.map((option, index) => {
-            const optionValue: ObservationValue =
-              field.kind === 'boolean' ? option === 'Yes' : option;
-            const selected = value === optionValue;
-
-            return (
-              <Pressable
-                key={option}
-                accessibilityRole="button"
-                accessibilityLabel={`${field.label}: ${option}`}
-                accessibilityState={{ selected }}
-                testID={`record-choice-${field.id}-${index}`}
-                onPress={() => set(optionValue)}
-                style={({ pressed }) => [
-                  styles.chip,
-                  {
-                    borderColor: selected ? 'transparent' : theme.border,
-                    backgroundColor: selected ? theme.brand : 'transparent',
-                  },
-                  pressed && styles.pressed,
-                ]}>
-                <Text style={[styles.chipLabel, { color: selected ? theme.brandInk : theme.text }]}>
-                  {option}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      ) : (
-        <TextInput
-          testID={`record-input-${field.id}`}
-          accessibilityLabel={field.label}
-          value={value === undefined ? '' : String(value)}
-          onChangeText={(text) => {
-            if (field.kind !== 'number') {
-              set(text);
-              return;
-            }
-            const parsed = Number(text);
-            set(text.trim() === '' || Number.isNaN(parsed) ? '' : parsed);
-          }}
-          keyboardType={field.kind === 'number' ? 'numeric' : 'default'}
-          multiline={field.kind === 'text'}
-          placeholder={field.kind === 'time' ? 'e.g. 14:20' : ''}
-          placeholderTextColor={theme.textSecondary}
-          style={[
-            styles.input,
-            { color: theme.text, borderColor: theme.border, backgroundColor: theme.background },
-            field.kind === 'text' && styles.inputTall,
-          ]}
+      <Text style={[styles.formPurpose, { color: theme.textSecondary }]}>{form.purpose}</Text>
+      <View
+        style={[styles.track, { backgroundColor: theme.backgroundSelected }]}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants">
+        <View
+          style={[styles.fill, { backgroundColor: theme.brand, width: `${fraction * 100}%` }]}
         />
-      )}
-    </View>
+      </View>
+    </Pressable>
   );
 }
 
@@ -317,35 +246,33 @@ const styles = StyleSheet.create({
   cardTitle: { ...Type.title },
   body: { ...Type.body },
   note: { ...Type.note },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  sectionLabel: { ...Type.label },
+  list: { gap: Spacing.three },
+  hero: {
+    backgroundColor: Colors.light.text,
+    borderRadius: Radius.xl,
+    padding: Spacing.four,
+    gap: Spacing.two,
+    overflow: 'hidden',
+  },
+  heroHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  heroLabel: { ...Type.label, color: Colors.dark.brand },
+  heroMeta: { ...Type.machine, fontSize: 12, color: 'rgba(241, 239, 232, 0.72)' },
+  heroValue: { ...Type.machine, fontSize: 24, color: Colors.dark.text },
+  formRow: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: Radius.md,
+    padding: Spacing.three,
+    gap: Spacing.two,
+  },
+  formRowHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
   mnemonic: { ...Type.title, fontSize: 20, letterSpacing: 0.5 },
-  tag: {
-    ...Type.note,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: Radius.sm,
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.half,
-  },
-  field: { gap: Spacing.one, marginTop: Spacing.two },
-  fieldLabel: { ...Type.title },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
-  chip: {
-    minHeight: MinTarget,
-    justifyContent: 'center',
-    borderRadius: Radius.pill,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: Spacing.three,
-  },
-  chipLabel: { ...Type.body },
-  input: {
-    minHeight: MinTarget,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: Radius.sm,
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.two,
-    ...Type.body,
-  },
-  inputTall: { minHeight: 80, textAlignVertical: 'top' },
+  count: { ...Type.machine, fontSize: 13 },
+  formPurpose: { ...Type.note },
+  track: { height: 6, borderRadius: Radius.pill, overflow: 'hidden' },
+  fill: { height: '100%', borderRadius: Radius.pill },
+  discard: { minHeight: MinTarget, justifyContent: 'center' },
+  discardLabel: { ...Type.title },
   primary: {
     minHeight: MinTarget,
     borderRadius: Radius.md,

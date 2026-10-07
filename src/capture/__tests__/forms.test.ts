@@ -1,6 +1,12 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { CAPTURE_FORMS, findCaptureField, findCaptureForm, formForField } from '../forms';
+import {
+  CAPTURE_FORMS,
+  findCaptureField,
+  findCaptureForm,
+  formForField,
+  stepFields,
+} from '../forms';
 
 describe('the capture forms', () => {
   it('covers the four mnemonics the plan names', () => {
@@ -111,5 +117,38 @@ describe('the line between recording and advising', () => {
 
   it('has a guard that would notice, so the check above is not vacuous', () => {
     expect(wordings().length).toBeGreaterThan(20);
+  });
+});
+
+/**
+ * The steps are the form's own structure, so a field that falls out of every step is one the
+ * renderer can never show, and a field listed twice is one asked twice.
+ */
+describe('the named steps', () => {
+  it('puts every field in exactly one step, and invents none', () => {
+    for (const form of CAPTURE_FORMS) {
+      const listed = form.steps.flatMap((step) => step.fieldIds);
+      const fieldIds = form.fields.map((field) => field.id);
+
+      expect(new Set(listed).size).toBe(listed.length);
+      expect([...listed].sort()).toEqual([...fieldIds].sort());
+    }
+  });
+
+  it('resolves every step to real fields', () => {
+    for (const form of CAPTURE_FORMS) {
+      for (const step of form.steps) {
+        expect(stepFields(form, step).length).toBe(step.fieldIds.length);
+      }
+    }
+  });
+
+  it('names every step with a letter and a label', () => {
+    for (const form of CAPTURE_FORMS) {
+      for (const step of form.steps) {
+        expect(step.letter.trim()).not.toBe('');
+        expect(step.label.trim()).not.toBe('');
+      }
+    }
   });
 });
