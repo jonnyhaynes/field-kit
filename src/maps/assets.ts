@@ -24,13 +24,16 @@ import glyphMedium0 from '../../assets/maps/glyphs/noto-sans-medium/0-255.pbf';
 import glyphMedium256 from '../../assets/maps/glyphs/noto-sans-medium/256-511.pbf';
 import glyphRegular0 from '../../assets/maps/glyphs/noto-sans-regular/0-255.pbf';
 import glyphRegular256 from '../../assets/maps/glyphs/noto-sans-regular/256-511.pbf';
-import spriteDark2x from '../../assets/maps/sprites/dark/sprite-2x.png';
+// The sprite images carry a `.bin` tail so Metro bundles them as generic assets rather than
+// Android drawables — see `metro.config.js` and `assets.d.ts`. The destination below keeps the
+// name MapLibre actually asks for.
+import spriteDark2x from '../../assets/maps/sprites/dark/sprite-2x.png.bin';
 import spriteDark2xJson from '../../assets/maps/sprites/dark/sprite-2x.json';
-import spriteDarkPng from '../../assets/maps/sprites/dark/sprite.png';
+import spriteDarkPng from '../../assets/maps/sprites/dark/sprite.png.bin';
 import spriteDark from '../../assets/maps/sprites/dark/sprite.json';
-import spriteLight2x from '../../assets/maps/sprites/light/sprite-2x.png';
+import spriteLight2x from '../../assets/maps/sprites/light/sprite-2x.png.bin';
 import spriteLight2xJson from '../../assets/maps/sprites/light/sprite-2x.json';
-import spriteLightPng from '../../assets/maps/sprites/light/sprite.png';
+import spriteLightPng from '../../assets/maps/sprites/light/sprite.png.bin';
 import spriteLight from '../../assets/maps/sprites/light/sprite.json';
 import { mapsRoot } from './paths';
 import { mapAssetUrls, type MapAssetUrls } from './urls';
@@ -87,6 +90,19 @@ function fileIn(root: Directory, path: string): File {
   return new File(root, ...path.split('/'));
 }
 
+/**
+ * The native copy wants a URI with a scheme.
+ *
+ * On Android an asset embedded in the APK comes back from `expo-asset` as a bare absolute path
+ * (`/data/user/0/…/ExponentAsset-….pmtiles`), and handing that straight to `File.copy` fails with
+ * *"URI is not absolute"* — which is why the map prepared on iOS and never on Android. On iOS the
+ * same value already carries `file://`, so this only rewrites when a scheme is missing.
+ */
+function asFileUri(path: string): string {
+  if (/^[a-z][a-z0-9+.-]*:/i.test(path)) return path;
+  return path.startsWith('/') ? `file://${path}` : `file:///${path}`;
+}
+
 function ensureParent(file: File): void {
   const parent = file.parentDirectory;
   if (!parent.exists) parent.create({ intermediates: true });
@@ -105,10 +121,12 @@ async function layDownAssets(root: Directory): Promise<void> {
 
     const asset = Asset.fromModule(module);
     await asset.downloadAsync();
-    if (!asset.localUri) throw new Error(`bundled map asset ${path} has no local file`);
+
+    const source = asset.localUri ?? asset.uri;
+    if (!source) throw new Error(`bundled map asset ${path} has no local file`);
 
     ensureParent(destination);
-    await new File(asset.localUri).copy(destination);
+    await new File(asFileUri(source)).copy(destination);
   }
 
   for (const flavour of ['light', 'dark'] as const) {

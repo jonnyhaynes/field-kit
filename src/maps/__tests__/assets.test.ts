@@ -41,7 +41,9 @@ function iconImages(node: unknown, found: string[] = []): string[] {
 
 describe('bundled sprite assets', () => {
   it.each(FLAVOURS)('ships both densities for the %s sprite', (flavour) => {
-    for (const file of ['sprite.json', 'sprite.png', 'sprite-2x.json', 'sprite-2x.png']) {
+    // The images carry a `.bin` tail so Metro bundles them as generic assets rather than Android
+    // drawables — see `metro.config.js`. The descriptor names are unchanged.
+    for (const file of ['sprite.json', 'sprite.png.bin', 'sprite-2x.json', 'sprite-2x.png.bin']) {
       expect(existsSync(join(REPO, 'assets/maps/sprites', flavour, file))).toBe(true);
     }
   });
