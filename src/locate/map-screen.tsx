@@ -4,11 +4,13 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { nearestAeds } from '@/aed';
 import { AedDatabaseProvider, useAedRecords } from '@/aed/database';
+import { formatDistance } from '@/aed/presentation';
 import { useAedFlags } from '@/aed/use-flags';
+import { cardinal, initialBearing } from '@/compass/heading';
 import { Card } from '@/components/card';
 import { Contour } from '@/components/contour';
 import { Screen } from '@/components/screen';
-import { MinTarget, Radius } from '@/constants/theme';
+import { MinTarget, Radius, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Type } from '@/constants/type';
 import { useTheme } from '@/hooks/use-theme';
@@ -139,6 +141,78 @@ function MapContent({
           tone={scheme === 'dark' ? 'brand' : 'ink'}
           size={150}
         />
+
+        {/* The board's top overlay: what the map is, and the way to more of it. */}
+        <View style={styles.mapTop} pointerEvents="box-none">
+          <View style={[styles.offlinePill, { backgroundColor: theme.backgroundElement }]}>
+            <Text style={[styles.offlinePillLabel, { color: theme.textSecondary }]}>
+              Offline · UK overview
+            </Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Region packs"
+            accessibilityHint="Download street detail for one area"
+            testID="map-regions-button"
+            onPress={() => router.push('/locate/regions')}
+            style={({ pressed }) => [
+              styles.mapTopButton,
+              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+              pressed && styles.pressed,
+            ]}>
+            <Text style={[styles.mapTopButtonLabel, { color: theme.text }]}>Region packs</Text>
+          </Pressable>
+        </View>
+
+        {/* The board's bottom sheet, bound to the nearest defibrillator — the one the bearing line
+            points at. It shows the figure and the way to act on it, and never claims it is verified. */}
+        {position.status === 'ready' && neighbours[0] ? (
+          <View
+            style={[
+              styles.sheet,
+              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+            ]}>
+            <View style={styles.sheetRow}>
+              <View style={[styles.sheetBadge, { backgroundColor: theme.glacier }]}>
+                <Text style={[styles.sheetBadgeLabel, { color: theme.brandInk }]}>1</Text>
+              </View>
+              <Text style={[styles.sheetValue, { color: theme.text }]}>
+                {`${formatDistance(neighbours[0].meters)} · ${bearingLabel(position.coordinates, neighbours[0].coordinates)}`}
+              </Text>
+            </View>
+            <Text style={[styles.sheetNote, { color: theme.textSecondary }]}>
+              Unverified — a defibrillator can be moved, removed, or locked away.
+            </Text>
+            <View style={styles.sheetActions}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Walk on a bearing"
+                testID="map-sheet-bearing"
+                onPress={onOpenCompass}
+                style={({ pressed }) => [
+                  styles.sheetPrimary,
+                  { backgroundColor: theme.brand },
+                  pressed && styles.pressed,
+                ]}>
+                <Text style={[styles.sheetPrimaryLabel, { color: theme.brandInk }]}>
+                  Walk on a bearing
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Defibrillator list"
+                testID="map-sheet-details"
+                onPress={() => router.push('/aed')}
+                style={({ pressed }) => [
+                  styles.sheetSecondary,
+                  { borderColor: theme.border },
+                  pressed && styles.pressed,
+                ]}>
+                <Text style={[styles.sheetSecondaryLabel, { color: theme.text }]}>Details</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
       </View>
 
       {outsideArchive ? (
@@ -234,6 +308,15 @@ function MapNotice({ title, body, testID }: { title: string; body: string; testI
   );
 }
 
+/** The walking bearing, as a compass reads it: `042° NE`. */
+function bearingLabel(
+  from: { latitude: number; longitude: number },
+  to: { latitude: number; longitude: number },
+): string {
+  const degrees = initialBearing(from, to);
+  return `${String(Math.round(degrees)).padStart(3, '0')}° ${cardinal(degrees)}`;
+}
+
 const styles = StyleSheet.create({
   title: { ...Type.display },
   mapFrame: {
@@ -243,6 +326,68 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },
+  mapTop: {
+    position: 'absolute',
+    top: Spacing.three,
+    left: Spacing.three,
+    right: Spacing.three,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  offlinePill: {
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.one,
+    borderRadius: Radius.pill,
+  },
+  offlinePillLabel: { ...Type.note },
+  mapTopButton: {
+    minHeight: 36,
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.three,
+    borderRadius: Radius.pill,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  mapTopButtonLabel: { ...Type.title, fontSize: 14 },
+  sheet: {
+    position: 'absolute',
+    left: Spacing.three,
+    right: Spacing.three,
+    bottom: Spacing.three,
+    borderRadius: Radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: Spacing.three,
+    gap: Spacing.two,
+  },
+  sheetRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  sheetBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: Radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetBadgeLabel: { ...Type.machineStrong, fontSize: 16 },
+  sheetValue: { ...Type.machine, fontSize: 20 },
+  sheetNote: { ...Type.note },
+  sheetActions: { flexDirection: 'row', gap: Spacing.two },
+  sheetPrimary: {
+    flex: 1,
+    minHeight: MinTarget,
+    borderRadius: Radius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sheetPrimaryLabel: { ...Type.title },
+  sheetSecondary: {
+    minHeight: MinTarget,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    borderRadius: Radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  sheetSecondaryLabel: { ...Type.title },
   body: { ...Type.body },
   attribution: { ...Type.note },
   link: { minHeight: MinTarget, justifyContent: 'center' },

@@ -301,3 +301,40 @@ Reduce Motion — all of which §7 requires and none of which a type-check or a 
 **Also worth doing before this is done:** the umbrella plan still reads "draft — awaiting approval"
 although slices 0–3 shipped against it (§1), and issues #39 and #41 look landed but are still open.
 
+---
+
+## 12. The fidelity pass
+
+The first cut of §11 **used the board as a steer rather than implementing it**. This pass closes that
+gap. It is one branch, and each item below is a board element that was previously approximated or
+skipped.
+
+| Screen | What the board draws, and now ships |
+| --- | --- |
+| **Capture form** | The tabs **stand down** and Previous / Next / 999 take their place in one bar (the beacon is now shared from `call-beacon.tsx`). Number fields carry their **unit inline**. |
+| **Act** | The two tiles are **live readouts** — an OS grid reference and the nearest defibrillator with its bearing — not links with static hints. |
+| **AED** | "Show on a map" moves into the **hero**, beside "Walk on a bearing"; the footer goes, because the board's AED screen has none — Settings is reached from the More tab. |
+| **CPR** | The defibrillator button carries the **live `nearest <distance> · unverified`**, read without prompting for location. |
+| **Send** | The **channel grid** moves into the body, and the summary becomes the board's **"What has happened"** card — Position, Started, and each started form's progress with an Edit link. |
+| **More** | The board's **three section labels** (Responder tools / Report to OpenStreetMap / On this phone). |
+| **Field** | The row for the form **in progress** is filled hi-vis and says so. |
+| **Map** | A **top overlay** (offline pill + Region-packs button), a **dashed bearing line** to the nearest defibrillator, and the **bottom sheet** bound to it — badge, distance · bearing, "Walk on a bearing", "Details". |
+
+**Route change, and why.** The capture form moved from `/field/[form]` to `/field/form?form=<id>`: a
+file whose name contains brackets cannot be read or edited by path by the tooling this repo is built
+with, which makes it a maintenance hazard. One file still serves all four forms.
+
+**Two board elements are still not built, and both are named rather than hidden:**
+
+1. **Numbered map markers.** The markers are glacier circles, not numbers; MapLibre text layers need a
+   glyph stack the bundled archive may not carry, and that cannot be checked without a device. The
+   numbers live on the sheet and in the AED list, which is where a responder reads them.
+2. **Tap-to-select a marker.** The sheet is bound to the **nearest** defibrillator (the board's marker
+   "1"), not to a tapped one. Marker hit-testing is the one genuinely new interaction and needs a
+   device to verify; shipping it blind would be a guess.
+
+**Verification.** `typecheck`, `lint`, `format:check`, `test` (561) and `expo export` are green. The
+**flows are updated but unrun** — five of them were rerouted from the removed `aed-settings` selector
+to the More tab, and the capture flow now opens the form and steps through it. Not verified, and it
+needs hardware: everything visual above, and the two items just named.
+
