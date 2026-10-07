@@ -10,7 +10,7 @@ import { Screen } from '@/components/screen';
 import { ScreenHeader } from '@/components/screen-header';
 import { WriteToTag } from '@/components/tag-controls';
 import { brandSurface, controlSurface, hairline } from '@/constants/surface';
-import { MinTarget, Radius, Spacing } from '@/constants/theme';
+import { MinTarget, Radius, Spacing, Surfaces } from '@/constants/theme';
 import { Type } from '@/constants/type';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
@@ -119,16 +119,18 @@ export default function SendScreen() {
               {/*
                 White on black, always — not the theme. A code drawn in the app's dark palette is a
                 code no camera can read, and the one place this screen cannot compromise is being
-                scannable.
+                scannable. The board sets it on its own white plate inside the stone card.
               */}
-              <QRCode
-                value={handover.code}
-                size={240}
-                color="#000000"
-                backgroundColor="#ffffff"
-                ecl="M"
-              />
-              {/* Fixed ink, not the theme: this plate is white in both schemes, so a theme colour
+              <View style={styles.codePlate}>
+                <QRCode
+                  value={handover.code}
+                  size={240}
+                  color="#000000"
+                  backgroundColor="#ffffff"
+                  ecl="M"
+                />
+              </View>
+              {/* Fixed ink, not the theme: this card is stone in both schemes, so a theme colour
                   would be unreadable here in dark mode — the same reason the code is fixed. */}
               <Text style={styles.codeCaption}>Hold it up — another phone scans this</Text>
               <Text style={styles.codeCaptionSmall}>
@@ -321,9 +323,16 @@ const styles = StyleSheet.create({
     ...Type.body,
     textAlignVertical: 'top',
   },
+  // The board's card: stone in both schemes, with the code on its own white plate. Fixed colours,
+  // not the theme — this is the one surface on the screen that has to stay light to be scannable.
   codeCard: {
     alignItems: 'center',
-    gap: Spacing.two,
+    gap: Spacing.three,
+    padding: Spacing.four,
+    borderRadius: 30,
+    backgroundColor: Surfaces.light.canvas,
+  },
+  codePlate: {
     padding: Spacing.three,
     borderRadius: Radius.md,
     backgroundColor: '#ffffff',

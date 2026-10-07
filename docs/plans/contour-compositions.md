@@ -373,9 +373,9 @@ horizontal row with an **ink** progress fill.
 - **Map.** The map should be full-bleed (no framed card); the offline pill is mono on `#0F1A16` with a
   ring; the Region-packs control is a 48px **icon-only** square; the bearing line is **hi-vis**, 2px,
   dash 4/5; the sheet is radius 28 on `#0F1A16`; the user marker (concentric hi-vis ring) is missing.
-- **Send.** The QR card is stone (`#F1EFE8`) with an inner white plate, radius 30; the summary card is
-  radius 24 with a ruled header row, label/values at 14/14.5, and a single "Forms" middot row rather
-  than per-form rows.
+- **Send — the QR card, the "What has happened" card and the four-up channel grid now match** (the
+  card is stone with an inner white plate at radius 30). Still open, and small: the summary card's
+  **ruled header row**, and label/value sizes at 14/14.5 rather than 13/15.
 - **More / Regions.** Card radius 24; the toggle row leads the card, not the note; the board's custom
   switch shape; the OSM entry is a 58px **row**, not a switch; the version footer carries the mark and
   the guidance edition; Region packs wants a **DOWNLOADING** hero, a 14px progress bar on `#0F1A16`
