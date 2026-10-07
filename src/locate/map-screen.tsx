@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { Suspense, useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Svg, { G, Path } from 'react-native-svg';
 
 import { nearestAeds } from '@/aed';
 import { AedDatabaseProvider, useAedRecords } from '@/aed/database';
@@ -10,7 +11,7 @@ import { cardinal, initialBearing } from '@/compass/heading';
 import { Card } from '@/components/card';
 import { Contour } from '@/components/contour';
 import { Screen } from '@/components/screen';
-import { MinTarget, Radius, Spacing } from '@/constants/theme';
+import { Colors, MinTarget, Radius, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Type } from '@/constants/type';
 import { useTheme } from '@/hooks/use-theme';
@@ -126,6 +127,10 @@ function MapContent({
           neighbours={neighbours}
           markerColor={theme.glacier}
           markerRingColor={theme.text}
+          bearingColor={theme.brand}
+          showUser={position.status === 'ready' && !outsideArchive}
+          userColor={theme.brand}
+          userInk={Colors[scheme].background}
         />
         {/* The identity's contour language over the real map, in two corners. Decoration: it is
             hidden from the accessibility tree and clipped by the frame. */}
@@ -142,9 +147,14 @@ function MapContent({
           size={150}
         />
 
-        {/* The board's top overlay: what the map is, and the way to more of it. */}
+        {/* The board's top overlay: what the map is, and the way to more of it. The pill is the
+            map's own ink surface in mono, and the region control is icon-only. */}
         <View style={styles.mapTop} pointerEvents="box-none">
-          <View style={[styles.offlinePill, { backgroundColor: theme.backgroundElement }]}>
+          <View
+            style={[
+              styles.offlinePill,
+              { backgroundColor: Colors[scheme].background, borderColor: Colors[scheme].border },
+            ]}>
             <Text style={[styles.offlinePillLabel, { color: theme.textSecondary }]}>
               Offline · UK overview
             </Text>
@@ -157,10 +167,10 @@ function MapContent({
             onPress={() => router.push('/locate/regions')}
             style={({ pressed }) => [
               styles.mapTopButton,
-              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+              { backgroundColor: Colors[scheme].background, borderColor: Colors[scheme].border },
               pressed && styles.pressed,
             ]}>
-            <Text style={[styles.mapTopButtonLabel, { color: theme.text }]}>Region packs</Text>
+            <LayersGlyph color={theme.text} />
           </Pressable>
         </View>
 
@@ -317,6 +327,18 @@ function bearingLabel(
   return `${String(Math.round(degrees)).padStart(3, '0')}° ${cardinal(degrees)}`;
 }
 
+/** The stacked-layers mark for the region control, drawn rather than imported. */
+function LayersGlyph({ color }: { color: string }) {
+  return (
+    <Svg width={22} height={22} viewBox="0 0 24 24">
+      <G fill="none" stroke={color} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round">
+        <Path d="M12 3l9 5-9 5-9-5 9-5z" />
+        <Path d="M3 13l9 5 9-5" />
+      </G>
+    </Svg>
+  );
+}
+
 const styles = StyleSheet.create({
   title: { ...Type.display },
   mapFrame: {
@@ -335,20 +357,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  // The board's pill: the map's own ink surface, in mono, with a hairline ring.
   offlinePill: {
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.one,
-    borderRadius: Radius.pill,
-  },
-  offlinePillLabel: { ...Type.note },
-  mapTopButton: {
-    minHeight: 36,
+    height: 40,
     justifyContent: 'center',
-    paddingHorizontal: Spacing.three,
-    borderRadius: Radius.pill,
+    paddingHorizontal: Spacing.three + Spacing.half,
+    borderRadius: 20,
     borderWidth: StyleSheet.hairlineWidth,
   },
-  mapTopButtonLabel: { ...Type.title, fontSize: 14 },
+  offlinePillLabel: { ...Type.machine, fontSize: 12.5 },
+  // The board's region control is a 48px icon-only square, not a labelled pill.
+  mapTopButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+  },
   sheet: {
     position: 'absolute',
     left: Spacing.three,

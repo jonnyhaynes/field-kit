@@ -370,9 +370,12 @@ horizontal row with an **ink** progress fill.
   text/number. *(Those need a data change.)*
 - **Field — the row, its fill and the report chip now match.** Still open: the Send button is inline
   ink on the board, not a hi-vis footer.
-- **Map.** The map should be full-bleed (no framed card); the offline pill is mono on `#0F1A16` with a
-  ring; the Region-packs control is a 48px **icon-only** square; the bearing line is **hi-vis**, 2px,
-  dash 4/5; the sheet is radius 28 on `#0F1A16`; the user marker (concentric hi-vis ring) is missing.
+- **Map — the offline pill (mono on the map's own ink, ringed), the 48px icon-only Region-packs
+  control, the hi-vis 2px/4-5 bearing line and the concentric "you are here" marker now match.** The
+  pill and the control are **verified on the emulator**; the line and the marker are **not** — the
+  headless emulator never returns a GPS fix, so nothing that needs a position could be exercised.
+  Still open: **full-bleed** (the map is still a framed card, because the four link rows below it are
+  ours, not the board's, and moving it is the extras decision below), and the sheet's radius/fill.
 - **Send — the QR card, the "What has happened" card and the four-up channel grid now match** (the
   card is stone with an inner white plate at radius 30). Still open, and small: the summary card's
   **ruled header row**, and label/value sizes at 14/14.5 rather than 13/15.
