@@ -359,10 +359,9 @@ horizontal row with an **ink** progress fill.
   Bricolage **700 / 20*** — so `Type.title` is right and must not be changed; the agent summary that
   claimed "800 everywhere" was wrong. What remains is that the board's CTA labels are Bricolage **800**
   at ~14–18, where the code uses `Type.title` 700/20.
-- **AED.** Non-hero badges should be control-filled with glacier digits (15px), list distances 17px,
-  no bearing on list rows, the flag link hero-only in `#A9BDB3` not glacier, the Unverified banner a
-  single glacier row, "Show on a map" **hi-vis** not glacier, and "How to use an AED" an outlined
-  button rather than a `ContentSlot`. *(Site name / access rows need data.)*
+- **AED — badges, distances, the flag and "Show on a map" now match.** Still open: the Unverified
+  banner as a single glacier row (it is two paragraphs in a column), and "How to use an AED" as an
+  outlined button rather than a `ContentSlot`. *(Site name / access rows need data.)*
 - **Capture form — labels, inputs, ring and note now match.** Still open: the footer should be the
   board's **ink pill** (Previous / Next / 999), not a white panel; and the field *kinds* the board
   draws as text/number. *(Those need a data change.)*

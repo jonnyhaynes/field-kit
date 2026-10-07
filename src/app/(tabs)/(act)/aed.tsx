@@ -15,7 +15,7 @@ import { Screen } from '@/components/screen';
 import { ScreenHeader } from '@/components/screen-header';
 import { cardinal, initialBearing } from '@/compass/heading';
 import { Radius, Spacing } from '@/constants/theme';
-import { Type } from '@/constants/type';
+import { FontFamily, Type } from '@/constants/type';
 import { GUIDANCE_IDS } from '@/content';
 import { useTheme } from '@/hooks/use-theme';
 import { useCurrentPosition } from '@/location/current-position';
@@ -248,20 +248,39 @@ function AedRow({
       {hero ? <Contour variant="hill" corner="top-right" tone="glacier" size={180} /> : null}
 
       <View style={styles.row}>
-        <View style={[styles.badge, { backgroundColor: theme.glacier }]}>
-          <Text style={[styles.badgeNumber, { color: theme.brandInk }]}>{number}</Text>
+        {/* The board's badge: the hero is a glacier plate at 40, the rows are control plates at 34
+            with the digit in glacier. */}
+        <View
+          style={[
+            styles.badge,
+            hero ? styles.badgeHero : styles.badgeRow,
+            { backgroundColor: hero ? theme.glacier : theme.backgroundSelected },
+          ]}>
+          <Text
+            style={[
+              hero ? styles.badgeNumberHero : styles.badgeNumberRow,
+              { color: hero ? theme.brandInk : theme.glacier },
+            ]}>
+            {number}
+          </Text>
         </View>
-        <Text style={[styles.distance, { color: theme.text }]}>
+        <Text style={[hero ? styles.distanceHero : styles.distanceRow, { color: theme.text }]}>
           {formatDistance(neighbour.meters)}
         </Text>
-        <Text style={[styles.bearing, { color: theme.textSecondary }]}>
-          {bearingText(from, neighbour.coordinates)}
-        </Text>
+        {hero ? (
+          <Text style={[styles.bearing, { color: theme.textSecondary }]}>
+            {bearingText(from, neighbour.coordinates)}
+          </Text>
+        ) : (
+          <Text style={[styles.unverified, { color: theme.glacierText }]}>Unverified</Text>
+        )}
       </View>
 
-      <Text style={[styles.note, { color: theme.textSecondary }]}>
-        {describeVerification(neighbour.verification)}
-      </Text>
+      {hero ? (
+        <Text style={[styles.note, { color: theme.textSecondary }]}>
+          {describeVerification(neighbour.verification)}
+        </Text>
+      ) : null}
 
       {hero ? (
         <View style={styles.heroAction}>
@@ -269,7 +288,7 @@ function AedRow({
             <ActionButton
               label="Show on a map"
               hint="Offline — works with no signal"
-              variant="glacier"
+              variant="signal"
               testID="aed-map"
               onPress={() => router.push('/locate')}
             />
@@ -285,17 +304,19 @@ function AedRow({
         </View>
       ) : null}
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`Flag the defibrillator ${formatDistance(neighbour.meters)} away as inaccurate`}
-        accessibilityHint="Hides it from this device's list, and queues a report you can review"
-        testID={`aed-flag-${index}`}
-        onPress={() => onFlag(neighbour)}
-        style={({ pressed }) => [styles.flag, pressed && styles.pressed]}>
-        {/* Quiet and underlined, not a filled chip: flagging is a correction, not an action.
-            Glacier, not red — with the beacon permanently red, no other control may be. */}
-        <Text style={[styles.flagLabel, { color: theme.glacierText }]}>Flag as inaccurate</Text>
-      </Pressable>
+      {/* The flag is the hero's — the board draws it once, for the nearest. */}
+      {hero ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Flag the defibrillator ${formatDistance(neighbour.meters)} away as inaccurate`}
+          accessibilityHint="Hides it from this device's list, and queues a report you can review"
+          testID={`aed-flag-${index}`}
+          onPress={() => onFlag(neighbour)}
+          style={({ pressed }) => [styles.flag, pressed && styles.pressed]}>
+          {/* Quiet and underlined. Muted, not glacier, and never red — the beacon is the only red. */}
+          <Text style={[styles.flagLabel, { color: theme.textSecondary }]}>Flag as inaccurate</Text>
+        </Pressable>
+      ) : null}
     </Card>
   );
 }
@@ -316,20 +337,24 @@ const styles = StyleSheet.create({
   unverifiedLabel: { ...Type.label, letterSpacing: 0.8 },
   heroCard: { overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
-  badge: {
-    width: 36,
-    height: 36,
-    borderRadius: Radius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeNumber: { ...Type.machineStrong, fontSize: 18 },
-  distance: { ...Type.machine, fontSize: 30, letterSpacing: -0.5 },
+  badge: { alignItems: 'center', justifyContent: 'center' },
+  badgeHero: { width: 40, height: 40, borderRadius: 14 },
+  badgeRow: { width: 34, height: 34, borderRadius: 12 },
+  badgeNumberHero: { ...Type.machineStrong, fontSize: 18 },
+  badgeNumberRow: { ...Type.machineStrong, fontSize: 15 },
+  distanceHero: { ...Type.machine, fontSize: 30, letterSpacing: -0.6 },
+  distanceRow: { ...Type.machine, fontSize: 17 },
   bearing: { ...Type.machine, fontSize: 15, marginLeft: 'auto' },
+  unverified: { ...Type.machine, fontSize: 13, marginLeft: 'auto' },
   note: { ...Type.note },
   heroAction: { marginTop: Spacing.one, flexDirection: 'row', gap: Spacing.two },
   heroButton: { flex: 1 },
   flag: { alignSelf: 'flex-start', minHeight: 38, justifyContent: 'center' },
   pressed: { opacity: 0.7 },
-  flagLabel: { ...Type.title, fontSize: 14, textDecorationLine: 'underline' },
+  flagLabel: {
+    ...Type.body,
+    fontSize: 13,
+    fontFamily: FontFamily.textStrong,
+    textDecorationLine: 'underline',
+  },
 });
