@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { hairline } from '@/constants/surface';
-import { Spacing, Surfaces } from '@/constants/theme';
+import { Surfaces } from '@/constants/theme';
 import { Type } from '@/constants/type';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
@@ -77,7 +77,9 @@ function Chevron({ color }: { color: string }) {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  // The board's header gap is 12, and the 16 it started at squeezed the title into an ellipsis
+  // ("Record inc…") on the screens that carry a chip.
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   back: {
     width: 48,
     height: 48,

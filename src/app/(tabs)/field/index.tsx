@@ -42,7 +42,7 @@ function RefusedCapture() {
 
   return (
     <Screen testID="record-screen" withTopInset>
-      <ScreenHeader title="Record incident" titleSize={29} />
+      <ScreenHeader title="Record incident" titleSize={27} />
       <Card testID="record-refused">
         <Text style={[styles.cardTitle, { color: theme.text }]}>Responder capture is off</Text>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
@@ -95,11 +95,16 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
           </Pressable>
         ) : null
       }>
-      <ScreenHeader
-        title="Record incident"
-        titleSize={29}
-        right={report ? <ReportChip /> : undefined}
-      />
+      <ScreenHeader title="Record incident" titleSize={27} />
+
+      {/* The board puts "Report open" in the header row beside the title, but at these sizes that
+          row cannot hold both on a 390pt screen — the title truncated to "Record incid…". The chip
+          keeps its meaning and moves to the line below, right-aligned. */}
+      {report ? (
+        <View style={styles.statusRow}>
+          <ReportChip />
+        </View>
+      ) : null}
 
       {report ? (
         <>
@@ -252,8 +257,10 @@ function FormRow({ form, report, active }: { form: CaptureForm; report: Report; 
         <Text testID={`record-mnemonic-${form.id}`} style={[styles.mnemonic, { color: ink }]}>
           {form.mnemonic}
         </Text>
+        {/* The row's subtitle is the short `summary`, not the purpose sentence — the purpose is for
+            a screen with room for it, and truncating it here read as broken. */}
         <Text style={[styles.formPurpose, { color: subInk }]} numberOfLines={1}>
-          {active ? 'In progress' : form.purpose}
+          {active ? 'In progress' : form.summary}
         </Text>
       </View>
       <View
@@ -301,6 +308,7 @@ const styles = StyleSheet.create({
   },
   chipDot: { width: 8, height: 8, borderRadius: 4 },
   chipLabel: { ...Type.body, fontSize: 12.5, fontFamily: 'Figtree-SemiBold' },
+  statusRow: { flexDirection: 'row', justifyContent: 'flex-end' },
   cardTitle: { ...Type.title },
   body: { ...Type.body },
   note: { ...Type.note },

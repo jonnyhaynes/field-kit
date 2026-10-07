@@ -26,6 +26,14 @@ describe('the capture forms', () => {
     }
   });
 
+  it('gives every form a short summary, for the index row where a sentence truncates', () => {
+    for (const form of CAPTURE_FORMS) {
+      expect(form.summary.trim()).not.toBe('');
+      expect(form.summary.length).toBeLessThanOrEqual(16);
+      expect(form.summary.endsWith('.')).toBe(false);
+    }
+  });
+
   it('gives every form a purpose, so a responder knows which one they are in', () => {
     for (const form of CAPTURE_FORMS) {
       expect(form.purpose.trim()).not.toBe('');
