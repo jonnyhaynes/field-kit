@@ -362,9 +362,9 @@ horizontal row with an **ink** progress fill.
 - **AED — badges, distances, the flag and "Show on a map" now match.** Still open: the Unverified
   banner as a single glacier row (it is two paragraphs in a column), and "How to use an AED" as an
   outlined button rather than a `ContentSlot`. *(Site name / access rows need data.)*
-- **Capture form — labels, inputs, ring and note now match.** Still open: the footer should be the
-  board's **ink pill** (Previous / Next / 999), not a white panel; and the field *kinds* the board
-  draws as text/number. *(Those need a data change.)*
+- **Capture form — labels, inputs, ring, note and the ink action pill now match.** (`Screen` gained
+  `actionsBare` so a screen can supply its own bar.) Still open: the field *kinds* the board draws as
+  text/number. *(Those need a data change.)*
 - **Field — the row, its fill and the report chip now match.** Still open: the Send button is inline
   ink on the board, not a hi-vis footer.
 - **Map.** The map should be full-bleed (no framed card); the offline pill is mono on `#0F1A16` with a

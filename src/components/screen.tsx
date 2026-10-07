@@ -17,6 +17,11 @@ type Props = {
    * the bar and draws its own. Everywhere else the bar owns it, and padding here would double it.
    */
   withBottomInset?: boolean;
+  /**
+   * Draw `actions` as they are, with no footer panel or bevel — for a screen that supplies its own
+   * bar. The capture form uses it: its footer is the board's **ink pill**, not a panel.
+   */
+  actionsBare?: boolean;
   testID?: string;
 };
 
@@ -32,6 +37,7 @@ export function Screen({
   actions,
   withTopInset = false,
   withBottomInset = false,
+  actionsBare = false,
   testID,
 }: Props) {
   const scheme = useColorScheme();
@@ -57,12 +63,17 @@ export function Screen({
         </ScrollView>
 
         {actions ? (
-          // A raised level above the canvas: the footer catches light at its top edge rather than
-          // being separated from the scroll area by a bare rule.
-          <View style={[styles.footer, { backgroundColor: Surfaces[scheme].panel }]}>
-            <View pointerEvents="none" style={bevelStyle(Bevel[scheme], 0)} />
-            {actions}
-          </View>
+          actionsBare ? (
+            // The screen draws its own bar (the capture form's ink pill), so there is no panel here.
+            actions
+          ) : (
+            // A raised level above the canvas: the footer catches light at its top edge rather than
+            // being separated from the scroll area by a bare rule.
+            <View style={[styles.footer, { backgroundColor: Surfaces[scheme].panel }]}>
+              <View pointerEvents="none" style={bevelStyle(Bevel[scheme], 0)} />
+              {actions}
+            </View>
+          )
         ) : null}
       </SafeAreaView>
     </View>

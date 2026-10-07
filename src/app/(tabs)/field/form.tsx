@@ -15,7 +15,6 @@ import { CallBeacon } from '@/components/call-beacon';
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { ScreenHeader } from '@/components/screen-header';
-import { brandSurface, controlSurface } from '@/constants/surface';
 import { Colors, MinTarget, Radius, Spacing, Surfaces } from '@/constants/theme';
 import { FontFamily, Type } from '@/constants/type';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -77,6 +76,7 @@ function GuardedRefusal({ body }: { body: string }) {
 }
 
 function FocusedForm({ form }: { form: CaptureForm }) {
+  const scheme = useColorScheme();
   const theme = useTheme();
   const { report, record } = useCurrentReport();
   const [stepIndex, setStepIndex] = useState(0);
@@ -109,24 +109,28 @@ function FocusedForm({ form }: { form: CaptureForm }) {
       testID="capture-form-screen"
       withTopInset
       withBottomInset
+      actionsBare
       actions={
-        // The board's bar: Previous, the next step, and 999 — the tabs stood down for this screen.
-        <View style={styles.footerRow}>
-          {stepIndex > 0 ? (
+        // The board's bar: an ink pill carrying Previous, the next step and 999 — the tabs stood
+        // down for this screen, and this is what takes their place.
+        <View style={styles.barWrap}>
+          <View style={[styles.bar, { backgroundColor: Colors[scheme].bar }]}>
+            {stepIndex > 0 ? (
+              <FooterButton
+                label="Previous"
+                testID="capture-prev"
+                variant="onInk"
+                onPress={() => setStepIndex((index) => index - 1)}
+              />
+            ) : null}
             <FooterButton
-              label="Previous"
-              testID="capture-prev"
-              variant="secondary"
-              onPress={() => setStepIndex((index) => index - 1)}
+              label={isLast ? 'Done' : `Next: ${next.letter}`}
+              testID="capture-next"
+              variant="primary"
+              onPress={() => (isLast ? router.back() : setStepIndex((index) => index + 1))}
             />
-          ) : null}
-          <FooterButton
-            label={isLast ? 'Done' : `Next: ${next.letter}`}
-            testID="capture-next"
-            variant="primary"
-            onPress={() => (isLast ? router.back() : setStepIndex((index) => index + 1))}
-          />
-          <CallBeacon />
+            <CallBeacon />
+          </View>
         </View>
       }>
       <ScreenHeader
@@ -172,11 +176,16 @@ function FooterButton({
 }: {
   label: string;
   testID: string;
-  variant: 'primary' | 'secondary';
+  variant: 'primary' | 'onInk';
   onPress: () => void;
 }) {
-  const scheme = useColorScheme();
   const theme = useTheme();
+
+  // The bar is ink in both schemes, so these two are the only colours allowed on it: the hi-vis
+  // step forward, and a dark control for going back — both with light ink, because a theme colour
+  // would vanish into the pill.
+  const background = variant === 'primary' ? theme.brand : Surfaces.dark.control;
+  const ink = variant === 'primary' ? theme.brandInk : Colors.dark.text;
 
   return (
     <Pressable
@@ -186,16 +195,10 @@ function FooterButton({
       onPress={onPress}
       style={({ pressed }) => [
         styles.footerButton,
-        variant === 'primary' ? brandSurface(scheme) : controlSurface(scheme),
+        { backgroundColor: background },
         pressed && styles.pressed,
       ]}>
-      <Text
-        style={[
-          styles.footerLabel,
-          { color: variant === 'primary' ? theme.brandInk : theme.text },
-        ]}>
-        {label}
-      </Text>
+      <Text style={[styles.footerLabel, { color: ink }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -461,15 +464,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
   },
   equipmentLabel: { ...Type.note },
-  footerRow: { flexDirection: 'row', gap: Spacing.two },
+  // The board's bar: an ink pill with the same geometry as the tab bar it replaces.
+  barWrap: {
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.two,
+    paddingBottom: Spacing.two,
+  },
+  bar: {
+    height: 74,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderRadius: 37,
+    paddingLeft: Spacing.three,
+    paddingRight: Spacing.two + Spacing.half,
+  },
   footerButton: {
     flex: 1,
-    minHeight: MinTarget,
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
+    height: 52,
+    borderRadius: 26,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  footerLabel: { ...Type.title },
+  footerLabel: { ...Type.body, fontSize: 14.5, fontFamily: FontFamily.textStrong },
   pressed: { opacity: 0.85 },
 });
