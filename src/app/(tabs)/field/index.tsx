@@ -7,6 +7,7 @@ import { useDepth } from '@/capture/use-depth';
 import { Card } from '@/components/card';
 import { Contour } from '@/components/contour';
 import { Screen } from '@/components/screen';
+import { ScreenHeader } from '@/components/screen-header';
 import { brandSurface, controlSurface } from '@/constants/surface';
 import { Colors, MinTarget, Radius, Spacing } from '@/constants/theme';
 import { Type } from '@/constants/type';
@@ -40,8 +41,8 @@ function RefusedCapture() {
   const theme = useTheme();
 
   return (
-    <Screen testID="record-screen">
-      <Text style={[styles.title, { color: theme.text }]}>Record incident</Text>
+    <Screen testID="record-screen" withTopInset>
+      <ScreenHeader title="Record incident" titleSize={29} />
       <Card testID="record-refused">
         <Text style={[styles.cardTitle, { color: theme.text }]}>Responder capture is off</Text>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
@@ -75,6 +76,7 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
   return (
     <Screen
       testID="record-screen"
+      withTopInset
       actions={
         // Only once there is something to send. A Send button over an empty report would be a
         // promise the next screen cannot keep.
@@ -93,7 +95,11 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
           </Pressable>
         ) : null
       }>
-      <Text style={[styles.title, { color: theme.text }]}>Record incident</Text>
+      <ScreenHeader
+        title="Record incident"
+        titleSize={29}
+        right={report ? <ReportChip /> : undefined}
+      />
 
       {report ? (
         <>
@@ -269,8 +275,30 @@ function FormRow({ form, report, active }: { form: CaptureForm; report: Report; 
   );
 }
 
+/** The board's "Report open" chip, in the header row while a report exists. */
+function ReportChip() {
+  const theme = useTheme();
+
+  return (
+    <View style={[styles.chip, { backgroundColor: theme.backgroundSelected }]}>
+      <View style={[styles.chipDot, { backgroundColor: theme.brandText }]} />
+      <Text style={[styles.chipLabel, { color: theme.textSecondary }]}>Report open</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   title: { ...Type.display },
+  chip: {
+    height: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    borderRadius: 16,
+  },
+  chipDot: { width: 8, height: 8, borderRadius: 4 },
+  chipLabel: { ...Type.body, fontSize: 12.5, fontFamily: 'Figtree-SemiBold' },
   cardTitle: { ...Type.title },
   body: { ...Type.body },
   note: { ...Type.note },

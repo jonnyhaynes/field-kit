@@ -338,3 +338,49 @@ with, which makes it a maintenance hazard. One file still serves all four forms.
 to the More tab, and the capture flow now opens the form and steps through it. Not verified, and it
 needs hardware: everything visual above, and the two items just named.
 
+---
+
+## 13. Matching the board, not steering by it
+
+§12 still "used the board as a steer". This pass works from an **element-by-element diff** of the
+board HTML against the code, which is now the way to do this: no more paraphrasing the board and then
+reinterpreting it.
+
+**Landed in this pass:** the board's own header on every screen it draws (a back disc, the title at
+display weight, a chip or counter), with the **native header hidden** — no screen shows two titles
+any more; and cards move from radius 18 to the board's **22 floor**.
+
+**Still to close, and now enumerated rather than hand-waved.** Each is a code fix unless marked:
+
+- **Type weights/sizes.** `Type.title` is Bricolage **700**; the board uses **800** for every heading
+  and CTA. Screen titles are 26–30 on the board, 32 in `Type.display`. Field labels are **13.5px
+  Figtree 600** on the board, `Type.title` 20 in the code.
+- **AED.** Non-hero badges should be control-filled with glacier digits (15px), list distances 17px,
+  no bearing on list rows, the flag link hero-only in `#A9BDB3` not glacier, the Unverified banner a
+  single glacier row, "Show on a map" **hi-vis** not glacier, and "How to use an AED" an outlined
+  button rather than a `ContentSlot`. *(Site name / access rows need data.)*
+- **Capture form.** The footer should be the board's **ink pill** (Previous / Next / 999), not a white
+  panel; the current step needs its **double ring**; the step box is 54/radius 18 weight 800; inputs
+  are white, radius 18, mono 20 value, mono 13 unit, with the 1.5px emphasis border; and the closing
+  note "Records what you observe. It doesn't interpret it." is missing. *(Field kinds — skin colour,
+  capillary refill, bleeding as text/number — need a data change.)*
+- **Field.** Form rows are a horizontal row (68px, radius 22, white fill) with an **ink** progress
+  fill, not a stacked column with hi-vis; the Send button is inline ink, not a hi-vis footer.
+- **Map.** The map should be full-bleed (no framed card); the offline pill is mono on `#0F1A16` with a
+  ring; the Region-packs control is a 48px **icon-only** square; the bearing line is **hi-vis**, 2px,
+  dash 4/5; the sheet is radius 28 on `#0F1A16`; the user marker (concentric hi-vis ring) is missing.
+- **Send.** The QR card is stone (`#F1EFE8`) with an inner white plate, radius 30; the summary card is
+  radius 24 with a ruled header row, label/values at 14/14.5, and a single "Forms" middot row rather
+  than per-form rows.
+- **More / Regions.** Card radius 24; the toggle row leads the card, not the note; the board's custom
+  switch shape; the OSM entry is a 58px **row**, not a switch; the version footer carries the mark and
+  the guidance edition; Region packs wants a **DOWNLOADING** hero, a 14px progress bar on `#0F1A16`
+  with a split mono readout, an **OTHER PACKS** label with compact Get/Check rows, and an etched
+  **SPACE USED** card with a mono total.
+
+**Also still open, and needing a decision rather than code:** several board elements are code-only
+extras that the board does not draw (AED attribution and OfflineNote, Send's "Scan a report" link and
+second QR caption, the map's four link rows and body block, the Regions intro and "Where this comes
+from" cards). Matching the board exactly means **removing** them, which is a product call, not a
+style one.
+

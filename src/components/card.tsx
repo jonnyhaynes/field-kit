@@ -35,7 +35,7 @@ export function Card({ children, tone = 'raised', testID, style }: Props) {
     <View testID={testID} style={[styles.card, cardSurface(tone, scheme), style]}>
       {/* Only a raised panel catches light. A notice or an outline sits on the canvas, not above it. */}
       {tone === 'raised' ? (
-        <View pointerEvents="none" style={bevelStyle(Bevel[scheme], Radius.md)} />
+        <View pointerEvents="none" style={bevelStyle(Bevel[scheme], Radius.lg)} />
       ) : null}
       {children}
     </View>
@@ -43,8 +43,10 @@ export function Card({ children, tone = 'raised', testID, style }: Props) {
 }
 
 const styles = StyleSheet.create({
+  // The board's cards are 22–30, not the 18 this started at; `Radius.lg` is the floor, and a hero
+  // that needs more (26/28/30) overrides it with `style`.
   card: {
-    borderRadius: Radius.md,
+    borderRadius: Radius.lg,
     borderWidth: hairline,
     padding: Spacing.three,
     gap: Spacing.two,

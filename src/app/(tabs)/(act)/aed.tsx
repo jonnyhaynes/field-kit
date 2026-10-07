@@ -12,6 +12,7 @@ import { ContentSlot } from '@/components/content-slot';
 import { Contour } from '@/components/contour';
 import { OfflineNote } from '@/components/offline-note';
 import { Screen } from '@/components/screen';
+import { ScreenHeader } from '@/components/screen-header';
 import { cardinal, initialBearing } from '@/compass/heading';
 import { Radius, Spacing } from '@/constants/theme';
 import { Type } from '@/constants/type';
@@ -40,8 +41,8 @@ function AedLoading() {
   const theme = useTheme();
 
   return (
-    <Screen testID="aed-screen">
-      <Text style={[styles.title, { color: theme.text }]}>Nearest defibrillator</Text>
+    <Screen testID="aed-screen" withTopInset>
+      <ScreenHeader title="Nearest defibrillator" titleSize={24} />
       <Text style={[styles.body, { color: theme.textSecondary }]}>
         Opening the defibrillator list…
       </Text>
@@ -81,8 +82,8 @@ function AedResults() {
   const hasDataset = records.status === 'ready' && records.records.length > 0;
 
   return (
-    <Screen testID="aed-screen">
-      <Text style={[styles.title, { color: theme.text }]}>Nearest defibrillator</Text>
+    <Screen testID="aed-screen" withTopInset>
+      <ScreenHeader title="Nearest defibrillator" titleSize={24} />
 
       {hasDataset ? <Disclaimer /> : null}
 

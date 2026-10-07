@@ -5,6 +5,7 @@ import { regionStorageProblem } from '@/capabilities/can-map-regions';
 import { Card } from '@/components/card';
 import { Contour } from '@/components/contour';
 import { Screen } from '@/components/screen';
+import { ScreenHeader } from '@/components/screen-header';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
 import { controlSurface, brandSurface } from '@/constants/surface';
 import { Type } from '@/constants/type';
@@ -34,8 +35,8 @@ export default function RegionsScreen() {
   const problem = regionStorageProblem(regions.availableBytes, regions.packs);
 
   return (
-    <Screen testID="regions-screen">
-      <Text style={[styles.title, { color: theme.text }]}>Region packs</Text>
+    <Screen testID="regions-screen" withTopInset>
+      <ScreenHeader title="Region packs" titleSize={26} />
 
       <Card>
         <Text style={[styles.body, { color: theme.textSecondary }]}>

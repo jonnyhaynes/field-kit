@@ -1,4 +1,4 @@
-import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -14,6 +14,7 @@ import { useDepth } from '@/capture/use-depth';
 import { CallBeacon } from '@/components/call-beacon';
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
+import { ScreenHeader } from '@/components/screen-header';
 import { brandSurface, controlSurface } from '@/constants/surface';
 import { Colors, MinTarget, Radius, Spacing, Surfaces } from '@/constants/theme';
 import { Type } from '@/constants/type';
@@ -66,7 +67,8 @@ function GuardedRefusal({ body }: { body: string }) {
   const theme = useTheme();
 
   return (
-    <Screen testID="capture-form-refused" withBottomInset>
+    <Screen testID="capture-form-refused" withTopInset withBottomInset>
+      <ScreenHeader title="Capture" titleSize={27} />
       <Card tone="outline">
         <Text style={[styles.body, { color: theme.textSecondary }]}>{body}</Text>
       </Card>
@@ -85,8 +87,8 @@ function FocusedForm({ form }: { form: CaptureForm }) {
 
   if (!report) {
     return (
-      <Screen testID="capture-form-screen" withBottomInset>
-        <Stack.Screen options={{ title: form.mnemonic }} />
+      <Screen testID="capture-form-screen" withTopInset withBottomInset>
+        <ScreenHeader title={form.mnemonic} titleSize={27} />
         <Card tone="outline" testID="capture-form-no-report">
           <Text style={[styles.body, { color: theme.textSecondary }]}>
             There is no report open, so there is nothing to record into. Start one from the Field
@@ -105,6 +107,7 @@ function FocusedForm({ form }: { form: CaptureForm }) {
   return (
     <Screen
       testID="capture-form-screen"
+      withTopInset
       withBottomInset
       actions={
         // The board's bar: Previous, the next step, and 999 — the tabs stood down for this screen.
@@ -126,20 +129,21 @@ function FocusedForm({ form }: { form: CaptureForm }) {
           <CallBeacon />
         </View>
       }>
-      <Stack.Screen options={{ title: form.mnemonic }} />
-
-      <View style={styles.formHead}>
-        <Text style={[styles.mnemonic, { color: theme.text }]}>{form.mnemonic}</Text>
-        <Text style={[styles.count, { color: theme.textSecondary }]}>
-          {`${String(answered)} / ${String(form.fields.length)}`}
-        </Text>
-      </View>
-      <Text style={[styles.purpose, { color: theme.textSecondary }]}>{form.purpose}</Text>
+      <ScreenHeader
+        title={form.mnemonic}
+        titleSize={27}
+        right={
+          <Text style={[styles.count, { color: theme.textSecondary }]}>
+            {`${String(answered)} / ${String(form.fields.length)}`}
+          </Text>
+        }
+      />
 
       <StepBar steps={form.steps} current={stepIndex} onSelect={setStepIndex} />
 
+      {/* The board heads the step with its own name alone — "Circulation", not "C · Circulation". */}
       <Text testID="capture-step-label" style={[styles.stepLabel, { color: theme.text }]}>
-        {`${step.letter} · ${step.label}`}
+        {step.label}
       </Text>
 
       <View style={styles.fields}>

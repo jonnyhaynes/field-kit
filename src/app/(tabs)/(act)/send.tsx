@@ -7,6 +7,7 @@ import { CAPTURE_FORMS } from '@/capture/forms';
 import { Card } from '@/components/card';
 import { OfflineNote } from '@/components/offline-note';
 import { Screen } from '@/components/screen';
+import { ScreenHeader } from '@/components/screen-header';
 import { WriteToTag } from '@/components/tag-controls';
 import { brandSurface, controlSurface, hairline } from '@/constants/surface';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
@@ -65,8 +66,8 @@ export default function SendScreen() {
   }
 
   return (
-    <Screen testID="send-screen">
-      <Text style={[styles.title, { color: theme.text }]}>Send report</Text>
+    <Screen testID="send-screen" withTopInset>
+      <ScreenHeader title="Send report" titleSize={26} />
 
       {handover.status === 'empty' ? (
         <Card testID="send-empty">

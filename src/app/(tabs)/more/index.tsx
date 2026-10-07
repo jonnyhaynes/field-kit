@@ -6,6 +6,7 @@ import { Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-nati
 import { useDepth } from '@/capture/use-depth';
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
+import { ScreenHeader } from '@/components/screen-header';
 import { MinTarget, Radius, Spacing } from '@/constants/theme';
 import { brandSurface } from '@/constants/surface';
 import { FontFamily, Type } from '@/constants/type';
@@ -52,8 +53,8 @@ export default function SettingsScreen() {
   }
 
   return (
-    <Screen testID="settings-screen">
-      <Text style={[styles.title, { color: theme.text }]}>More</Text>
+    <Screen testID="settings-screen" withTopInset>
+      <ScreenHeader title="More" titleSize={30} />
 
       <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Responder tools</Text>
       <Card>

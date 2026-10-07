@@ -10,10 +10,10 @@ import { ActionButton } from '@/components/action-button';
 import { ContentSlot } from '@/components/content-slot';
 import { Metronome } from '@/components/metronome';
 import { Screen } from '@/components/screen';
+import { ScreenHeader } from '@/components/screen-header';
 import { GUIDANCE_IDS, compressionPaceBpm } from '@/content';
-import { Radius, Spacing, Surfaces } from '@/constants/theme';
-import { Type } from '@/constants/type';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Spacing } from '@/constants/theme';
+import { FontFamily, Type } from '@/constants/type';
 import { useTheme } from '@/hooks/use-theme';
 import { useCurrentPosition } from '@/location/current-position';
 
@@ -31,26 +31,12 @@ import { useCurrentPosition } from '@/location/current-position';
  * **without prompting** — a permission dialog during CPR is the wrong trade.
  */
 export default function CprScreen() {
-  const scheme = useColorScheme();
-  const theme = useTheme();
   const bpm = compressionPaceBpm();
   const [running, setRunning] = useState(true);
 
   return (
-    <Screen testID="cpr-screen">
-      <View style={styles.stateRow}>
-        <View style={[styles.stateChip, { backgroundColor: Surfaces[scheme].control }]}>
-          <View
-            style={[
-              styles.stateDot,
-              { backgroundColor: running ? theme.brand : theme.textSecondary },
-            ]}
-          />
-          <Text style={[styles.stateLabel, { color: theme.textSecondary }]}>
-            {running ? 'Running' : 'Paused'}
-          </Text>
-        </View>
-      </View>
+    <Screen testID="cpr-screen" withTopInset>
+      <ScreenHeader title="Compressions" titleSize={26} right={<RunChip running={running} />} />
 
       {bpm === undefined ? (
         <ContentSlot id={GUIDANCE_IDS.cprCompressionRate} label="Compression pace" />
@@ -112,16 +98,35 @@ function NearestDefibrillatorButton() {
   return <GetDefibrillator hint={hint} />;
 }
 
+/** The board's "Running" chip: a hi-vis pill with an ink dot and the word, in the header row. */
+function RunChip({ running }: { running: boolean }) {
+  const theme = useTheme();
+
+  return (
+    <View
+      style={[styles.chip, { backgroundColor: running ? theme.brand : theme.backgroundSelected }]}>
+      <View
+        style={[
+          styles.chipDot,
+          { backgroundColor: running ? theme.brandInk : theme.textSecondary },
+        ]}
+      />
+      <Text style={[styles.chipLabel, { color: running ? theme.brandInk : theme.textSecondary }]}>
+        {running ? 'Running' : 'Paused'}
+      </Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  stateRow: { flexDirection: 'row' },
-  stateChip: {
+  chip: {
+    height: 32,
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.one,
-    borderRadius: Radius.pill,
+    borderRadius: 16,
   },
-  stateDot: { width: 8, height: 8, borderRadius: Radius.pill },
-  stateLabel: { ...Type.label },
+  chipDot: { width: 8, height: 8, borderRadius: 4 },
+  chipLabel: { ...Type.body, fontSize: 12.5, fontFamily: FontFamily.textStrong },
 });
