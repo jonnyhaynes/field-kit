@@ -22,9 +22,9 @@ export default function FieldLayout() {
         headerTitleStyle: { ...Type.title },
         contentStyle: { backgroundColor: palette.background },
       }}>
-      <Stack.Screen name="index" options={{ title: 'Record incident' }} />
-      {/* The title is the mnemonic; the screen sets it, since one file serves all four forms. */}
-      <Stack.Screen name="[form]" options={{ title: 'Record' }} />
+      {/* Index and form draw the board's own header row; scan has no board mockup and keeps this. */}
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="form" options={{ headerShown: false }} />
       <Stack.Screen name="scan" options={{ title: 'Open a report' }} />
     </Stack>
   );

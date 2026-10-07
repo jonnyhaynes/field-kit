@@ -24,10 +24,13 @@ export default function ActLayout() {
         headerTitleStyle: { ...Type.title },
         contentStyle: { backgroundColor: palette.background },
       }}>
+      {/* Every screen the board draws hides this header and puts its title in the content instead
+          (see `ScreenHeader`) — a native bar *and* an in-body title was the clearest tell that the
+          app was not the board. */}
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="cpr" options={{ title: 'Start compressions' }} />
-      <Stack.Screen name="aed" options={{ title: 'Nearest defibrillator' }} />
-      <Stack.Screen name="send" options={{ title: 'Send report' }} />
+      <Stack.Screen name="cpr" options={{ headerShown: false }} />
+      <Stack.Screen name="aed" options={{ headerShown: false }} />
+      <Stack.Screen name="send" options={{ headerShown: false }} />
     </Stack>
   );
 }

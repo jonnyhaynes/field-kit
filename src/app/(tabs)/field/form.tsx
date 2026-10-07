@@ -1,4 +1,4 @@
-import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -11,11 +11,12 @@ import {
   type CaptureStep,
 } from '@/capture/forms';
 import { useDepth } from '@/capture/use-depth';
+import { CallBeacon } from '@/components/call-beacon';
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
-import { brandSurface, controlSurface } from '@/constants/surface';
+import { ScreenHeader } from '@/components/screen-header';
 import { Colors, MinTarget, Radius, Spacing, Surfaces } from '@/constants/theme';
-import { Type } from '@/constants/type';
+import { FontFamily, Type } from '@/constants/type';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import {
@@ -34,6 +35,11 @@ import { useCurrentReport } from '@/report/use-report';
  * A form is worked through in its own named steps — A, B, C, D, E — rather than as one long scroll.
  * The steps are the mnemonic's own structure (`src/capture/forms.ts`), so nothing inside a form gets
  * an invented stage: a form is one idea, and a step is part of it.
+ *
+ * **The board's own bottom bar replaces the tabs here**: Previous, Next, and the same 999 beacon, so
+ * the way out of a half-filled form is the one you are in the middle of, not the tab bar. The route
+ * carries the form as a query param (`/field/form?form=abcde`) rather than a dynamic segment, so one
+ * file serves all four and it stays editable by path.
  *
  * The gate holds here too: the route is inside the Field tab, but a deep link could still reach it,
  * so the depth is checked and a guarded refusal renders rather than a form.
@@ -60,7 +66,8 @@ function GuardedRefusal({ body }: { body: string }) {
   const theme = useTheme();
 
   return (
-    <Screen testID="capture-form-refused">
+    <Screen testID="capture-form-refused" withTopInset withBottomInset>
+      <ScreenHeader title="Capture" titleSize={27} />
       <Card tone="outline">
         <Text style={[styles.body, { color: theme.textSecondary }]}>{body}</Text>
       </Card>
@@ -69,6 +76,7 @@ function GuardedRefusal({ body }: { body: string }) {
 }
 
 function FocusedForm({ form }: { form: CaptureForm }) {
+  const scheme = useColorScheme();
   const theme = useTheme();
   const { report, record } = useCurrentReport();
   const [stepIndex, setStepIndex] = useState(0);
@@ -79,8 +87,8 @@ function FocusedForm({ form }: { form: CaptureForm }) {
 
   if (!report) {
     return (
-      <Screen testID="capture-form-screen">
-        <Stack.Screen options={{ title: form.mnemonic }} />
+      <Screen testID="capture-form-screen" withTopInset withBottomInset>
+        <ScreenHeader title={form.mnemonic} titleSize={27} />
         <Card tone="outline" testID="capture-form-no-report">
           <Text style={[styles.body, { color: theme.textSecondary }]}>
             There is no report open, so there is nothing to record into. Start one from the Field
@@ -99,38 +107,47 @@ function FocusedForm({ form }: { form: CaptureForm }) {
   return (
     <Screen
       testID="capture-form-screen"
+      withTopInset
+      withBottomInset
+      actionsBare
       actions={
-        <View style={styles.footerRow}>
-          {stepIndex > 0 ? (
+        // The board's bar: an ink pill carrying Previous, the next step and 999 — the tabs stood
+        // down for this screen, and this is what takes their place.
+        <View style={styles.barWrap}>
+          <View style={[styles.bar, { backgroundColor: Colors[scheme].bar }]}>
+            {stepIndex > 0 ? (
+              <FooterButton
+                label="Previous"
+                testID="capture-prev"
+                variant="onInk"
+                onPress={() => setStepIndex((index) => index - 1)}
+              />
+            ) : null}
             <FooterButton
-              label="Previous"
-              testID="capture-prev"
-              variant="secondary"
-              onPress={() => setStepIndex((index) => index - 1)}
+              label={isLast ? 'Done' : `Next: ${next.letter}`}
+              testID="capture-next"
+              variant="primary"
+              onPress={() => (isLast ? router.back() : setStepIndex((index) => index + 1))}
             />
-          ) : null}
-          <FooterButton
-            label={isLast ? 'Done' : `Next: ${next.letter}`}
-            testID="capture-next"
-            variant="primary"
-            onPress={() => (isLast ? router.back() : setStepIndex((index) => index + 1))}
-          />
+            <CallBeacon />
+          </View>
         </View>
       }>
-      <Stack.Screen options={{ title: form.mnemonic }} />
-
-      <View style={styles.formHead}>
-        <Text style={[styles.mnemonic, { color: theme.text }]}>{form.mnemonic}</Text>
-        <Text style={[styles.count, { color: theme.textSecondary }]}>
-          {`${String(answered)} / ${String(form.fields.length)}`}
-        </Text>
-      </View>
-      <Text style={[styles.purpose, { color: theme.textSecondary }]}>{form.purpose}</Text>
+      <ScreenHeader
+        title={form.mnemonic}
+        titleSize={27}
+        right={
+          <Text style={[styles.count, { color: theme.textSecondary }]}>
+            {`${String(answered)} / ${String(form.fields.length)}`}
+          </Text>
+        }
+      />
 
       <StepBar steps={form.steps} current={stepIndex} onSelect={setStepIndex} />
 
+      {/* The board heads the step with its own name alone — "Circulation", not "C · Circulation". */}
       <Text testID="capture-step-label" style={[styles.stepLabel, { color: theme.text }]}>
-        {`${step.letter} · ${step.label}`}
+        {step.label}
       </Text>
 
       <View style={styles.fields}>
@@ -142,6 +159,11 @@ function FocusedForm({ form }: { form: CaptureForm }) {
       </View>
 
       <EquipmentFields form={form} step={step} report={report} onRecord={record} />
+
+      {/* The board says this in words, and it is the app's rule as much as the form's (§2.1). */}
+      <Text testID="capture-observe-note" style={[styles.note, { color: theme.textSecondary }]}>
+        Records what you observe. It doesn&apos;t interpret it.
+      </Text>
     </Screen>
   );
 }
@@ -154,11 +176,16 @@ function FooterButton({
 }: {
   label: string;
   testID: string;
-  variant: 'primary' | 'secondary';
+  variant: 'primary' | 'onInk';
   onPress: () => void;
 }) {
-  const scheme = useColorScheme();
   const theme = useTheme();
+
+  // The bar is ink in both schemes, so these two are the only colours allowed on it: the hi-vis
+  // step forward, and a dark control for going back — both with light ink, because a theme colour
+  // would vanish into the pill.
+  const background = variant === 'primary' ? theme.brand : Surfaces.dark.control;
+  const ink = variant === 'primary' ? theme.brandInk : Colors.dark.text;
 
   return (
     <Pressable
@@ -168,16 +195,10 @@ function FooterButton({
       onPress={onPress}
       style={({ pressed }) => [
         styles.footerButton,
-        variant === 'primary' ? brandSurface(scheme) : controlSurface(scheme),
+        { backgroundColor: background },
         pressed && styles.pressed,
       ]}>
-      <Text
-        style={[
-          styles.footerLabel,
-          { color: variant === 'primary' ? theme.brandInk : theme.text },
-        ]}>
-        {label}
-      </Text>
+      <Text style={[styles.footerLabel, { color: ink }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -220,7 +241,12 @@ function StepBar({
             accessibilityState={{ selected: index === current }}
             testID={`capture-step-${index}`}
             onPress={() => onSelect(index)}
-            style={[styles.stepBox, { backgroundColor: background }]}>
+            // The board rings the current step with an ink outline.
+            style={[
+              styles.stepBox,
+              { backgroundColor: background },
+              state === 'current' && { borderWidth: 2, borderColor: theme.text },
+            ]}>
             <Text style={[styles.stepLetter, { color: ink }]}>{step.letter}</Text>
           </Pressable>
         );
@@ -288,6 +314,7 @@ function FieldControl({
   report: Report;
   onRecord: (observation: Observation) => void;
 }) {
+  const scheme = useColorScheme();
   const theme = useTheme();
   const value = observationFor(report, field.id)?.value;
 
@@ -305,10 +332,7 @@ function FieldControl({
 
   return (
     <View testID={`record-field-${field.id}`} style={styles.field}>
-      <Text style={[styles.fieldLabel, { color: theme.text }]}>
-        {field.label}
-        {field.unit ? ` (${field.unit})` : ''}
-      </Text>
+      <Text style={[styles.fieldLabel, { color: theme.text }]}>{field.label}</Text>
       {field.needsEquipment ? (
         <Text style={[styles.note, { color: theme.textSecondary }]}>
           Needs equipment you may not have.
@@ -346,28 +370,43 @@ function FieldControl({
           })}
         </View>
       ) : (
-        <TextInput
-          testID={`record-input-${field.id}`}
-          accessibilityLabel={field.label}
-          value={value === undefined ? '' : String(value)}
-          onChangeText={(text) => {
-            if (field.kind !== 'number') {
-              set(text);
-              return;
-            }
-            const parsed = Number(text);
-            set(text.trim() === '' || Number.isNaN(parsed) ? '' : parsed);
-          }}
-          keyboardType={field.kind === 'number' ? 'numeric' : 'default'}
-          multiline={field.kind === 'text'}
-          placeholder={field.kind === 'time' ? 'e.g. 14:20' : ''}
-          placeholderTextColor={theme.textSecondary}
-          style={[
-            styles.input,
-            { color: theme.text, borderColor: theme.border, backgroundColor: theme.background },
-            field.kind === 'text' && styles.inputTall,
-          ]}
-        />
+        // The unit rides inside the field, the board's way: a number is meaningless without it, and
+        // putting it here means it cannot be separated from the value by a scroll or a screen reader.
+        <View style={styles.inputRow}>
+          <TextInput
+            testID={`record-input-${field.id}`}
+            accessibilityLabel={field.unit ? `${field.label}, in ${field.unit}` : field.label}
+            value={value === undefined ? '' : String(value)}
+            onChangeText={(text) => {
+              if (field.kind !== 'number') {
+                set(text);
+                return;
+              }
+              const parsed = Number(text);
+              set(text.trim() === '' || Number.isNaN(parsed) ? '' : parsed);
+            }}
+            keyboardType={field.kind === 'number' ? 'numeric' : 'default'}
+            multiline={field.kind === 'text'}
+            placeholder={field.kind === 'time' ? 'e.g. 14:20' : ''}
+            placeholderTextColor={theme.textSecondary}
+            style={[
+              styles.input,
+              styles.inputFlex,
+              // A number reads as a measured value (mono); free text is prose. The board draws the
+              // number fields with an ink emphasis border and leaves text fields on the hairline.
+              field.kind === 'number' ? styles.valueMachine : styles.valueText,
+              {
+                color: theme.text,
+                borderColor: field.kind === 'number' ? theme.text : theme.border,
+                backgroundColor: Surfaces[scheme].panel,
+              },
+              field.kind === 'text' && styles.inputTall,
+            ]}
+          />
+          {field.unit ? (
+            <Text style={[styles.unit, { color: theme.textSecondary }]}>{field.unit}</Text>
+          ) : null}
+        </View>
       )}
     </View>
   );
@@ -383,16 +422,17 @@ const styles = StyleSheet.create({
   stepBar: { flexDirection: 'row', gap: Spacing.two },
   stepBox: {
     flex: 1,
-    height: 50,
-    borderRadius: Radius.sm,
+    height: 54,
+    borderRadius: Radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepLetter: { ...Type.title, fontSize: 22 },
-  stepLabel: { ...Type.title, fontSize: 22 },
+  stepLetter: { ...Type.display, fontSize: 22 },
+  stepLabel: { ...Type.display, fontSize: 22 },
   fields: { gap: Spacing.three },
   field: { gap: Spacing.one, marginTop: Spacing.two },
-  fieldLabel: { ...Type.title },
+  // The board sets a field label in Figtree 600 at 13.5 — prose, not the display face.
+  fieldLabel: { fontFamily: FontFamily.textStrong, fontSize: 13.5 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   chip: {
     minHeight: MinTarget,
@@ -402,15 +442,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
   },
   chipLabel: { ...Type.body },
+  inputRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  inputFlex: { flex: 1 },
   input: {
-    minHeight: MinTarget,
+    minHeight: 54,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: Radius.sm,
-    paddingHorizontal: Spacing.two,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
-    ...Type.body,
   },
+  valueMachine: { ...Type.machine, fontSize: 20 },
+  valueText: { ...Type.body },
   inputTall: { minHeight: 80, textAlignVertical: 'top' },
+  unit: { ...Type.machine, fontSize: 13 },
   equipment: { gap: Spacing.two },
   equipmentToggle: {
     minHeight: MinTarget,
@@ -420,15 +464,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
   },
   equipmentLabel: { ...Type.note },
-  footerRow: { flexDirection: 'row', gap: Spacing.two },
+  // The board's bar: an ink pill with the same geometry as the tab bar it replaces.
+  barWrap: {
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.two,
+    paddingBottom: Spacing.two,
+  },
+  bar: {
+    height: 74,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderRadius: 37,
+    paddingLeft: Spacing.three,
+    paddingRight: Spacing.two + Spacing.half,
+  },
   footerButton: {
     flex: 1,
-    minHeight: MinTarget,
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
+    height: 52,
+    borderRadius: 26,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  footerLabel: { ...Type.title },
+  footerLabel: { ...Type.body, fontSize: 14.5, fontFamily: FontFamily.textStrong },
   pressed: { opacity: 0.85 },
 });

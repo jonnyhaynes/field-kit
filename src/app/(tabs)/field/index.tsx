@@ -7,8 +7,9 @@ import { useDepth } from '@/capture/use-depth';
 import { Card } from '@/components/card';
 import { Contour } from '@/components/contour';
 import { Screen } from '@/components/screen';
+import { ScreenHeader } from '@/components/screen-header';
 import { brandSurface, controlSurface } from '@/constants/surface';
-import { Colors, MinTarget, Radius, Spacing } from '@/constants/theme';
+import { Colors, MinTarget, Radius, Spacing, Surfaces } from '@/constants/theme';
 import { Type } from '@/constants/type';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
@@ -40,8 +41,8 @@ function RefusedCapture() {
   const theme = useTheme();
 
   return (
-    <Screen testID="record-screen">
-      <Text style={[styles.title, { color: theme.text }]}>Record incident</Text>
+    <Screen testID="record-screen" withTopInset>
+      <ScreenHeader title="Record incident" titleSize={27} />
       <Card testID="record-refused">
         <Text style={[styles.cardTitle, { color: theme.text }]}>Responder capture is off</Text>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
@@ -62,6 +63,8 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
 
   const forms = responderForms(depth);
   const canAttach = position.status === 'ready';
+  // The form the last observation went into — the one actually being worked on, marked "In progress".
+  const activeFormId = report ? inProgressFormId(report) : undefined;
 
   function attach() {
     // Recorded, not live: the report says when the position was taken (§4.1 rule 1).
@@ -73,6 +76,7 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
   return (
     <Screen
       testID="record-screen"
+      withTopInset
       actions={
         // Only once there is something to send. A Send button over an empty report would be a
         // promise the next screen cannot keep.
@@ -91,7 +95,16 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
           </Pressable>
         ) : null
       }>
-      <Text style={[styles.title, { color: theme.text }]}>Record incident</Text>
+      <ScreenHeader title="Record incident" titleSize={27} />
+
+      {/* The board puts "Report open" in the header row beside the title, but at these sizes that
+          row cannot hold both on a 390pt screen — the title truncated to "Record incid…". The chip
+          keeps its meaning and moves to the line below, right-aligned. */}
+      {report ? (
+        <View style={styles.statusRow}>
+          <ReportChip />
+        </View>
+      ) : null}
 
       {report ? (
         <>
@@ -120,7 +133,12 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
 
           <View style={styles.list}>
             {forms.map((form) => (
-              <FormRow key={form.id} form={form} report={report} />
+              <FormRow
+                key={form.id}
+                form={form}
+                report={report}
+                active={form.id === activeFormId}
+              />
             ))}
           </View>
 
@@ -172,6 +190,14 @@ function clock(iso: string): string {
   return `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`;
 }
 
+/** Which form the last observation went into — the one the user is actually working on. */
+function inProgressFormId(report: Report): string | undefined {
+  const latest = [...report.observations].sort((a, b) =>
+    b.recordedAt.localeCompare(a.recordedAt),
+  )[0];
+  return latest?.formId;
+}
+
 /** The report itself, on the board's ink card: when it started, and where it is pinned to. */
 function ReportHero({ report }: { report: Report }) {
   return (
@@ -197,52 +223,92 @@ function ReportHero({ report }: { report: Report }) {
   );
 }
 
-/** One form in the index: what it is, and an honest progress bar with its count. */
-function FormRow({ form, report }: { form: CaptureForm; report: Report }) {
+/** One form in the index: the board's single row — mnemonic, progress, count. */
+function FormRow({ form, report, active }: { form: CaptureForm; report: Report; active: boolean }) {
+  const scheme = useColorScheme();
   const theme = useTheme();
   const answered = answeredCount(
     report,
     form.fields.map((field) => field.id),
   );
-  const fraction = form.fields.length === 0 ? 0 : answered / form.fields.length;
+  const total = form.fields.length;
+  const fraction = total === 0 ? 0 : answered / total;
+
+  // The board fills the row for the form you are in the middle of, and says so.
+  const ink = active ? theme.brandInk : theme.text;
+  const subInk = active ? theme.brandInk : theme.textSecondary;
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${form.mnemonic} — ${form.purpose}`}
-      accessibilityHint={`${String(answered)} of ${String(form.fields.length)} recorded`}
+      accessibilityHint={`${String(answered)} of ${String(total)} recorded`}
       testID={`record-form-${form.id}`}
-      onPress={() => router.push({ pathname: '/field/[form]', params: { form: form.id } })}
+      onPress={() => router.push({ pathname: '/field/form', params: { form: form.id } })}
       style={({ pressed }) => [
         styles.formRow,
-        { borderColor: theme.border },
+        {
+          borderColor: active ? 'transparent' : theme.border,
+          backgroundColor: active ? theme.brand : Surfaces[scheme].panel,
+        },
         pressed && styles.pressed,
       ]}>
-      <View style={styles.formRowHead}>
-        <Text
-          testID={`record-mnemonic-${form.id}`}
-          style={[styles.mnemonic, { color: theme.text }]}>
+      <View style={styles.formLeft}>
+        <Text testID={`record-mnemonic-${form.id}`} style={[styles.mnemonic, { color: ink }]}>
           {form.mnemonic}
         </Text>
-        <Text style={[styles.count, { color: theme.textSecondary }]}>
-          {`${String(answered)}/${String(form.fields.length)}`}
+        {/* The row's subtitle is the short `summary`, not the purpose sentence — the purpose is for
+            a screen with room for it, and truncating it here read as broken. */}
+        <Text style={[styles.formPurpose, { color: subInk }]} numberOfLines={1}>
+          {active ? 'In progress' : form.summary}
         </Text>
       </View>
-      <Text style={[styles.formPurpose, { color: theme.textSecondary }]}>{form.purpose}</Text>
       <View
-        style={[styles.track, { backgroundColor: theme.backgroundSelected }]}
+        style={[
+          styles.track,
+          { backgroundColor: active ? 'rgba(15, 26, 22, 0.15)' : theme.backgroundSelected },
+        ]}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants">
         <View
-          style={[styles.fill, { backgroundColor: theme.brand, width: `${fraction * 100}%` }]}
+          style={[
+            styles.fill,
+            // The board fills progress in ink, not the action colour — hi-vis stays for the action.
+            { backgroundColor: active ? theme.brandInk : theme.text, width: `${fraction * 100}%` },
+          ]}
         />
       </View>
+      <Text
+        style={[styles.count, { color: subInk }]}>{`${String(answered)}/${String(total)}`}</Text>
     </Pressable>
+  );
+}
+
+/** The board's "Report open" chip, in the header row while a report exists. */
+function ReportChip() {
+  const theme = useTheme();
+
+  return (
+    <View style={[styles.chip, { backgroundColor: theme.backgroundSelected }]}>
+      <View style={[styles.chipDot, { backgroundColor: theme.brandText }]} />
+      <Text style={[styles.chipLabel, { color: theme.textSecondary }]}>Report open</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   title: { ...Type.display },
+  chip: {
+    height: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    borderRadius: 16,
+  },
+  chipDot: { width: 8, height: 8, borderRadius: 4 },
+  chipLabel: { ...Type.body, fontSize: 12.5, fontFamily: 'Figtree-SemiBold' },
+  statusRow: { flexDirection: 'row', justifyContent: 'flex-end' },
   cardTitle: { ...Type.title },
   body: { ...Type.body },
   note: { ...Type.note },
@@ -259,18 +325,22 @@ const styles = StyleSheet.create({
   heroLabel: { ...Type.label, color: Colors.dark.brand },
   heroMeta: { ...Type.machine, fontSize: 12, color: 'rgba(241, 239, 232, 0.72)' },
   heroValue: { ...Type.machine, fontSize: 24, color: Colors.dark.text },
+  // The board's row: a fixed left column, the bar taking the slack, the count on the right.
   formRow: {
+    height: 68,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: Radius.md,
-    padding: Spacing.three,
-    gap: Spacing.two,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.three,
   },
-  formRowHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  mnemonic: { ...Type.title, fontSize: 20, letterSpacing: 0.5 },
-  count: { ...Type.machine, fontSize: 13 },
+  formLeft: { width: 108, gap: 2 },
+  mnemonic: { ...Type.display, fontSize: 17 },
+  count: { ...Type.machine, fontSize: 13.5, width: 44, textAlign: 'right' },
   formPurpose: { ...Type.note },
-  track: { height: 6, borderRadius: Radius.pill, overflow: 'hidden' },
-  fill: { height: '100%', borderRadius: Radius.pill },
+  track: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
+  fill: { height: '100%', borderRadius: 4 },
   discard: { minHeight: MinTarget, justifyContent: 'center' },
   discardLabel: { ...Type.title },
   primary: {

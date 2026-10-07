@@ -26,14 +26,9 @@ tags:
     longitude: -0.1278
 
 # Setup: turn the Responder depth on. The switch is TC-02's subject; here it is a precondition.
+# Settings are behind the More tab — the AED screen no longer carries a settings link.
 - tapOn:
-    id: act-aed
-- extendedWaitUntil:
-    visible:
-      id: aed-settings
-    timeout: 60000
-- tapOn:
-    id: aed-settings
+    id: tab-more
 - extendedWaitUntil:
     visible:
       id: settings-screen
@@ -117,21 +112,15 @@ tags:
 
 # Turning the depth off closes the gate, so this is not a one-way door.
 #
-# Back to the Act screen first: this flow is standing on /field, and the settings link lives on the
-# AED screen behind it.
+# Back to the Act screen first: this flow is standing on /field, and settings are reached from the
+# More tab.
 - launchApp
 - extendedWaitUntil:
     visible:
-      id: act-aed
+      id: act-screen
     timeout: 30000
 - tapOn:
-    id: act-aed
-- extendedWaitUntil:
-    visible:
-      id: aed-settings
-    timeout: 60000
-- tapOn:
-    id: aed-settings
+    id: tab-more
 - extendedWaitUntil:
     visible:
       id: settings-screen

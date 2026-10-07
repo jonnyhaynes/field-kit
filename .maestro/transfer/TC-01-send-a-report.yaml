@@ -25,15 +25,9 @@ tags:
     latitude: 51.5074
     longitude: -0.1278
 
-# Turn the Responder depth on: the capture forms are behind it.
+# Turn the Responder depth on: the capture forms are behind it. Settings are behind the More tab.
 - tapOn:
-    id: act-aed
-- extendedWaitUntil:
-    visible:
-      id: aed-settings
-    timeout: 60000
-- tapOn:
-    id: aed-settings
+    id: tab-more
 - extendedWaitUntil:
     visible:
       id: settings-screen

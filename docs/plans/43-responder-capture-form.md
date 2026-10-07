@@ -182,8 +182,11 @@ a typo shows as a missing field the test catches rather than a render-time throw
 
 **The index replaces the one long scroll.** `src/app/(tabs)/field/index.tsx` is the report hero (ink
 card: started time and the recorded position) plus four rows, each with its mnemonic, purpose, a
-hi-vis progress bar and an honest count. `src/app/(tabs)/field/[form].tsx` is one form with the
-named stepper, previous/next, and the equipment disclosure. `scan.tsx` is unchanged.
+hi-vis progress bar and an honest count. `src/app/(tabs)/field/form.tsx` (reached as
+`/field/form?form=<id>`) is one form with the named stepper, previous/next, and the equipment
+disclosure. `scan.tsx` is unchanged. The route is not a dynamic segment, and the bar stands down: the
+board's Previous / Next / 999 take the tabs' place — both recorded in
+[`contour-compositions.md`](./contour-compositions.md) §12.
 
 **The equipment disclosure** is closed by default and shows the fields of the current step that carry
 `needsEquipment`. An **answered** equipment field stays visible when the disclosure is closed — the

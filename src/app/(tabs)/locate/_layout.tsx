@@ -23,7 +23,7 @@ export default function LocateLayout() {
         contentStyle: { backgroundColor: palette.background },
       }}>
       <Stack.Screen name="index" options={{ title: 'Locate' }} />
-      <Stack.Screen name="regions" options={{ title: 'Region packs' }} />
+      <Stack.Screen name="regions" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -22,7 +22,7 @@ export default function MoreLayout() {
         headerTitleStyle: { ...Type.title },
         contentStyle: { backgroundColor: palette.background },
       }}>
-      <Stack.Screen name="index" options={{ title: 'More' }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="about" options={{ title: 'Data and licences' }} />
     </Stack>
   );

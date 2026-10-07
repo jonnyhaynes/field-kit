@@ -1,14 +1,17 @@
 import { router } from 'expo-router';
 import { Suspense, useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Svg, { G, Path } from 'react-native-svg';
 
 import { nearestAeds } from '@/aed';
 import { AedDatabaseProvider, useAedRecords } from '@/aed/database';
+import { formatDistance } from '@/aed/presentation';
 import { useAedFlags } from '@/aed/use-flags';
+import { cardinal, initialBearing } from '@/compass/heading';
 import { Card } from '@/components/card';
 import { Contour } from '@/components/contour';
 import { Screen } from '@/components/screen';
-import { MinTarget, Radius } from '@/constants/theme';
+import { Colors, MinTarget, Radius, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Type } from '@/constants/type';
 import { useTheme } from '@/hooks/use-theme';
@@ -124,6 +127,10 @@ function MapContent({
           neighbours={neighbours}
           markerColor={theme.glacier}
           markerRingColor={theme.text}
+          bearingColor={theme.brand}
+          showUser={position.status === 'ready' && !outsideArchive}
+          userColor={theme.brand}
+          userInk={Colors[scheme].background}
         />
         {/* The identity's contour language over the real map, in two corners. Decoration: it is
             hidden from the accessibility tree and clipped by the frame. */}
@@ -139,6 +146,83 @@ function MapContent({
           tone={scheme === 'dark' ? 'brand' : 'ink'}
           size={150}
         />
+
+        {/* The board's top overlay: what the map is, and the way to more of it. The pill is the
+            map's own ink surface in mono, and the region control is icon-only. */}
+        <View style={styles.mapTop} pointerEvents="box-none">
+          <View
+            style={[
+              styles.offlinePill,
+              { backgroundColor: Colors[scheme].background, borderColor: Colors[scheme].border },
+            ]}>
+            <Text style={[styles.offlinePillLabel, { color: theme.textSecondary }]}>
+              Offline · UK overview
+            </Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Region packs"
+            accessibilityHint="Download street detail for one area"
+            testID="map-regions-button"
+            onPress={() => router.push('/locate/regions')}
+            style={({ pressed }) => [
+              styles.mapTopButton,
+              { backgroundColor: Colors[scheme].background, borderColor: Colors[scheme].border },
+              pressed && styles.pressed,
+            ]}>
+            <LayersGlyph color={theme.text} />
+          </Pressable>
+        </View>
+
+        {/* The board's bottom sheet, bound to the nearest defibrillator — the one the bearing line
+            points at. It shows the figure and the way to act on it, and never claims it is verified. */}
+        {position.status === 'ready' && neighbours[0] ? (
+          <View
+            style={[
+              styles.sheet,
+              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+            ]}>
+            <View style={styles.sheetRow}>
+              <View style={[styles.sheetBadge, { backgroundColor: theme.glacier }]}>
+                <Text style={[styles.sheetBadgeLabel, { color: theme.brandInk }]}>1</Text>
+              </View>
+              <Text style={[styles.sheetValue, { color: theme.text }]}>
+                {`${formatDistance(neighbours[0].meters)} · ${bearingLabel(position.coordinates, neighbours[0].coordinates)}`}
+              </Text>
+            </View>
+            <Text style={[styles.sheetNote, { color: theme.textSecondary }]}>
+              Unverified — a defibrillator can be moved, removed, or locked away.
+            </Text>
+            <View style={styles.sheetActions}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Walk on a bearing"
+                testID="map-sheet-bearing"
+                onPress={onOpenCompass}
+                style={({ pressed }) => [
+                  styles.sheetPrimary,
+                  { backgroundColor: theme.brand },
+                  pressed && styles.pressed,
+                ]}>
+                <Text style={[styles.sheetPrimaryLabel, { color: theme.brandInk }]}>
+                  Walk on a bearing
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Defibrillator list"
+                testID="map-sheet-details"
+                onPress={() => router.push('/aed')}
+                style={({ pressed }) => [
+                  styles.sheetSecondary,
+                  { borderColor: theme.border },
+                  pressed && styles.pressed,
+                ]}>
+                <Text style={[styles.sheetSecondaryLabel, { color: theme.text }]}>Details</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
       </View>
 
       {outsideArchive ? (
@@ -234,6 +318,27 @@ function MapNotice({ title, body, testID }: { title: string; body: string; testI
   );
 }
 
+/** The walking bearing, as a compass reads it: `042° NE`. */
+function bearingLabel(
+  from: { latitude: number; longitude: number },
+  to: { latitude: number; longitude: number },
+): string {
+  const degrees = initialBearing(from, to);
+  return `${String(Math.round(degrees)).padStart(3, '0')}° ${cardinal(degrees)}`;
+}
+
+/** The stacked-layers mark for the region control, drawn rather than imported. */
+function LayersGlyph({ color }: { color: string }) {
+  return (
+    <Svg width={22} height={22} viewBox="0 0 24 24">
+      <G fill="none" stroke={color} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round">
+        <Path d="M12 3l9 5-9 5-9-5 9-5z" />
+        <Path d="M3 13l9 5 9-5" />
+      </G>
+    </Svg>
+  );
+}
+
 const styles = StyleSheet.create({
   title: { ...Type.display },
   mapFrame: {
@@ -243,6 +348,72 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },
+  mapTop: {
+    position: 'absolute',
+    top: Spacing.three,
+    left: Spacing.three,
+    right: Spacing.three,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  // The board's pill: the map's own ink surface, in mono, with a hairline ring.
+  offlinePill: {
+    height: 40,
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.three + Spacing.half,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  offlinePillLabel: { ...Type.machine, fontSize: 12.5 },
+  // The board's region control is a 48px icon-only square, not a labelled pill.
+  mapTopButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  sheet: {
+    position: 'absolute',
+    left: Spacing.three,
+    right: Spacing.three,
+    bottom: Spacing.three,
+    borderRadius: Radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: Spacing.three,
+    gap: Spacing.two,
+  },
+  sheetRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  sheetBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: Radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetBadgeLabel: { ...Type.machineStrong, fontSize: 16 },
+  sheetValue: { ...Type.machine, fontSize: 20 },
+  sheetNote: { ...Type.note },
+  sheetActions: { flexDirection: 'row', gap: Spacing.two },
+  sheetPrimary: {
+    flex: 1,
+    minHeight: MinTarget,
+    borderRadius: Radius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sheetPrimaryLabel: { ...Type.title },
+  sheetSecondary: {
+    minHeight: MinTarget,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    borderRadius: Radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  sheetSecondaryLabel: { ...Type.title },
   body: { ...Type.body },
   attribution: { ...Type.note },
   link: { minHeight: MinTarget, justifyContent: 'center' },

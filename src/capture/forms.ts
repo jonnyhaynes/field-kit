@@ -58,6 +58,8 @@ export type CaptureForm = {
   mnemonic: string;
   /** One line on what the form is for. */
   purpose: string;
+  /** Two or three words for the index row, where a full sentence would truncate. */
+  summary: string;
   /** Whether this records the scene or the casualty. They are not interchangeable. */
   whatItDescribes: 'patient' | 'scene';
   fields: readonly CaptureField[];
@@ -83,6 +85,7 @@ const SAMPLER: CaptureForm = {
   id: 'sampler',
   mnemonic: 'SAMPLER',
   purpose: 'History from a casualty who is alert enough to answer.',
+  summary: 'History',
   whatItDescribes: 'patient',
   fields: [
     {
@@ -121,6 +124,7 @@ const ABCDE: CaptureForm = {
   id: 'abcde',
   mnemonic: 'ABCDE',
   purpose: 'Primary survey: what you can see, hear and feel, in order.',
+  summary: 'Primary survey',
   whatItDescribes: 'patient',
   fields: [
     {
@@ -279,6 +283,7 @@ const ETHANE: CaptureForm = {
   id: 'ethane',
   mnemonic: 'ETHANE',
   purpose: 'Situation report about the scene, for a control room or a second crew.',
+  summary: 'The scene',
   whatItDescribes: 'scene',
   fields: [
     {
@@ -312,6 +317,7 @@ const ASHICE: CaptureForm = {
   id: 'ashice',
   mnemonic: 'ASHICE',
   purpose: 'Handover about one casualty, to the crew that takes over.',
+  summary: 'Handing over',
   whatItDescribes: 'patient',
   fields: [
     { id: 'ashice.age', label: 'Age', kind: 'number', unit: 'years' },
