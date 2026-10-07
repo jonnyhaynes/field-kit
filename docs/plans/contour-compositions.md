@@ -359,9 +359,12 @@ horizontal row with an **ink** progress fill.
   Bricolage **700 / 20*** — so `Type.title` is right and must not be changed; the agent summary that
   claimed "800 everywhere" was wrong. What remains is that the board's CTA labels are Bricolage **800**
   at ~14–18, where the code uses `Type.title` 700/20.
-- **AED — badges, distances, the flag and "Show on a map" now match.** Still open: the Unverified
-  banner as a single glacier row (it is two paragraphs in a column), and "How to use an AED" as an
-  outlined button rather than a `ContentSlot`. *(Site name / access rows need data.)*
+- **AED — badges, distances, the flag, "Show on a map" and the Unverified banner now match** (the
+  banner is the board's row: chip left, wording right — the wording itself unchanged). Still open:
+  "How to use an AED" as an outlined button rather than a `ContentSlot`. *Itself a deviation on
+  purpose:* the board's button implies a guide screen, and this app shows the licensed guidance in
+  place, with its citation, rather than behind a button that opens nothing. *(Site name / access rows
+  need data.)*
 - **Capture form — labels, inputs, ring, note and the ink action pill now match.** (`Screen` gained
   `actionsBare` so a screen can supply its own bar.) Still open: the field *kinds* the board draws as
   text/number. *(Those need a data change.)*

@@ -14,7 +14,7 @@ import { OfflineNote } from '@/components/offline-note';
 import { Screen } from '@/components/screen';
 import { ScreenHeader } from '@/components/screen-header';
 import { cardinal, initialBearing } from '@/compass/heading';
-import { Radius, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { FontFamily, Type } from '@/constants/type';
 import { GUIDANCE_IDS } from '@/content';
 import { useTheme } from '@/hooks/use-theme';
@@ -203,18 +203,25 @@ function Disclaimer() {
 
   return (
     <Card tone="outline" testID="aed-disclaimer" style={styles.provenance}>
-      <View style={[styles.unverifiedChip, { backgroundColor: theme.glacier }]}>
-        <Text style={[styles.unverifiedLabel, { color: theme.brandInk }]}>Unverified</Text>
+      {/* The board draws this as one row — the chip on the left, the wording beside it. **The
+          wording itself does not change**: the board's own line is a placeholder, and this is the
+          disclaimer the app is required to show (§4.3). */}
+      <View style={styles.provenanceRow}>
+        <View style={[styles.unverifiedChip, { backgroundColor: theme.glacier }]}>
+          <Text style={[styles.unverifiedLabel, { color: theme.brandInk }]}>Unverified</Text>
+        </View>
+        <View style={styles.provenanceText}>
+          <Text style={[styles.body, { color: theme.text }]}>
+            Unverified. This list comes from public mapping, not from the ambulance service. A
+            defibrillator may have been moved, removed, or locked away — do not rely on any entry
+            being there, reachable, or working.
+          </Text>
+          <Text style={[styles.body, { color: theme.textSecondary }]}>
+            If an entry is wrong, flagging hides it here and leaves a report you can send to
+            OpenStreetMap yourself, so the map is better for the next person.
+          </Text>
+        </View>
       </View>
-      <Text style={[styles.body, { color: theme.text }]}>
-        Unverified. This list comes from public mapping, not from the ambulance service. A
-        defibrillator may have been moved, removed, or locked away — do not rely on any entry being
-        there, reachable, or working.
-      </Text>
-      <Text style={[styles.body, { color: theme.textSecondary }]}>
-        If an entry is wrong, flagging hides it here and leaves a report you can send to
-        OpenStreetMap yourself, so the map is better for the next person.
-      </Text>
     </Card>
   );
 }
@@ -328,13 +335,15 @@ const styles = StyleSheet.create({
   body: { ...Type.body },
   attribution: { ...Type.note },
   provenance: { backgroundColor: 'rgba(142, 216, 248, 0.12)', borderColor: 'transparent' },
+  provenanceRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.three },
+  provenanceText: { flex: 1, gap: Spacing.two },
   unverifiedChip: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.half,
-    borderRadius: Radius.sm,
+    height: 26,
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.two + Spacing.half,
+    borderRadius: 13,
   },
-  unverifiedLabel: { ...Type.label, letterSpacing: 0.8 },
+  unverifiedLabel: { ...Type.body, fontSize: 12, fontFamily: FontFamily.textStrong },
   heroCard: { overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   badge: { alignItems: 'center', justifyContent: 'center' },
