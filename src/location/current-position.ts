@@ -19,7 +19,13 @@ export type PositionState =
   | { status: 'denied' }
   | { status: 'unavailable' };
 
-export function useCurrentPosition(): PositionState {
+/**
+ * `request: false` reads the position **only if permission is already granted** and never prompts.
+ *
+ * The CPR screen uses it: a distance on the defibrillator button is worth having, but stopping to
+ * ask for location permission with someone on the floor is not a trade this app makes.
+ */
+export function useCurrentPosition({ request = true }: { request?: boolean } = {}): PositionState {
   const [state, setState] = useState<PositionState>({ status: 'loading' });
 
   useEffect(() => {
@@ -27,7 +33,9 @@ export function useCurrentPosition(): PositionState {
 
     void (async () => {
       try {
-        const permission = await Location.requestForegroundPermissionsAsync();
+        const permission = request
+          ? await Location.requestForegroundPermissionsAsync()
+          : await Location.getForegroundPermissionsAsync();
         if (cancelled) return;
 
         if (permission.status !== 'granted') {
@@ -56,7 +64,7 @@ export function useCurrentPosition(): PositionState {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [request]);
 
   return state;
 }

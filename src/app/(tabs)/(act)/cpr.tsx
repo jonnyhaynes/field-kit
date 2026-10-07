@@ -1,7 +1,11 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { nearestAeds } from '@/aed';
+import { AedDatabaseProvider, useAedRecords } from '@/aed/database';
+import { formatDistance } from '@/aed/presentation';
+import { useAedFlags } from '@/aed/use-flags';
 import { ActionButton } from '@/components/action-button';
 import { ContentSlot } from '@/components/content-slot';
 import { Metronome } from '@/components/metronome';
@@ -11,6 +15,7 @@ import { Radius, Spacing, Surfaces } from '@/constants/theme';
 import { Type } from '@/constants/type';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
+import { useCurrentPosition } from '@/location/current-position';
 
 /**
  * Compressions.
@@ -19,6 +24,11 @@ import { useTheme } from '@/hooks/use-theme';
  * the slot says so rather than showing a number we picked. The defibrillator is one tap from here and
  * sits above Stop, because reaching for an AED should not mean scrolling past the control that ends
  * the thing you are doing.
+ *
+ * The defibrillator button carries the **live nearest distance**, as the board draws it. That mounts
+ * the bundled dataset on the emergency path, so it is done gently: the dataset load is inside a
+ * `Suspense` boundary whose fallback is the same button without a figure, and the position is read
+ * **without prompting** — a permission dialog during CPR is the wrong trade.
  */
 export default function CprScreen() {
   const scheme = useColorScheme();
@@ -48,13 +58,11 @@ export default function CprScreen() {
         <Metronome bpm={bpm} running={running} />
       )}
 
-      <ActionButton
-        label="Get a defibrillator"
-        hint="Nearest from the list on this phone"
-        variant="glacier"
-        testID="cpr-aed"
-        onPress={() => router.push('/aed')}
-      />
+      <AedDatabaseProvider>
+        <Suspense fallback={<GetDefibrillator hint="Works with no signal" />}>
+          <NearestDefibrillatorButton />
+        </Suspense>
+      </AedDatabaseProvider>
 
       {bpm === undefined ? null : (
         <ActionButton
@@ -67,6 +75,41 @@ export default function CprScreen() {
       <ContentSlot id={GUIDANCE_IDS.cprCompressions} label="How to do compressions" />
     </Screen>
   );
+}
+
+/** The button, so the `Suspense` fallback and the live version cannot drift apart. */
+function GetDefibrillator({ hint }: { hint: string }) {
+  return (
+    <ActionButton
+      label="Get a defibrillator"
+      hint={hint}
+      variant="glacier"
+      testID="cpr-aed"
+      onPress={() => router.push('/aed')}
+    />
+  );
+}
+
+/** The nearest mapped defibrillator as the button's subtitle — a machine figure, or an honest none. */
+function NearestDefibrillatorButton() {
+  const position = useCurrentPosition({ request: false });
+  const records = useAedRecords();
+  const { flagged } = useAedFlags();
+
+  const hint = useMemo(() => {
+    if (position.status !== 'ready' || records.status !== 'ready') return 'Works with no signal';
+
+    const [nearest] = nearestAeds(records.records, {
+      center: position.coordinates,
+      limit: 1,
+      excludedIds: flagged,
+    });
+    return nearest
+      ? `nearest ${formatDistance(nearest.meters)} · unverified`
+      : 'none mapped nearby';
+  }, [position, records, flagged]);
+
+  return <GetDefibrillator hint={hint} />;
 }
 
 const styles = StyleSheet.create({

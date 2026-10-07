@@ -11,6 +11,7 @@ import {
   type CaptureStep,
 } from '@/capture/forms';
 import { useDepth } from '@/capture/use-depth';
+import { CallBeacon } from '@/components/call-beacon';
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { brandSurface, controlSurface } from '@/constants/surface';
@@ -34,6 +35,11 @@ import { useCurrentReport } from '@/report/use-report';
  * A form is worked through in its own named steps — A, B, C, D, E — rather than as one long scroll.
  * The steps are the mnemonic's own structure (`src/capture/forms.ts`), so nothing inside a form gets
  * an invented stage: a form is one idea, and a step is part of it.
+ *
+ * **The board's own bottom bar replaces the tabs here**: Previous, Next, and the same 999 beacon, so
+ * the way out of a half-filled form is the one you are in the middle of, not the tab bar. The route
+ * carries the form as a query param (`/field/form?form=abcde`) rather than a dynamic segment, so one
+ * file serves all four and it stays editable by path.
  *
  * The gate holds here too: the route is inside the Field tab, but a deep link could still reach it,
  * so the depth is checked and a guarded refusal renders rather than a form.
@@ -60,7 +66,7 @@ function GuardedRefusal({ body }: { body: string }) {
   const theme = useTheme();
 
   return (
-    <Screen testID="capture-form-refused">
+    <Screen testID="capture-form-refused" withBottomInset>
       <Card tone="outline">
         <Text style={[styles.body, { color: theme.textSecondary }]}>{body}</Text>
       </Card>
@@ -79,7 +85,7 @@ function FocusedForm({ form }: { form: CaptureForm }) {
 
   if (!report) {
     return (
-      <Screen testID="capture-form-screen">
+      <Screen testID="capture-form-screen" withBottomInset>
         <Stack.Screen options={{ title: form.mnemonic }} />
         <Card tone="outline" testID="capture-form-no-report">
           <Text style={[styles.body, { color: theme.textSecondary }]}>
@@ -99,7 +105,9 @@ function FocusedForm({ form }: { form: CaptureForm }) {
   return (
     <Screen
       testID="capture-form-screen"
+      withBottomInset
       actions={
+        // The board's bar: Previous, the next step, and 999 — the tabs stood down for this screen.
         <View style={styles.footerRow}>
           {stepIndex > 0 ? (
             <FooterButton
@@ -115,6 +123,7 @@ function FocusedForm({ form }: { form: CaptureForm }) {
             variant="primary"
             onPress={() => (isLast ? router.back() : setStepIndex((index) => index + 1))}
           />
+          <CallBeacon />
         </View>
       }>
       <Stack.Screen options={{ title: form.mnemonic }} />
@@ -305,10 +314,7 @@ function FieldControl({
 
   return (
     <View testID={`record-field-${field.id}`} style={styles.field}>
-      <Text style={[styles.fieldLabel, { color: theme.text }]}>
-        {field.label}
-        {field.unit ? ` (${field.unit})` : ''}
-      </Text>
+      <Text style={[styles.fieldLabel, { color: theme.text }]}>{field.label}</Text>
       {field.needsEquipment ? (
         <Text style={[styles.note, { color: theme.textSecondary }]}>
           Needs equipment you may not have.
@@ -346,28 +352,36 @@ function FieldControl({
           })}
         </View>
       ) : (
-        <TextInput
-          testID={`record-input-${field.id}`}
-          accessibilityLabel={field.label}
-          value={value === undefined ? '' : String(value)}
-          onChangeText={(text) => {
-            if (field.kind !== 'number') {
-              set(text);
-              return;
-            }
-            const parsed = Number(text);
-            set(text.trim() === '' || Number.isNaN(parsed) ? '' : parsed);
-          }}
-          keyboardType={field.kind === 'number' ? 'numeric' : 'default'}
-          multiline={field.kind === 'text'}
-          placeholder={field.kind === 'time' ? 'e.g. 14:20' : ''}
-          placeholderTextColor={theme.textSecondary}
-          style={[
-            styles.input,
-            { color: theme.text, borderColor: theme.border, backgroundColor: theme.background },
-            field.kind === 'text' && styles.inputTall,
-          ]}
-        />
+        // The unit rides inside the field, the board's way: a number is meaningless without it, and
+        // putting it here means it cannot be separated from the value by a scroll or a screen reader.
+        <View style={styles.inputRow}>
+          <TextInput
+            testID={`record-input-${field.id}`}
+            accessibilityLabel={field.unit ? `${field.label}, in ${field.unit}` : field.label}
+            value={value === undefined ? '' : String(value)}
+            onChangeText={(text) => {
+              if (field.kind !== 'number') {
+                set(text);
+                return;
+              }
+              const parsed = Number(text);
+              set(text.trim() === '' || Number.isNaN(parsed) ? '' : parsed);
+            }}
+            keyboardType={field.kind === 'number' ? 'numeric' : 'default'}
+            multiline={field.kind === 'text'}
+            placeholder={field.kind === 'time' ? 'e.g. 14:20' : ''}
+            placeholderTextColor={theme.textSecondary}
+            style={[
+              styles.input,
+              styles.inputFlex,
+              { color: theme.text, borderColor: theme.border, backgroundColor: theme.background },
+              field.kind === 'text' && styles.inputTall,
+            ]}
+          />
+          {field.unit ? (
+            <Text style={[styles.unit, { color: theme.textSecondary }]}>{field.unit}</Text>
+          ) : null}
+        </View>
       )}
     </View>
   );
@@ -402,6 +416,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
   },
   chipLabel: { ...Type.body },
+  inputRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  inputFlex: { flex: 1 },
   input: {
     minHeight: MinTarget,
     borderWidth: StyleSheet.hairlineWidth,
@@ -411,6 +427,7 @@ const styles = StyleSheet.create({
     ...Type.body,
   },
   inputTall: { minHeight: 80, textAlignVertical: 'top' },
+  unit: { ...Type.body },
   equipment: { gap: Spacing.two },
   equipmentToggle: {
     minHeight: MinTarget,

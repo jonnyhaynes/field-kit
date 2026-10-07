@@ -263,7 +263,7 @@ function FormsReview({ report }: { report: Report }) {
               accessibilityRole="button"
               accessibilityLabel={`Edit ${form.mnemonic}`}
               testID={`send-form-${form.id}-edit`}
-              onPress={() => router.push({ pathname: '/field/[form]', params: { form: form.id } })}
+              onPress={() => router.push({ pathname: '/field/form', params: { form: form.id } })}
               style={({ pressed }) => [styles.edit, pressed && styles.pressed]}>
               <Text style={[styles.editLabel, { color: theme.brandText }]}>Edit</Text>
             </Pressable>

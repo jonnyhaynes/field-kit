@@ -21,16 +21,10 @@ tags:
     latitude: 51.5074
     longitude: -0.1278
 
-# Act -> AED -> Settings. There is no settings link on the Act screen, by design: settings are not
-# part of the emergency path.
+# Settings live behind the More tab, not the emergency path — the AED screen no longer carries a
+# settings link (the board's AED screen has none), so More is how a person gets there.
 - tapOn:
-    id: act-aed
-- extendedWaitUntil:
-    visible:
-      id: aed-settings
-    timeout: 60000
-- tapOn:
-    id: aed-settings
+    id: tab-more
 - extendedWaitUntil:
     visible:
       id: settings-screen

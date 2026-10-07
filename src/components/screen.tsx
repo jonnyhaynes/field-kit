@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { bevelStyle } from '@/constants/surface';
 import { Bevel, MaxContentWidth, Spacing, Surfaces } from '@/constants/theme';
@@ -12,6 +12,11 @@ type Props = {
   actions?: ReactNode;
   /** Screens with no navigation header need the top inset; screens with one don't. */
   withTopInset?: boolean;
+  /**
+   * Set only where there is **no tab bar** to own the bottom inset — the capture form, which hides
+   * the bar and draws its own. Everywhere else the bar owns it, and padding here would double it.
+   */
+  withBottomInset?: boolean;
   testID?: string;
 };
 
@@ -22,19 +27,28 @@ type Props = {
  * on every screen including Act, rather than appearing and disappearing — the reversal is recorded
  * in `docs/plans/field-kit-35-beacon-tab-navigation.md` §13.
  */
-export function Screen({ children, actions, withTopInset = false, testID }: Props) {
+export function Screen({
+  children,
+  actions,
+  withTopInset = false,
+  withBottomInset = false,
+  testID,
+}: Props) {
   const scheme = useColorScheme();
+
+  const edges: Edge[] = ['left', 'right'];
+  if (withTopInset) edges.unshift('top');
+  if (withBottomInset) edges.push('bottom');
 
   return (
     <View style={[styles.root, { backgroundColor: Surfaces[scheme].canvas }]} testID={testID}>
       {/*
-        No `bottom` edge: every screen sits above the tab bar, and the bar owns the bottom inset.
-        Leaving this in would pad for the home indicator twice, which reads as a spacing bug and
-        invites someone to shrink a padding token to "fix" it.
+        No `bottom` edge by default: every screen sits above the tab bar, and the bar owns the bottom
+        inset. Leaving it in would pad for the home indicator twice, which reads as a spacing bug and
+        invites someone to shrink a padding token to "fix" it. `withBottomInset` is the one exception,
+        for the capture form where the bar is not there.
       */}
-      <SafeAreaView
-        style={styles.safe}
-        edges={withTopInset ? ['top', 'left', 'right'] : ['left', 'right']}>
+      <SafeAreaView style={styles.safe} edges={edges}>
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.body}

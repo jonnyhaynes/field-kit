@@ -53,10 +53,10 @@ export default function SettingsScreen() {
 
   return (
     <Screen testID="settings-screen">
-      <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
+      <Text style={[styles.title, { color: theme.text }]}>More</Text>
 
+      <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Responder tools</Text>
       <Card>
-        <Text style={[styles.cardTitle, { color: theme.text }]}>Responder tools</Text>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
           Adds structured capture — SAMPLER, ABCDE, ETHANE and ASHICE — for people trained in them.
           It only adds: Call 999, CPR and the defibrillator locator stay exactly where they are, and
@@ -74,8 +74,10 @@ export default function SettingsScreen() {
         </View>
       </Card>
 
+      <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+        Report to OpenStreetMap
+      </Text>
       <Card>
-        <Text style={[styles.cardTitle, { color: theme.text }]}>Report to OpenStreetMap</Text>
         <Text style={[styles.body, { color: theme.textSecondary }]}>
           Defibrillator data comes from OpenStreetMap, so a wrong entry is best fixed there rather
           than only hidden here. Reports are <Text style={styles.emphasis}>public</Text> and{' '}

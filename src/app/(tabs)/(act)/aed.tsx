@@ -54,7 +54,7 @@ function AedResults() {
   const position = useCurrentPosition();
   const records = useAedRecords();
   const { flagged, flag } = useAedFlags();
-  const { notes, enqueue } = useNoteQueue();
+  const { enqueue } = useNoteQueue();
 
   /**
    * One tap, two consequences: the entry disappears from this device at once, and a report joins the
@@ -81,28 +81,7 @@ function AedResults() {
   const hasDataset = records.status === 'ready' && records.records.length > 0;
 
   return (
-    <Screen
-      testID="aed-screen"
-      actions={
-        <>
-          <ActionButton
-            label="Show on a map"
-            hint="Offline map — works with no signal"
-            testID="aed-map"
-            onPress={() => router.push('/locate')}
-          />
-          <ActionButton
-            label="Reports and settings"
-            hint={
-              notes.length > 0
-                ? `${notes.length} to review before sending`
-                : 'Review what to send to OpenStreetMap'
-            }
-            testID="aed-settings"
-            onPress={() => router.push('/more')}
-          />
-        </>
-      }>
+    <Screen testID="aed-screen">
       <Text style={[styles.title, { color: theme.text }]}>Nearest defibrillator</Text>
 
       {hasDataset ? <Disclaimer /> : null}
@@ -285,12 +264,23 @@ function AedRow({
 
       {hero ? (
         <View style={styles.heroAction}>
-          <ActionButton
-            label="Walk on a bearing"
-            hint="Opens the compass pointed at this one"
-            testID="aed-bearing"
-            onPress={() => router.push({ pathname: '/locate', params: { tab: 'compass' } })}
-          />
+          <View style={styles.heroButton}>
+            <ActionButton
+              label="Show on a map"
+              hint="Offline — works with no signal"
+              variant="glacier"
+              testID="aed-map"
+              onPress={() => router.push('/locate')}
+            />
+          </View>
+          <View style={styles.heroButton}>
+            <ActionButton
+              label="Walk on a bearing"
+              hint="Opens the compass pointed at this one"
+              testID="aed-bearing"
+              onPress={() => router.push({ pathname: '/locate', params: { tab: 'compass' } })}
+            />
+          </View>
         </View>
       ) : null}
 
@@ -336,7 +326,8 @@ const styles = StyleSheet.create({
   distance: { ...Type.machine, fontSize: 30, letterSpacing: -0.5 },
   bearing: { ...Type.machine, fontSize: 15, marginLeft: 'auto' },
   note: { ...Type.note },
-  heroAction: { marginTop: Spacing.one },
+  heroAction: { marginTop: Spacing.one, flexDirection: 'row', gap: Spacing.two },
+  heroButton: { flex: 1 },
   flag: { alignSelf: 'flex-start', minHeight: 38, justifyContent: 'center' },
   pressed: { opacity: 0.7 },
   flagLabel: { ...Type.title, fontSize: 14, textDecorationLine: 'underline' },

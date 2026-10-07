@@ -41,7 +41,7 @@ tags:
     id: aed-flag-0
 
 - tapOn:
-    id: aed-settings
+    id: tab-more
 - extendedWaitUntil:
     visible:
       id: settings-screen

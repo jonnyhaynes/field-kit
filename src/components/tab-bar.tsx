@@ -1,14 +1,12 @@
-import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { router, usePathname } from 'expo-router';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
 
 import { useDepth } from '@/capture/use-depth';
+import { CallBeacon } from '@/components/call-beacon';
 import { TabGlyph } from '@/components/tab-glyph';
 import { hairline } from '@/constants/surface';
 import { Colors, Elevation, MinTarget, Radius, Spacing } from '@/constants/theme';
-import { Type } from '@/constants/type';
-import { EMERGENCY_LABEL, callEmergencyServices } from '@/emergency/dial';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { TAB_LABELS, TAB_TEST_IDS, isTabVisible, type TabId } from '@/navigation/tabs';
 
@@ -23,6 +21,11 @@ import { TAB_LABELS, TAB_TEST_IDS, isTabVisible, type TabId } from '@/navigation
  * The pill is **ink in both schemes**, so it is the one surface that does not follow the theme, and
  * its glyphs take the dark scheme's light inks even under light. The tabs are **icon-only** (the
  * board's design) — their names survive as accessibility labels — which is why the pill fits at 74pt.
+ *
+ * **On a capture form the bar stands down entirely** (the board's ABCDE screen). The form draws its
+ * own bar — Previous, Next and the same beacon — so the tabs are not a way out mid-form, and there is
+ * still exactly one emergency action on screen. The form supplies its own bottom inset, because this
+ * bar is no longer there to own it.
  *
  * The bar is a normal (not overlaid) tab bar with a transparent strip, so React Navigation measures
  * it and no screen has to reserve space for an overlay.
@@ -57,6 +60,10 @@ export function TabBar({ state }: TabBarProps) {
   const scheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const { depth } = useDepth();
+  const pathname = usePathname();
+
+  // A capture form draws its own bar; see the note above.
+  if (pathname === '/field/form') return null;
 
   // The pill is ink in both schemes; a couple of things must therefore borrow the dark ink, not the
   // live scheme's text colours, or they vanish into the pill under light.
@@ -94,45 +101,9 @@ export function TabBar({ state }: TabBarProps) {
           );
         })}
 
-        {/*
-          The emergency action, inside the pill and last. It is the one thing in the app allowed to
-          look like it is emitting light (Elevation.attention), and the one control that carries a
-          word rather than a glyph — a word beats an icon under stress.
-        */}
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={EMERGENCY_LABEL}
-          accessibilityHint={`Opens the dialler with ${EMERGENCY_LABEL.replace('Call ', '')} ready`}
-          testID="call-beacon"
-          onPress={() => {
-            void callEmergencyServices();
-          }}
-          style={({ pressed }) => [
-            styles.call,
-            { backgroundColor: Colors[scheme].rescue, ...Elevation[scheme].attention },
-            pressed && styles.pressed,
-          ]}>
-          <PhoneGlyph color={Colors[scheme].rescueInk} />
-          <Text style={[styles.callLabel, { color: Colors[scheme].rescueInk }]}>999</Text>
-        </Pressable>
+        <CallBeacon />
       </View>
     </View>
-  );
-}
-
-/** The handset, drawn rather than imported — the app ships no icon set. */
-function PhoneGlyph({ color }: { color: string }) {
-  return (
-    <Svg width={20} height={20} viewBox="0 0 24 24">
-      <Path
-        d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"
-        fill="none"
-        stroke={color}
-        strokeWidth={2.2}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </Svg>
   );
 }
 
@@ -155,16 +126,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  call: {
-    marginLeft: 'auto',
-    height: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Radius.pill,
-  },
-  callLabel: { ...Type.machineStrong, fontSize: 21 },
-  pressed: { opacity: 0.85 },
 });

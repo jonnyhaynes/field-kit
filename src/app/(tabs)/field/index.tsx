@@ -62,6 +62,8 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
 
   const forms = responderForms(depth);
   const canAttach = position.status === 'ready';
+  // The form the last observation went into — the one actually being worked on, marked "In progress".
+  const activeFormId = report ? inProgressFormId(report) : undefined;
 
   function attach() {
     // Recorded, not live: the report says when the position was taken (§4.1 rule 1).
@@ -120,7 +122,12 @@ function ResponderCapture({ depth }: { depth: ResponderDepth }) {
 
           <View style={styles.list}>
             {forms.map((form) => (
-              <FormRow key={form.id} form={form} report={report} />
+              <FormRow
+                key={form.id}
+                form={form}
+                report={report}
+                active={form.id === activeFormId}
+              />
             ))}
           </View>
 
@@ -172,6 +179,14 @@ function clock(iso: string): string {
   return `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`;
 }
 
+/** Which form the last observation went into — the one the user is actually working on. */
+function inProgressFormId(report: Report): string | undefined {
+  const latest = [...report.observations].sort((a, b) =>
+    b.recordedAt.localeCompare(a.recordedAt),
+  )[0];
+  return latest?.formId;
+}
+
 /** The report itself, on the board's ink card: when it started, and where it is pinned to. */
 function ReportHero({ report }: { report: Report }) {
   return (
@@ -198,7 +213,7 @@ function ReportHero({ report }: { report: Report }) {
 }
 
 /** One form in the index: what it is, and an honest progress bar with its count. */
-function FormRow({ form, report }: { form: CaptureForm; report: Report }) {
+function FormRow({ form, report, active }: { form: CaptureForm; report: Report; active: boolean }) {
   const theme = useTheme();
   const answered = answeredCount(
     report,
@@ -206,35 +221,48 @@ function FormRow({ form, report }: { form: CaptureForm; report: Report }) {
   );
   const fraction = form.fields.length === 0 ? 0 : answered / form.fields.length;
 
+  // The board fills the row for the form you are in the middle of, and says so.
+  const ink = active ? theme.brandInk : theme.text;
+  const subInk = active ? theme.brandInk : theme.textSecondary;
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${form.mnemonic} — ${form.purpose}`}
       accessibilityHint={`${String(answered)} of ${String(form.fields.length)} recorded`}
       testID={`record-form-${form.id}`}
-      onPress={() => router.push({ pathname: '/field/[form]', params: { form: form.id } })}
+      onPress={() => router.push({ pathname: '/field/form', params: { form: form.id } })}
       style={({ pressed }) => [
         styles.formRow,
-        { borderColor: theme.border },
+        {
+          borderColor: active ? 'transparent' : theme.border,
+          backgroundColor: active ? theme.brand : undefined,
+        },
         pressed && styles.pressed,
       ]}>
       <View style={styles.formRowHead}>
-        <Text
-          testID={`record-mnemonic-${form.id}`}
-          style={[styles.mnemonic, { color: theme.text }]}>
+        <Text testID={`record-mnemonic-${form.id}`} style={[styles.mnemonic, { color: ink }]}>
           {form.mnemonic}
         </Text>
-        <Text style={[styles.count, { color: theme.textSecondary }]}>
+        <Text style={[styles.count, { color: subInk }]}>
           {`${String(answered)}/${String(form.fields.length)}`}
         </Text>
       </View>
-      <Text style={[styles.formPurpose, { color: theme.textSecondary }]}>{form.purpose}</Text>
+      <Text style={[styles.formPurpose, { color: subInk }]}>
+        {active ? 'In progress' : form.purpose}
+      </Text>
       <View
-        style={[styles.track, { backgroundColor: theme.backgroundSelected }]}
+        style={[
+          styles.track,
+          { backgroundColor: active ? 'rgba(15, 26, 22, 0.18)' : theme.backgroundSelected },
+        ]}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants">
         <View
-          style={[styles.fill, { backgroundColor: theme.brand, width: `${fraction * 100}%` }]}
+          style={[
+            styles.fill,
+            { backgroundColor: active ? theme.brandInk : theme.brand, width: `${fraction * 100}%` },
+          ]}
         />
       </View>
     </Pressable>
