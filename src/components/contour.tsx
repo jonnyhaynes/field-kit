@@ -1,4 +1,14 @@
-import { StyleSheet, View, type ViewStyle } from 'react-native';
+import { useEffect } from 'react';
+import { StyleSheet, type ViewStyle } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+  type SharedValue,
+} from 'react-native-reanimated';
 import Svg, { G, Path } from 'react-native-svg';
 
 import { Colors, type Scheme } from '@/constants/theme';
@@ -14,8 +24,14 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
  * `hill` and `summit` are two readings of one shape rather than two shapes. The stroke is
  * `non-scaling`, so the line stays 1.3pt however far the ring is scaled.
  *
+ * **It breathes.** By default the field drifts in and out on a slow loop, so the lines read as a
+ * living surface rather than a printed one. On CPR the field is handed the metronome's `pulse`
+ * instead, so it expands **on each beat** rather than on its own clock — the board's note that the
+ * rings breathe with the compressions.
+ *
  * **Decoration on an emergency app.** It is `pointerEvents="none"` and hidden from the accessibility
  * tree, so it can never intercept a tap or be read out; keep it in corners, never under body text.
+ * **Reduce Motion stops it entirely** — the field is drawn once and left still.
  */
 
 const BLOB =
@@ -24,6 +40,9 @@ const BLOB =
 /** The blob's authored radius, in its own units — used to normalise a ring to the box. */
 const BLOB_RADIUS = 110;
 const STROKE = 1.3;
+
+/** How long one breath takes, out and back. Slow enough to read as ambient, not as a loading state. */
+const BREATH_MS = 7000;
 
 type Variant = 'hill' | 'summit';
 type Corner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
@@ -36,6 +55,13 @@ type Props = {
   tone?: Tone;
   /** The square the rings are drawn in, in points. */
   size?: number;
+  /**
+   * A 0→1-per-beat value to drive the field with — CPR passes the metronome's. When given, the field
+   * rides the beat instead of its own slow loop.
+   */
+  pulse?: SharedValue<number>;
+  /** Set false to hold the field still (the splash draws its own entrance). */
+  animated?: boolean;
 };
 
 /** Outer to inner: the two readings of the one shape. */
@@ -90,10 +116,35 @@ export function Contour({
   corner = 'top-right',
   tone = 'brand',
   size = 240,
+  pulse,
+  animated = true,
 }: Props) {
   const scheme = useColorScheme();
+  const reduceMotion = useReducedMotion();
   const preset = PRESETS[variant];
   const stroke = toneColour[tone](scheme);
+
+  const motion = animated && !reduceMotion;
+  const beatDriven = pulse !== undefined;
+
+  // The ambient breath. Skipped when Reduce Motion is on, and when a beat drives the field instead.
+  const ambient = useSharedValue(0);
+  useEffect(() => {
+    if (!motion || beatDriven) return;
+    ambient.value = 0;
+    ambient.value = withRepeat(
+      withTiming(1, { duration: BREATH_MS, easing: Easing.inOut(Easing.quad) }),
+      -1,
+      true,
+    );
+  }, [motion, beatDriven, ambient]);
+
+  const source = pulse ?? ambient;
+  const animatedStyle = useAnimatedStyle(() => {
+    if (!motion) return {};
+    const p = source.value;
+    return { transform: [{ scale: 0.985 + p * 0.05 }], opacity: 0.82 + p * 0.18 };
+  });
 
   // The largest ring is the box's 92%, so every ring shares one scale rather than each preset
   // carrying its own absolute numbers.
@@ -103,7 +154,7 @@ export function Contour({
   const y = ANCHOR[corner].y * size;
 
   return (
-    <View
+    <Animated.View
       pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
@@ -114,6 +165,7 @@ export function Contour({
         // sit at the box's centre, land on the parent's centre.
         corner === 'center' ? { marginLeft: -size / 2, marginTop: -size / 2 } : null,
         { width: size, height: size },
+        animatedStyle,
       ]}>
       <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <G fill="none" stroke={stroke} strokeWidth={STROKE}>
@@ -128,7 +180,7 @@ export function Contour({
           ))}
         </G>
       </Svg>
-    </View>
+    </Animated.View>
   );
 }
 

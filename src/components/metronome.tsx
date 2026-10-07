@@ -76,11 +76,14 @@ export function Metronome({ bpm, running = true, testID = 'metronome' }: Props) 
       accessible
       accessibilityLabel={`Compression pace, ${bpm} per minute, ${beats} beats so far`}>
       <View style={styles.hero}>
+        {/* `pulse` is the beat: the field expands with each compression instead of on its own slow
+            loop — the board's "the rings breathe on each beat". Reduce Motion leaves it still. */}
         <Contour
           variant="summit"
           corner="center"
           tone={scheme === 'dark' ? 'brand' : 'ink'}
           size={320}
+          pulse={pulse}
         />
         <View style={styles.stage}>
           {!reduceMotion && running

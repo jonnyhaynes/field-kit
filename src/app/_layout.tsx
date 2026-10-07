@@ -1,8 +1,9 @@
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
+import { AnimatedSplash } from '@/components/animated-splash';
 import { FONTS } from '@/constants/fonts';
 import { Colors, type Scheme } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -39,6 +40,11 @@ export default function RootLayout() {
   // forever. Falling back to the system face is a worse-looking app, not a broken one.
   const [fontsLoaded, fontError] = useFonts(FONTS);
 
+  // The native splash is static, so it hands off to `AnimatedSplash` — which draws the mark in and
+  // fades, once. This drives that hand-off and nothing else.
+  const [splashDone, setSplashDone] = useState(false);
+  const finishSplash = useCallback(() => setSplashDone(true), []);
+
   useEffect(() => {
     if (fontsLoaded || fontError) void SplashScreen.hideAsync();
   }, [fontsLoaded, fontError]);
@@ -59,6 +65,9 @@ export default function RootLayout() {
         }}>
         <Stack.Screen name="(tabs)" />
       </Stack>
+
+      {/* Sits over the first screen until its entrance finishes; then unmounts for good. */}
+      {splashDone ? null : <AnimatedSplash onDone={finishSplash} />}
     </ThemeProvider>
   );
 }
