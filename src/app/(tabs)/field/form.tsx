@@ -17,7 +17,7 @@ import { Screen } from '@/components/screen';
 import { ScreenHeader } from '@/components/screen-header';
 import { brandSurface, controlSurface } from '@/constants/surface';
 import { Colors, MinTarget, Radius, Spacing, Surfaces } from '@/constants/theme';
-import { Type } from '@/constants/type';
+import { FontFamily, Type } from '@/constants/type';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import {
@@ -155,6 +155,11 @@ function FocusedForm({ form }: { form: CaptureForm }) {
       </View>
 
       <EquipmentFields form={form} step={step} report={report} onRecord={record} />
+
+      {/* The board says this in words, and it is the app's rule as much as the form's (§2.1). */}
+      <Text testID="capture-observe-note" style={[styles.note, { color: theme.textSecondary }]}>
+        Records what you observe. It doesn&apos;t interpret it.
+      </Text>
     </Screen>
   );
 }
@@ -233,7 +238,12 @@ function StepBar({
             accessibilityState={{ selected: index === current }}
             testID={`capture-step-${index}`}
             onPress={() => onSelect(index)}
-            style={[styles.stepBox, { backgroundColor: background }]}>
+            // The board rings the current step with an ink outline.
+            style={[
+              styles.stepBox,
+              { backgroundColor: background },
+              state === 'current' && { borderWidth: 2, borderColor: theme.text },
+            ]}>
             <Text style={[styles.stepLetter, { color: ink }]}>{step.letter}</Text>
           </Pressable>
         );
@@ -301,6 +311,7 @@ function FieldControl({
   report: Report;
   onRecord: (observation: Observation) => void;
 }) {
+  const scheme = useColorScheme();
   const theme = useTheme();
   const value = observationFor(report, field.id)?.value;
 
@@ -378,7 +389,14 @@ function FieldControl({
             style={[
               styles.input,
               styles.inputFlex,
-              { color: theme.text, borderColor: theme.border, backgroundColor: theme.background },
+              // A number reads as a measured value (mono); free text is prose. The board draws the
+              // number fields with an ink emphasis border and leaves text fields on the hairline.
+              field.kind === 'number' ? styles.valueMachine : styles.valueText,
+              {
+                color: theme.text,
+                borderColor: field.kind === 'number' ? theme.text : theme.border,
+                backgroundColor: Surfaces[scheme].panel,
+              },
               field.kind === 'text' && styles.inputTall,
             ]}
           />
@@ -401,16 +419,17 @@ const styles = StyleSheet.create({
   stepBar: { flexDirection: 'row', gap: Spacing.two },
   stepBox: {
     flex: 1,
-    height: 50,
-    borderRadius: Radius.sm,
+    height: 54,
+    borderRadius: Radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepLetter: { ...Type.title, fontSize: 22 },
-  stepLabel: { ...Type.title, fontSize: 22 },
+  stepLetter: { ...Type.display, fontSize: 22 },
+  stepLabel: { ...Type.display, fontSize: 22 },
   fields: { gap: Spacing.three },
   field: { gap: Spacing.one, marginTop: Spacing.two },
-  fieldLabel: { ...Type.title },
+  // The board sets a field label in Figtree 600 at 13.5 — prose, not the display face.
+  fieldLabel: { fontFamily: FontFamily.textStrong, fontSize: 13.5 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   chip: {
     minHeight: MinTarget,
@@ -423,15 +442,16 @@ const styles = StyleSheet.create({
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   inputFlex: { flex: 1 },
   input: {
-    minHeight: MinTarget,
+    minHeight: 54,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: Radius.sm,
-    paddingHorizontal: Spacing.two,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
-    ...Type.body,
   },
+  valueMachine: { ...Type.machine, fontSize: 20 },
+  valueText: { ...Type.body },
   inputTall: { minHeight: 80, textAlignVertical: 'top' },
-  unit: { ...Type.body },
+  unit: { ...Type.machine, fontSize: 13 },
   equipment: { gap: Spacing.two },
   equipmentToggle: {
     minHeight: MinTarget,
